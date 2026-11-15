@@ -135,6 +135,7 @@ DistField makeDistField(const World& world, const Geom& g, int tx0, int ty0, int
     const std::vector<float>& wh = world.h;
     const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
     const double bqx = g.ccx - g.cu * dux - g.cv * dvx, bqy = g.ccy - g.cu * duy - g.cv * dvy;
+
     DistField f;
     f.sx0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(tx0 - reach - dM) / DS)) * DS);
     f.sy0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(ty0 - reach - dM) / DS)) * DS);
@@ -198,6 +199,49 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     };
     const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
     const double bqx = g.ccx - g.cu * dux - g.cv * dvx, bqy = g.ccy - g.cu * duy - g.cv * dvy;
+
+    // mapa de imagem: o chão é a própria imagem, plano (gira e inclina com a mesa); os territórios tingem por cima
+    if (world.backdrop && !world.backdrop->levels.empty()) {
+        const Backdrop& bd = *world.backdrop;
+        int L = 0;
+        while (L + 1 < static_cast<int>(bd.levels.size()) && (2 << L) <= s) L++;   // de longe, a redução (sem serrilhar)
+        const Backdrop::Level& lv = bd.levels[static_cast<size_t>(L)];
+        const double kx = double(lv.W) / WW, ky = double(lv.H) / WH;
+        const RealmPaint* info = g.info ? realms : nullptr;
+        const double tint = 0.22;
+        for (int y = ty0; y < ty1; y++) {
+            if (g.cancel && g.cancel->load(std::memory_order_relaxed)) return;
+            double qx = bqx + tx0 * dux + y * dvx, qy = bqy + tx0 * duy + y * dvy;
+            for (int x = tx0; x < tx1; x++, qx += dux, qy += duy) {
+                if (qx < -0.5 || qy < -0.5 || qx > WW - 0.5 || qy > WH - 0.5) continue;
+                const double ix = clampd((qx + 0.5) * kx - 0.5, 0, lv.W - 1.001), iy = clampd((qy + 0.5) * ky - 0.5, 0, lv.H - 1.001);
+                const int x0 = static_cast<int>(ix), y0 = static_cast<int>(iy);
+                const int x1 = std::min(lv.W - 1, x0 + 1), y1 = std::min(lv.H - 1, y0 + 1);
+                const double fx = ix - x0, fy = iy - y0;
+                const uint8_t* p00 = lv.rgba.data() + (static_cast<size_t>(y0) * lv.W + x0) * 4;
+                const uint8_t* p10 = lv.rgba.data() + (static_cast<size_t>(y0) * lv.W + x1) * 4;
+                const uint8_t* p01 = lv.rgba.data() + (static_cast<size_t>(y1) * lv.W + x0) * 4;
+                const uint8_t* p11 = lv.rgba.data() + (static_cast<size_t>(y1) * lv.W + x1) * 4;
+                double c[3];
+                for (int k = 0; k < 3; k++)
+                    c[k] = p00[k] * (1 - fx) * (1 - fy) + p10[k] * fx * (1 - fy) + p01[k] * (1 - fx) * fy + p11[k] * fx * fy;
+                const bool land = sampleW(wh, std::clamp(qx, 0.0, WW - 1.0), std::clamp(qy, 0.0, WH - 1.0), -1) > 0;
+                if (info && land) {
+                    const RealmSample ra = info->realmAt(qx, qy);
+                    if (ra.id >= 0) { const RGB rc = info->realmColor(ra.id); for (int k = 0; k < 3; k++) c[k] += (rc[k] - c[k]) * tint; }
+                    if (ra.edge > 0.01 && ra.eid >= 0) {
+                        const RGB ec = info->realmColor(ra.eid);
+                        const double ea = 0.85 * ra.edge;
+                        for (int k = 0; k < 3; k++) c[k] += (ec[k] * 0.45 - c[k]) * ea;
+                    }
+                }
+                const long long o = PI(x, y) * 4;
+                out[o] = u8c(c[0]); out[o + 1] = u8c(c[1]); out[o + 2] = u8c(c[2]); out[o + 3] = 255;
+                if (AD) { AD[PI(x, y)] = land ? static_cast<int16_t>(y) : static_cast<int16_t>(-1); AL[PI(x, y)] = 0.0f; }
+            }
+        }
+        return;
+    }
 
     // B: vizinhança justa, resolução cheia
     const int rowEnd = std::min(H, ty1 + eR);
@@ -772,7 +816,7 @@ void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1
         paintRegion(w, g, out, tx0, ty0, tx1, ty1, aux, nullptr, realms, true);
         return;
     }
-    const DistField df = makeDistField(w, g, tx0, ty0, tx1, ty1, threads);
+    const DistField df = w.backdrop ? DistField() : makeDistField(w, g, tx0, ty0, tx1, ty1, threads);   // o mapa de imagem não tem costa pra medir
     std::atomic<int> next{ 0 };
     auto work = [&]() {
         for (int b; (b = next.fetch_add(1)) < bands;) {

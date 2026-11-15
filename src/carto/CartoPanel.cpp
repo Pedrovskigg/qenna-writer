@@ -6,6 +6,7 @@
 #include "CartoCartela.h"
 #include "CartoExplore.h"
 #include "CartoIcons.h"
+#include "CartoImage.h"
 #include "CartoRing.h"
 #include "../SheetDialogs.h"
 #include "../galaxy/GalaxyNewGalaxy.h"
@@ -881,7 +882,11 @@ void Panel::syncUi()
     if (m_explore) m_explore->syncGroups(nullptr);   // territórios que ainda não têm grupo (mapa gerado, aberto, antigo)
     const int idx = m_store.indexOf(m_mapId);
     if (!m_titleEdit->isVisible()) m_title->setText(idx >= 0 ? m_store.maps()[idx].name : tr("Mapa"));
-    QString sub = m_hasWorld ? QStringLiteral("%1 · %2 · %3").arg(modeName(m_canvas->mode()), sizeName(m_doc.world.size), tr("semente %1").arg(m_doc.world.seed)) : QString();
+    QString sub = m_hasWorld ? QStringLiteral("%1 · %2 · %3").arg(modeName(m_canvas->mode()), sizeName(m_doc.world.size),
+                                                                 isImageWorld(m_doc.world) ? tr("da imagem") : tr("semente %1").arg(m_doc.world.seed)) : QString();
+    // mapa de imagem: o relevo é a imagem, então Área, Pincel e Clima não têm o que mexer
+    const bool image = m_hasWorld && isImageWorld(m_doc.world);
+    for (const char* id : { "area", "brush", "climate" }) m_ring->setItemEnabled(QString::fromLatin1(id), !image);
     if (m_canvas->busy()) sub += tr(" · pintando…");
     m_sub->setText(sub);
     m_astro->setState(m_canvas->angle(), m_canvas->pitch(), m_canvas->hour(), m_canvas->mode());
@@ -1097,6 +1102,10 @@ void Panel::openRingAt(QPoint at)
 void Panel::pickTool(const QString& id, QPoint ringCenter)
 {
     if (id == QLatin1String("gen")) { openNewMap(NewMap::Mode::Regen); return; }
+    if (m_hasWorld && isImageWorld(m_doc.world) && (id == QLatin1String("area") || id == QLatin1String("brush") || id == QLatin1String("climate"))) {
+        flash(tr("Neste mapa o terreno é a imagem: Área, Pincel e Clima ficam desligados."));
+        return;
+    }
     m_dockAt = ringCenter; m_dockFromRing = true; m_dockUser = false;
     if (id == QLatin1String("climate")) {
         setTool(QStringLiteral("brush"));
@@ -1238,9 +1247,13 @@ void Panel::applyNewMap(const NewMapChoice& c, bool replace)
     CARTO_PROF("gerar (novo mapa)");
     m_canvas->waitIdle();
     // a prévia já gerou esse mundo; sem ela (mão rápida no Gerar) gera agora
-    World w = c.world ? std::move(*c.world) : rebuildBase(c.seed, c.water, c.type, c.size, c.climate);
-    const bool bare = !c.info || w.type == QLatin1String("empty");
-    const QString name = c.name.isEmpty() ? mapTitle(w) : c.name;   // em branco: o nome sugerido acompanha a semente
+    const bool fromImage = c.type == QLatin1String("image");
+    World w = c.world ? std::move(*c.world)
+            : fromImage ? imageWorld(fitImageToWorld(c.image, c.size), c.water, c.seed, c.size, c.climate)
+                        : rebuildBase(c.seed, c.water, c.type, c.size, c.climate);
+    const bool bare = !c.info || w.type == QLatin1String("empty") || fromImage;
+    // em branco: o nome sugerido acompanha a semente (no mapa de imagem, o nome do arquivo)
+    const QString name = !c.name.isEmpty() ? c.name : fromImage ? (c.imageName.isEmpty() ? tr("Mapa") : c.imageName) : mapTitle(w);
     if (!replace || !m_hasWorld || m_store.indexOf(m_mapId) < 0) {
         newMap(std::move(w), name, bare);
         toolForNewWorld();
@@ -1248,7 +1261,10 @@ void Panel::applyNewMap(const NewMapChoice& c, bool replace)
     }
     Undo u; u.kind = Undo::Full; u.world = std::make_shared<World>(m_doc.world); u.layers = std::make_shared<Doc::Layers>(m_doc.layers());
     const double keepScale = m_doc.world.scale;
-    // mapa novo: territórios, construções e nomes do antigo ficam no desfazer
+    // mapa novo: territórios, construções e nomes do antigo ficam no desfazer. Mapa de imagem refeito no mesmo
+    // tamanho (outra imagem por cima, o Mar ajustado) mantém o que a pessoa já desenhou: as coordenadas ainda valem
+    const bool keepLayers = fromImage && isImageWorld(m_doc.world) && m_doc.world.W == w.W && m_doc.world.H == w.H;
+    const QString keepGroup = m_doc.groupId;
     const int ver = m_doc.ver;
     m_canvas->setDoc(nullptr, false);
     m_doc = Doc();
@@ -1256,11 +1272,12 @@ void Panel::applyNewMap(const NewMapChoice& c, bool replace)
     m_doc.world = std::move(w);
     m_doc.world.scale = keepScale;
     if (bare) m_doc.clearSuggestions();
+    if (keepLayers) { m_doc.setLayers(*u.layers); m_doc.groupId = keepGroup; }
     pushUndo(std::move(u));
     m_store.renameMap(m_mapId, name);
     m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
     toolForNewWorld();
-    if (bare && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
+    if (bare && !keepLayers && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
     scheduleSave();
     syncUi();
 }

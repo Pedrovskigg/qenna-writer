@@ -113,6 +113,7 @@ void Canvas::setDoc(Doc* d, bool refit)
     m_selArt.clear(); m_selName.clear();
     m_roadFrom.reset(); m_bridgeStart.reset();
     if (!w) { update(); return; }
+    if (m_pitch < minPitch()) m_pitch = 90;   // mapa de imagem nasce (ou abre de um jeito antigo) visto de cima
     startClouds();
     if (refit) fit();
     paintPreview(3);
@@ -212,7 +213,7 @@ void Canvas::adoptBase(std::shared_ptr<Render> r)
 void Canvas::refreshLight()
 {
     if (!m_base) return;
-    m_lut = sunLUT(m_hour, currentView(1).style);
+    m_lut = (m_world && m_world->backdrop) ? std::vector<float>() : sunLUT(m_hour, currentView(1).style);   // a imagem não tem relevo pra luz do sol
     m_litHour = m_hour;
     presentRect(0, 0, m_base->g.W, m_base->g.H);
 }
@@ -318,7 +319,7 @@ void Canvas::setView(double ang, double pitch, bool quick)
     const QPointF c(width() / 2.0, height() / 2.0);
     const auto q = screenToWorld(c);
     m_ang = ang;
-    m_pitch = std::round(std::max(20.0, std::min(90.0, pitch)));
+    m_pitch = std::round(std::max(minPitch(), std::min(90.0, pitch)));
     const auto n = worldToPlane(*m_world, m_ang, q[0], q[1]);
     m_panX = c.x() - m_zoom * n[0];
     m_panY = c.y() - m_zoom * n[1] * sq();
@@ -449,7 +450,11 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     QBrush sea(atlas ? m_atlasTile : m_mode == QLatin1String("ink") ? m_paperTile : m_artTiles.value(m_mode, m_oceanTile));
     QTransform seaT; seaT.translate(m_panX, m_panY); seaT.scale(m_zoom, m_zoom);
     sea.setTransform(seaT);
-    p.fillRect(QRect(QPoint(0, 0), sz), sea);
+    if (m_world && m_world->backdrop) {
+        // mapa de imagem: em volta dela, a cor da borda da própria imagem (o mar desenhado nela continua mesa afora)
+        const auto& e = m_world->backdrop->edge;
+        p.fillRect(QRect(QPoint(0, 0), sz), QColor(e[0], e[1], e[2]));
+    } else p.fillRect(QRect(QPoint(0, 0), sz), sea);
     if (!m_base) return;
     if (ink && m_doc) {
         // linhas de rumo, ondinhas e monstro da Carta; grade da Planta: por baixo do terreno, aparece só no mar

@@ -52,7 +52,7 @@ struct Doc {
     }
     const std::vector<Flora>& ensureFlora()
     {
-        if (floraVer != ver || floraScale != worldScale(world)) { flora = buildFlora(world); floraVer = ver; floraScale = worldScale(world); }
+        if (floraVer != ver || floraScale != worldScale(world)) { flora = isImageWorld(world) ? std::vector<Flora>() : buildFlora(world); floraVer = ver; floraScale = worldScale(world); }
         return flora;
     }
     const std::vector<NameFeature>& ensureNames(const QString& density)

@@ -97,6 +97,15 @@ struct NoiseCache;   // ruído das bordas dos pincéis, guardado por bloco (Cart
 // (pra devolver) e a altura que ficou depois (só se devolve onde ninguém pintou por cima). key = a pose do castelo
 struct MoatCut { QString id, key; int x0 = 0, y0 = 0, x1 = 0, y1 = 0; std::vector<float> before, cut; };
 
+// mapa feito de uma imagem pronta: a imagem no tamanho do mundo (RGBA) e as reduções dela (pra quem olha de longe),
+// a cor média da borda (o fundo da mesa em volta) e uma chave do conteúdo (o nome do arquivo guardado)
+struct Backdrop {
+    struct Level { int W = 0, H = 0; std::vector<uint8_t> rgba; };
+    std::vector<Level> levels;    // [0] = tamanho do mundo; cada um a metade do anterior
+    std::array<uint8_t, 3> edge{ { 26, 61, 88 } };
+    QString key;
+};
+
 struct World {
     int W = 0, H = 0;
     std::vector<float> h, m, k;
@@ -112,7 +121,9 @@ struct World {
     std::vector<float> F, T;
     std::shared_ptr<NoiseCache> brushNoise;   // só depende da semente: cópias do mundo podem dividir
     std::vector<MoatCut> moats;
+    std::shared_ptr<const Backdrop> backdrop;   // só no mapa de imagem (type "image")
 };
+inline bool isImageWorld(const World& w) { return w.type == QLatin1String("image"); }
 
 World generate(int seed, int water, const QString& type, int size, const QString& climate);
 World emptyWorld(int seed, int size, const QString& climate);

@@ -38,6 +38,8 @@ struct NewMapChoice {
     QString type = QStringLiteral("continent"), climate = QStringLiteral("mixed");
     bool info = true;               // gerar territórios e locais
     std::shared_ptr<World> world;   // o mundo da prévia, quando já saiu com essas mesmas escolhas
+    QImage image;                   // type "image": a imagem escolhida (water = o quanto da cor da borda conta como mar)
+    QString imageName;              // o nome do arquivo, sem extensão (o nome do mapa se ficar em branco)
 };
 
 class NewMap : public QWidget {
@@ -61,6 +63,8 @@ protected:
     void paintEvent(QPaintEvent*) override;
     void resizeEvent(QResizeEvent*) override;
     void mousePressEvent(QMouseEvent*) override;   // segura o clique: o mapa atrás não recebe
+    void dragEnterEvent(QDragEnterEvent*) override;
+    void dropEvent(QDropEvent*) override;
     void wheelEvent(QWheelEvent*) override;
     void keyPressEvent(QKeyEvent*) override;
 
@@ -74,6 +78,10 @@ private:
     void accept();
     NewMapChoice choice() const;
     QString key() const;   // as escolhas que mudam o mundo, pra saber se a prévia ainda vale
+    void setImageMode(bool on);
+    void pickImage();
+    bool loadImage(const QString& path);
+    void useImage(const QImage& img, const QString& name, int size, bool suggestSize);
 
     Mode m_mode = Mode::New;
     QString m_style = QStringLiteral("rich");
@@ -83,6 +91,18 @@ private:
     QToolButton* m_close = nullptr;
     QToolButton* m_tabEarth = nullptr;
     QToolButton* m_tabGalaxy = nullptr;
+    QToolButton* m_tabImage = nullptr;
+    bool m_imageMode = false;
+    QImage m_srcImage;              // a imagem escolhida (até kImageMaxSide)
+    QString m_srcName;
+    int m_srcSerial = 0;            // sobe a cada imagem nova (entra na chave da prévia)
+    QToolButton* m_pickBtn = nullptr;
+    QLabel* m_imageHint = nullptr;
+    QLabel* m_climateCap = nullptr;
+    QLabel* m_typeCap = nullptr;
+    QLabel* m_seedCap = nullptr;
+    QWidget* m_climateRow = nullptr;
+    QWidget* m_typeRow = nullptr;
     NewMapPreview* m_preview = nullptr;
     QLabel* m_metaSize = nullptr;
     QLabel* m_metaSeed = nullptr;

@@ -1,12 +1,19 @@
 #include "CartoNewMap.h"
 
 #include "CartoIcons.h"
+#include "CartoImage.h"
 #include "CartoPaint.h"
 #include "CartoStore.h"
 #include "../Theme.h"
 
 #include <QAbstractButton>
 #include <QButtonGroup>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QImageReader>
+#include <QMimeData>
 #include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -89,6 +96,9 @@ public:
     void setBusy(bool b) { if (b != m_busy) { m_busy = b; update(); } }
     void setName(const QString& n) { if (n != m_name) { m_name = n; update(); } }
     void setEmpty(bool e) { if (e != m_empty) { m_empty = e; update(); } }
+    void setFit(bool f) { if (f != m_fit) { m_fit = f; update(); } }        // a imagem inteira (mapa de imagem tem a proporção dela)
+    void setPrompt(bool p) { if (p != m_prompt) { m_prompt = p; setCursor(p ? Qt::PointingHandCursor : Qt::ArrowCursor); update(); } }
+    std::function<void()> clicked;
 
 protected:
     void paintEvent(QPaintEvent*) override
@@ -103,9 +113,28 @@ protected:
         p.setClipPath(clip);
         p.fillRect(rect(), kSea);
         if (!m_img.isNull()) {
-            // cobre a caixa inteira mantendo a proporção (todos os tamanhos são 4:3)
-            const QSizeF s = QSizeF(m_img.size()).scaled(r.size(), Qt::KeepAspectRatioByExpanding);
+            // cobre a caixa inteira mantendo a proporção (todos os tamanhos são 4:3); a imagem pronta cabe inteira
+            const QSizeF s = QSizeF(m_img.size()).scaled(r.size(), m_fit ? Qt::KeepAspectRatio : Qt::KeepAspectRatioByExpanding);
             p.drawImage(QRectF(r.center().x() - s.width() / 2, r.center().y() - s.height() / 2, s.width(), s.height()), m_img);
+        }
+        if (m_prompt) {
+            QFont f(QStringLiteral("IM FELL English SC"));
+            f.setPixelSize(22);
+            p.setFont(f);
+            p.setPen(kParchment);
+            const QRectF mid(r.left() + 20, r.center().y() - 30, r.width() - 40, 30);
+            p.drawText(mid, Qt::AlignHCenter | Qt::AlignBottom, NewMap::tr("Escolha a imagem do mapa"));
+            QFont g = font();
+            g.setPixelSize(13);
+            p.setFont(g);
+            QColor c = kParchment; c.setAlphaF(0.85);
+            p.setPen(c);
+            p.drawText(QRectF(mid.left(), mid.bottom() + 4, mid.width(), 22), Qt::AlignHCenter | Qt::AlignTop,
+                       NewMap::tr("Clique aqui ou arraste o arquivo (PNG ou JPG)."));
+            QPen dash(c, 1.5, Qt::DashLine);
+            p.setPen(dash);
+            p.setBrush(Qt::NoBrush);
+            p.drawRoundedRect(r.adjusted(12, 12, -12, -12), 8, 8);
         }
         if (m_empty) {
             QFont f(QStringLiteral("IM FELL English SC"));
@@ -151,10 +180,12 @@ protected:
         p.drawRoundedRect(r, 10, 10);
     }
 
+    void mousePressEvent(QMouseEvent* e) override { if (clicked && m_prompt) clicked(); e->accept(); }
+
 private:
     QImage m_img;
     QString m_name;
-    bool m_busy = false, m_empty = false;
+    bool m_busy = false, m_empty = false, m_fit = false, m_prompt = false;
 };
 
 // ── os botões de escolha: tamanho (retângulo na proporção), estilo (miniatura) e bioma (faixa de cor) ──
@@ -327,8 +358,11 @@ void NewMap::build()
     };
     m_tabEarth = kindBtn(tr("Terra"));
     m_tabEarth->setChecked(true);
+    m_tabImage = kindBtn(tr("Imagem pronta"));
+    m_tabImage->setToolTip(tr("Um mapa que você já tem (desenhado à mão, de outro programa) vira o chão: territórios, construções, nomes e o Explorar em cima dele."));
     m_tabGalaxy = kindBtn(tr("Galáxia"));
-    connect(m_tabEarth, &QToolButton::clicked, this, [this]() { m_tabEarth->setChecked(true); });
+    connect(m_tabEarth, &QToolButton::clicked, this, [this]() { setImageMode(false); });
+    connect(m_tabImage, &QToolButton::clicked, this, [this]() { setImageMode(true); if (m_srcImage.isNull()) pickImage(); });
     connect(m_tabGalaxy, &QToolButton::clicked, this, [this]() { m_tabGalaxy->setChecked(false); if (wantGalaxy) wantGalaxy(); });
     outer->addLayout(kinds);
 
@@ -353,6 +387,7 @@ void NewMap::build()
     left->setContentsMargins(0, 0, 0, 0);
     left->setSpacing(7);
     m_preview = new NewMapPreview(m_left);
+    m_preview->clicked = [this]() { pickImage(); };
     left->addWidget(m_preview);
     auto* meta = new QHBoxLayout();
     m_metaSize = hint(m_left);
@@ -363,9 +398,22 @@ void NewMap::build()
     meta->addStretch();
     meta->addWidget(m_metaSeed);
     left->addLayout(meta);
+    // mapa de imagem: trocar a imagem e o que o azul quer dizer
+    m_pickBtn = new QToolButton(m_left);
+    m_pickBtn->setObjectName(QStringLiteral("cartoLink"));
+    m_pickBtn->setCursor(Qt::PointingHandCursor);
+    m_pickBtn->setText(tr("Trocar a imagem…"));
+    connect(m_pickBtn, &QToolButton::clicked, this, &NewMap::pickImage);
+    left->addWidget(m_pickBtn, 0, Qt::AlignLeft);
+    m_imageHint = hint(m_left);
+    m_imageHint->setText(tr("O azul é o que o Qenna entendeu como mar: os territórios ficam fora dele. Se pegou terra ou deixou mar de fora, ajuste o Mar ao lado."));
+    left->addWidget(m_imageHint);
     left->addSpacing(8);
-    left->addWidget(caption(m_left, tr("BIOMA DOMINANTE")));
-    auto* crow = new QHBoxLayout();
+    m_climateCap = caption(m_left, tr("BIOMA DOMINANTE"));
+    left->addWidget(m_climateCap);
+    m_climateRow = new QWidget(m_left);
+    auto* crow = new QHBoxLayout(m_climateRow);
+    crow->setContentsMargins(0, 0, 0, 0);
     crow->setSpacing(6);
     m_climates = new QButtonGroup(this);
     const QString cNames[4] = { tr("Misto"), tr("Frio"), tr("Árido"), tr("Verde") };
@@ -376,12 +424,12 @@ void NewMap::build()
         { QColor("#2f5d3a"), QColor("#3f6e44"), QColor("#58834a"), QColor("#53664c"), QColor("#7e9c5a") },
     };
     for (int i = 0; i < 4; i++) {
-        auto* t = new NewMapTile(NewMapTile::Swatch, cNames[i], m_left);
+        auto* t = new NewMapTile(NewMapTile::Swatch, cNames[i], m_climateRow);
         t->stops = cStops[i];
         m_climates->addButton(t, i);
         crow->addWidget(t);
     }
-    left->addLayout(crow);
+    left->addWidget(m_climateRow);
     m_climateHint = hint(m_left);
     left->addWidget(m_climateHint);
     left->addStretch();
@@ -427,18 +475,21 @@ void NewMap::build()
     right->addWidget(m_sizeHint);
     gap(right);
 
-    right->addWidget(caption(m_right, tr("ESTILO")));
-    auto* trow = new QHBoxLayout();
+    m_typeCap = caption(m_right, tr("ESTILO"));
+    right->addWidget(m_typeCap);
+    m_typeRow = new QWidget(m_right);
+    auto* trow = new QHBoxLayout(m_typeRow);
+    trow->setContentsMargins(0, 0, 0, 0);
     trow->setSpacing(6);
     m_types = new QButtonGroup(this);
     const QString tNames[4] = { tr("Continente"), tr("Arquipélago"), tr("Oceânico"), tr("Vazio") };
     for (int i = 0; i < 4; i++) {
-        auto* t = new NewMapTile(NewMapTile::Thumb, tNames[i], m_right);
+        auto* t = new NewMapTile(NewMapTile::Thumb, tNames[i], m_typeRow);
         m_types->addButton(t, i);
         m_typeTiles.append(t);
         trow->addWidget(t);
     }
-    right->addLayout(trow);
+    right->addWidget(m_typeRow);
     m_typeHint = hint(m_right);
     right->addWidget(m_typeHint);
     gap(right);
@@ -469,7 +520,8 @@ void NewMap::build()
     auto* foot = new QHBoxLayout();
     foot->setContentsMargins(22, 14, 22, 16);
     foot->setSpacing(8);
-    foot->addWidget(caption(m_card, tr("SEMENTE")));
+    m_seedCap = caption(m_card, tr("SEMENTE"));
+    foot->addWidget(m_seedCap);
     m_seed = new QSpinBox(m_card);
     m_seed->setObjectName(QStringLiteral("cartoSpin"));
     m_seed->setRange(0, 99999);
@@ -507,7 +559,11 @@ void NewMap::build()
     connect(m_sizes, &QButtonGroup::idClicked, this, [this](int id) { if (!m_loading) QSettings().setValue(QStringLiteral("carto/newSize"), id); changed(true); });
     connect(m_types, &QButtonGroup::idClicked, this, [this](int id) { if (!m_loading) QSettings().setValue(QStringLiteral("carto/newType"), QString::fromLatin1(kTypes[id])); changed(false); });
     connect(m_climates, &QButtonGroup::idClicked, this, [this](int id) { if (!m_loading) QSettings().setValue(QStringLiteral("carto/newClimate"), QString::fromLatin1(kClimates[id])); changed(true); });
-    connect(m_water, &QSlider::valueChanged, this, [this](int v) { if (!m_loading) QSettings().setValue(QStringLiteral("carto/newWater"), v); changed(true); });
+    connect(m_water, &QSlider::valueChanged, this, [this](int v) {
+        if (!m_loading) QSettings().setValue(m_imageMode ? QStringLiteral("carto/newImageSea") : QStringLiteral("carto/newWater"), v);
+        changed(!m_imageMode);
+    });
+    setAcceptDrops(true);
     connect(m_seed, &QSpinBox::valueChanged, this, [this]() { changed(true); });
 }
 
@@ -527,8 +583,7 @@ void NewMap::applyTheme()
 
 void NewMap::open(Mode mode, const World* current, const QString& currentName, const QString& terrainStyle)
 {
-    m_tabEarth->setVisible(mode != Mode::Regen);
-    m_tabGalaxy->setVisible(mode != Mode::Regen);
+    m_tabGalaxy->setVisible(mode != Mode::Regen);   // no Regenerar dá pra trocar Terra por imagem, mas galáxia é outro mapa
     m_mode = mode;
     m_style = terrainStyle;
     m_loading = true;
@@ -551,10 +606,18 @@ void NewMap::open(Mode mode, const World* current, const QString& currentName, c
     m_sizes->button(std::clamp(size, 0, 5))->setChecked(true);
     m_types->button(indexOf(kTypes, 4, type))->setChecked(true);
     m_climates->button(indexOf(kClimates, 4, climate))->setChecked(true);
+    m_water->setRange(20, 85);   // a aba da imagem deixa o slider de 0 a 100
     m_water->setValue(std::clamp(water, 20, 85));
     m_seed->setValue(seed);
     m_info->setChecked(st.value(QStringLiteral("carto/genInfo"), true).toBool());
     m_name->setText(name);
+    m_srcImage = QImage();
+    m_srcName.clear();
+    m_imageMode = false;
+    if (mode == Mode::Regen && current && isImageWorld(*current) && current->backdrop) {
+        m_imageMode = true;
+        useImage(backdropImage(*current), QString(), current->size, false);
+    }
     m_title->setText(mode == Mode::Regen ? tr("Regenerar mapa") : tr("Novo mapa"));
     m_sub->setText(mode == Mode::Regen ? tr("O mapa atual é substituído. Ctrl+Z desfaz.")
                                        : tr("Escolha como o seu mundo começa. Depois, dá pra redesenhar tudo com os pincéis."));
@@ -563,6 +626,10 @@ void NewMap::open(Mode mode, const World* current, const QString& currentName, c
     m_readyKey.clear();
     m_preview->setImage(QImage());
     m_thumbsDirty = true;
+    m_loading = true;
+    if (m_imageMode) setImageMode(true);
+    if (m_imageMode && mode == Mode::Regen && current) m_water->setValue(std::clamp(current->water, 0, 100));
+    m_loading = false;
     sync();
     setGeometry(parentWidget()->rect());
     show();
@@ -588,6 +655,7 @@ void NewMap::dismiss()
 
 QString NewMap::key() const
 {
+    if (m_imageMode) return QStringLiteral("img|%1|%2|%3").arg(m_srcSerial).arg(m_sizes->checkedId()).arg(m_water->value());
     const int t = std::max(0, m_types->checkedId());
     return QStringLiteral("%1|%2|%3|%4|%5").arg(m_seed->value()).arg(m_sizes->checkedId())
         .arg(t == 3 ? 0 : m_water->value()).arg(QLatin1String(kTypes[t]), QLatin1String(kClimates[std::max(0, m_climates->checkedId())]));
@@ -603,6 +671,13 @@ NewMapChoice NewMap::choice() const
     c.type = QString::fromLatin1(kTypes[std::max(0, m_types->checkedId())]);
     c.climate = QString::fromLatin1(kClimates[std::max(0, m_climates->checkedId())]);
     c.info = m_info->isChecked();
+    if (m_imageMode) {
+        c.type = QStringLiteral("image");
+        c.climate = QStringLiteral("mixed");
+        c.info = false;
+        c.image = m_srcImage;
+        c.imageName = m_srcName;
+    }
     return c;
 }
 
@@ -620,6 +695,48 @@ void NewMap::sync()
         QT_TR_NOOP("Cinturão de desertos, com oásis onde sobra umidade."),
         QT_TR_NOOP("Úmido: floresta e pântano."),
     };
+    const bool img = m_imageMode;
+    m_tabEarth->setChecked(!img);
+    m_tabImage->setChecked(img);
+    for (QWidget* x : std::initializer_list<QWidget*>{ m_climateCap, m_climateRow, m_climateHint, m_typeCap, m_typeRow, m_typeHint, m_seedCap, m_seed, m_dice, m_info })
+        x->setVisible(!img);
+    m_pickBtn->setVisible(img && !m_srcImage.isNull());
+    m_imageHint->setVisible(img && !m_srcImage.isNull());
+    m_preview->setFit(img);
+    m_preview->setPrompt(img && m_srcImage.isNull());
+    if (img) {
+        const bool has = !m_srcImage.isNull();
+        m_waterCap->setText(tr("MAR"));
+        m_water->setToolTip(tr("Quanto da cor da borda da imagem conta como mar. No zero, a imagem inteira é terra."));
+        m_waterValue->setText(m_water->value() == 0 ? tr("nenhum") : QString::number(m_water->value()));
+        for (QWidget* x : std::initializer_list<QWidget*>{ m_water, m_waterCap, m_waterValue }) x->setEnabled(has);
+        m_go->setText(tr("Criar mapa"));
+        m_go->setEnabled(has);
+        m_preview->setEmpty(false);
+        for (int i = 0; i < 6; i++) {
+            const QSize px = has ? imageWorldSize(m_srcImage.size(), i) : worldPx(i);
+            static_cast<NewMapTile*>(m_sizes->button(i))->sub = QStringLiteral("%1×%2").arg(px.width()).arg(px.height());
+            m_sizes->button(i)->update();
+        }
+        const QSize px = has ? imageWorldSize(m_srcImage.size(), s) : worldPx(s);
+        m_metaSize->setText(QStringLiteral("%1 · %2×%3").arg(sizeLabel(s)).arg(px.width()).arg(px.height()));
+        m_metaSeed->setText(has ? tr("imagem de %1×%2").arg(m_srcImage.width()).arg(m_srcImage.height()) : QString());
+        m_sizeHint->setText(tr("Quanto maior, mais nítida a imagem fica de perto, e mais pesado o mapa."));
+        m_name->setPlaceholderText(m_srcName.isEmpty() ? tr("Mapa") : m_srcName);
+        if (m_mode == Mode::Regen)
+            m_sub->setText(tr("Territórios, construções e nomes ficam se o tamanho não mudar. Ctrl+Z desfaz."));
+        return;
+    }
+    if (m_mode == Mode::Regen) m_sub->setText(tr("O mapa atual é substituído. Ctrl+Z desfaz."));
+    m_go->setEnabled(true);
+    m_waterCap->setText(tr("OCEANO"));
+    m_water->setToolTip(tr("Quanto do mapa é mar"));
+    m_sizeHint->setText(tr("Quanto maior, mais espaço pra desenhar e mais pesado fica."));
+    for (int i = 0; i < 6; i++) {
+        const QSize px = worldPx(i);
+        static_cast<NewMapTile*>(m_sizes->button(i))->sub = QStringLiteral("%1×%2").arg(px.width()).arg(px.height());
+        m_sizes->button(i)->update();
+    }
     m_typeHint->setText(tr(typeTips[t]));
     m_climateHint->setText(tr(climateTips[c]));
     m_water->setEnabled(!empty);
@@ -659,8 +776,30 @@ void NewMap::startPreview()
     const int gen = ++m_gen;
     const Style style = m_style == QLatin1String("mira") ? Style::Mira : Style::Rich;
     const int target = std::min(720, qRound(m_preview->width() * m_preview->devicePixelRatioF()));
-    m_preview->setBusy(true);
     QPointer<NewMap> self(this);
+    if (m_imageMode) {
+        if (m_srcImage.isNull()) { m_preview->setBusy(false); m_preview->setImage(QImage()); return; }
+        m_preview->setBusy(true);
+        m_pool->start([self, gen, c, k, target, cancel]() {
+            const QImage fitted = fitImageToWorld(c.image, c.size);
+            if (cancel->load()) return;
+            auto w = std::make_shared<World>(imageWorld(fitted, c.water, c.seed, c.size, c.climate));
+            if (cancel->load()) return;
+            std::vector<uint8_t> sea(w->h.size());
+            for (size_t i = 0; i < sea.size(); i++) sea[i] = w->h[i] <= 0;
+            const QImage img = seaPreview(fitted, sea, target);
+            if (cancel->load() || !self) return;
+            QMetaObject::invokeMethod(self, [self, gen, w, img, k]() {
+                if (!self || gen != self->m_gen) return;
+                self->m_ready = w;
+                self->m_readyKey = k;
+                self->m_preview->setImage(img);
+                self->m_preview->setBusy(false);
+            }, Qt::QueuedConnection);
+        });
+        return;
+    }
+    m_preview->setBusy(true);
     m_pool->start([self, gen, c, k, style, target, cancel]() {
         auto w = std::make_shared<World>(rebuildBase(c.seed, c.water, c.type, c.size, c.climate));
         if (cancel->load()) return;
@@ -679,6 +818,7 @@ void NewMap::startPreview()
 
 void NewMap::startThumbs()
 {
+    if (m_imageMode) return;   // a aba da imagem não mostra os estilos (fica pra quando voltar pra Terra)
     m_thumbsDirty = false;
     if (m_thumbCancel) m_thumbCancel->store(true);
     auto cancel = std::make_shared<std::atomic<bool>>(false);
@@ -708,6 +848,7 @@ void NewMap::startThumbs()
 
 void NewMap::accept()
 {
+    if (m_imageMode && m_srcImage.isNull()) { pickImage(); return; }
     NewMapChoice c = choice();
     if (m_ready && m_readyKey == key()) c.world = std::move(m_ready);
     m_ready.reset();
@@ -730,7 +871,8 @@ void NewMap::relayout()
     const int pw = std::max(220, cw - 44 - 22 - rightW);
     // tela baixa: as dicas de baixo dos campos saem e os respiros apertam antes de a janela passar da borda
     auto compact = [this](bool on) {
-        for (QLabel* h : { m_nameHint, m_sizeHint, m_typeHint, m_sub }) h->setVisible(!on);
+        for (QLabel* h : { m_nameHint, m_sizeHint, m_sub }) h->setVisible(!on);
+        m_typeHint->setVisible(!on && !m_imageMode);
         for (QSpacerItem* g : m_gaps) g->changeSize(0, on ? 2 : 9, QSizePolicy::Minimum, QSizePolicy::Fixed);
         m_right->layout()->setSpacing(on ? 4 : 7);
         m_card->layout()->invalidate();
@@ -764,6 +906,87 @@ void NewMap::paintEvent(QPaintEvent*)
 void NewMap::resizeEvent(QResizeEvent*) { relayout(); }
 void NewMap::mousePressEvent(QMouseEvent* e) { e->accept(); }
 void NewMap::wheelEvent(QWheelEvent* e) { e->accept(); }
+
+// ── mapa de imagem ──
+void NewMap::setImageMode(bool on)
+{
+    const bool was = m_imageMode;
+    m_imageMode = on;
+    // o slider vira o Mar da imagem (0 = sem mar) e volta pro Oceano na Terra, cada um com o seu valor guardado
+    const bool old = m_loading;
+    m_loading = true;
+    QSettings st;
+    if (on) { m_water->setRange(0, 100); m_water->setValue(st.value(QStringLiteral("carto/newImageSea"), 50).toInt()); }
+    else { m_water->setRange(20, 85); m_water->setValue(std::clamp(st.value(QStringLiteral("carto/newWater"), 60).toInt(), 20, 85)); }
+    m_loading = old;
+    if (was != on) { m_ready.reset(); m_readyKey.clear(); m_preview->setImage(QImage()); }
+    sync();
+    if (isVisible()) relayout();   // a aba da imagem esconde o bioma, o estilo e a semente: a janela muda de altura
+    if (!m_loading && isVisible()) {
+        if (!on && m_thumbsDirty) startThumbs();
+        changed(false);
+    }
+}
+
+void NewMap::pickImage()
+{
+    if (!m_imageMode) return;
+    QSettings st;
+    const QString dir = st.value(QStringLiteral("carto/imageDir")).toString();
+    const QString path = QFileDialog::getOpenFileName(this, tr("Imagem do mapa"), dir, tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
+    if (path.isEmpty()) return;
+    st.setValue(QStringLiteral("carto/imageDir"), QFileInfo(path).absolutePath());
+    loadImage(path);
+}
+
+bool NewMap::loadImage(const QString& path)
+{
+    QImageReader reader(path);
+    reader.setAutoTransform(true);
+    QImage img = reader.read();
+    if (img.isNull()) {
+        m_imageHint->setVisible(true);
+        m_imageHint->setText(tr("Não deu pra abrir essa imagem. Tente um PNG ou JPG."));
+        return false;
+    }
+    if (std::max(img.width(), img.height()) > kImageMaxSide)
+        img = img.scaled(kImageMaxSide, kImageMaxSide, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    useImage(img, QFileInfo(path).completeBaseName(), 0, true);
+    return true;
+}
+
+void NewMap::useImage(const QImage& img, const QString& name, int size, bool suggestSize)
+{
+    m_srcImage = img;
+    m_srcName = name;
+    m_srcSerial++;
+    m_imageHint->setText(tr("O azul é o que o Qenna entendeu como mar: os territórios ficam fora dele. Se pegou terra ou deixou mar de fora, ajuste o Mar ao lado."));
+    const bool old = m_loading;
+    m_loading = true;
+    m_sizes->button(std::clamp(suggestSize ? suggestedImageSize(img.size()) : size, 0, 5))->setChecked(true);
+    m_loading = old;
+    m_ready.reset();
+    m_readyKey.clear();
+    if (!m_loading) { sync(); changed(false); }
+}
+
+void NewMap::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls() || e->mimeData()->hasImage()) e->acceptProposedAction();
+}
+
+void NewMap::dropEvent(QDropEvent* e)
+{
+    // soltar uma imagem em qualquer lugar da janela leva pra aba da imagem
+    const QMimeData* md = e->mimeData();
+    QString path;
+    for (const QUrl& u : md->urls()) if (u.isLocalFile()) { path = u.toLocalFile(); break; }
+    if (path.isEmpty() && !md->hasImage()) return;
+    if (!m_imageMode) setImageMode(true);
+    if (!path.isEmpty()) loadImage(path);
+    else useImage(qvariant_cast<QImage>(md->imageData()), QString(), 0, true);
+    e->acceptProposedAction();
+}
 
 void NewMap::keyPressEvent(QKeyEvent* e)
 {

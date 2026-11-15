@@ -207,7 +207,13 @@ void Panel::syncCartela()
         for (auto it = m_viewBtns.begin(); it != m_viewBtns.end(); ++it)
             it.value()->setChecked(it.key() == QLatin1String("ink") ? isArtMode(m_canvas->mode()) : it.key() == m_canvas->mode());
         if (QToolButton* ab = m_viewBtns.value(QStringLiteral("ink"))) ab->setText(artModeShort(isArtMode(m_canvas->mode()) ? m_canvas->mode() : m_astro->artMode()) + QStringLiteral(" ▾"));
-        if (!m_cPitch->isSliderDown()) { m_cPitch->blockSignals(true); m_cPitch->setValue(qRound(m_canvas->pitch())); m_cPitch->blockSignals(false); }
+        if (!m_cPitch->isSliderDown()) {
+            m_cPitch->blockSignals(true);
+            m_cPitch->setRange(qRound(m_canvas->minPitch()), 90);
+            m_cPitch->setValue(qRound(m_canvas->pitch()));
+            m_cPitch->blockSignals(false);
+        }
+        m_cPitch->setToolTip(m_canvas->minPitch() > 20 ? tr("Mapa de imagem: inclina só até 70°, pra imagem não deitar.") : QString());
         if (!m_cHour->isSliderDown()) { m_cHour->blockSignals(true); m_cHour->setValue(qRound(m_canvas->hour() * 20)); m_cHour->blockSignals(false); }
         m_cPitchV->setText(QStringLiteral("%1°").arg(qRound(m_canvas->pitch())));
         const int mm = qRound(std::fmod(m_canvas->hour() + 24, 24.0) * 60) % 1440;

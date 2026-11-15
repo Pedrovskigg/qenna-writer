@@ -92,7 +92,9 @@ public:
     QString mode() const { return m_mode; }   // full · atlas · ink · terrain
     QString terrainStyle() const { return m_style; }   // rich · mira
     void setView(double ang, double pitch, bool quick);
-    void presetView(double ang, double pitch) { m_ang = ang; m_pitch = std::round(std::max(20.0, std::min(90.0, pitch))); }   // antes de pôr o mapa
+    void presetView(double ang, double pitch) { m_ang = ang; m_pitch = std::round(std::max(20.0, std::min(90.0, pitch))); }   // antes de pôr o mapa (o setDoc ainda trava o mapa de imagem)
+    // mapa de imagem: inclina só até 70° (mais deitada, a imagem plana parece um papel no chão; a 70° os castelos ainda têm fachada)
+    double minPitch() const { return m_world && isImageWorld(*m_world) ? 70.0 : 20.0; }
     void setMode(const QString& mode);
     void setTerrainStyle(const QString& style);
     void setHour(double hour, bool force);

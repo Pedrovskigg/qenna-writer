@@ -1,9 +1,12 @@
 #include "CartoStore.h"
+#include "CartoImage.h"
 #include "CartoProf.h"
 
 #include <QDataStream>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
+#include <QImage>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QSaveFile>
@@ -38,6 +41,20 @@ void unpackDelta(std::vector<float>& base, const QByteArray& packed, double q)
     const auto* d = reinterpret_cast<const qint32*>(raw.constData());
     for (size_t i = 0; i < base.size(); i++) if (d[i]) base[i] = static_cast<float>(base[i] + d[i] / q);
 }
+}
+
+QStringList imageFilesOf(const QString& mapPath)
+{
+    const QFileInfo fi(mapPath);
+    QStringList out;
+    for (const QFileInfo& f : QDir(fi.absolutePath()).entryInfoList({ fi.completeBaseName() + QStringLiteral("-*.png") }, QDir::Files))
+        out << f.absoluteFilePath();
+    return out;
+}
+QString imageFileFor(const QString& mapPath, const QString& key)
+{
+    const QFileInfo fi(mapPath);
+    return QDir(fi.absolutePath()).filePath(fi.completeBaseName() + QLatin1Char('-') + key + QStringLiteral(".png"));
 }
 
 World rebuildBase(int seed, int water, const QString& type, int size, const QString& climate)
@@ -118,7 +135,9 @@ void Store::removeMap(const QString& id)
 {
     const int i = indexOf(id);
     if (i < 0) return;
-    QFile::remove(pathOf(id));
+    const QString path = pathOf(id);
+    QFile::remove(path);
+    for (const QString& f : imageFilesOf(path)) QFile::remove(f);   // as imagens do mapa de imagem
     m_maps.removeAt(i);
     if (m_activeId == id) m_activeId = m_maps.isEmpty() ? QString() : m_maps.first().id;
     saveManifest();
@@ -132,6 +151,7 @@ SaveJob Store::prepareSave(const QString& id, const World& w, const MapViewState
     j.ref = w.ref; j.scale = w.scale; j.W = w.W; j.H = w.H;
     j.h = w.h; j.m = w.m; j.k = w.k;
     j.view = view;
+    if (isImageWorld(w)) j.backdrop = w.backdrop;
     return j;
 }
 
@@ -147,7 +167,19 @@ bool writeSave(const SaveJob& j)
     const MapViewState& view = j.view;
     if (path.isEmpty() || j.W <= 0) return false;
     QDir().mkpath(QFileInfo(path).absolutePath());
-    const World base = rebuildBase(j.seed, j.water, j.type, j.size, j.climate);
+    // mapa de imagem: o mundo sai da imagem (os pincéis de relevo não mexem nele), então não há diferença pra guardar
+    const bool image = j.type == QLatin1String("image");
+    QString imageName;
+    if (image && j.backdrop && !j.backdrop->levels.empty()) {
+        const QString file = imageFileFor(path, j.backdrop->key);
+        if (!QFileInfo::exists(file)) {
+            const Backdrop::Level& l = j.backdrop->levels.front();
+            QImage(l.rgba.data(), l.W, l.H, l.W * 4, QImage::Format_RGBA8888).save(file, "PNG");
+        }
+        for (const QString& f : imageFilesOf(path)) if (QFileInfo(f).fileName() != QFileInfo(file).fileName()) QFile::remove(f);   // a imagem antiga (o Regenerar trocou)
+        imageName = QFileInfo(file).fileName();
+    }
+    const World base = image ? World() : rebuildBase(j.seed, j.water, j.type, j.size, j.climate);
     QJsonObject meta{
         { QStringLiteral("seed"), j.seed }, { QStringLiteral("water"), j.water }, { QStringLiteral("type"), j.type },
         { QStringLiteral("size"), j.size }, { QStringLiteral("climate"), j.climate }, { QStringLiteral("ref"), j.ref },
@@ -157,12 +189,13 @@ bool writeSave(const SaveJob& j)
                                                 { QStringLiteral("hour"), view.hour } } },
     };
     if (!view.extra.isEmpty()) meta.insert(QStringLiteral("layers"), view.extra);
+    if (!imageName.isEmpty()) meta.insert(QStringLiteral("image"), imageName);
     QByteArray body;
     {
         QDataStream ds(&body, QIODevice::WriteOnly);
         ds.setVersion(QDataStream::Qt_6_5);
         ds << kMagic << kVersion << QJsonDocument(meta).toJson(QJsonDocument::Compact);
-        const bool sameSize = base.W == j.W && base.H == j.H;
+        const bool sameSize = !image && base.W == j.W && base.H == j.H;
         for (int f = 0; f < 3; f++) {
             const std::vector<float>& cur = f == 0 ? j.h : f == 1 ? j.m : j.k;
             const std::vector<float>& bas = f == 0 ? base.h : f == 1 ? base.m : base.k;
@@ -191,10 +224,27 @@ bool Store::loadMap(const QString& id, World& w, MapViewState& view) const
     ds >> magic >> version >> json;
     if (magic != kMagic || version > kVersion) return false;
     const QJsonObject meta = QJsonDocument::fromJson(json).object();
+    if (meta.value(QStringLiteral("type")).toString() == QLatin1String("image")) {
+        // mapa de imagem: o mundo sai de novo da imagem guardada; sem ela, vira um mar vazio pra desenhar
+        const QString name = meta.value(QStringLiteral("image")).toString();
+        const QImage img = name.isEmpty() ? QImage() : QImage(QDir(QFileInfo(f.fileName()).absolutePath()).filePath(name));
+        const int size = meta.value(QStringLiteral("size")).toInt(1);
+        const QString climate = meta.value(QStringLiteral("climate")).toString(QStringLiteral("mixed"));
+        if (!img.isNull()) {
+            w = imageWorld(img.convertToFormat(QImage::Format_RGBA8888), meta.value(QStringLiteral("water")).toInt(50),
+                           meta.value(QStringLiteral("seed")).toInt(), size, climate);
+            if (w.backdrop) {
+                auto bd = std::make_shared<Backdrop>(*w.backdrop);
+                bd->key = QFileInfo(name).completeBaseName().section(QLatin1Char('-'), -1);   // o mesmo arquivo: não regrava
+                w.backdrop = bd;
+            }
+        } else w = emptyWorld(meta.value(QStringLiteral("seed")).toInt(), size, climate);
+    } else
     w = rebuildBase(meta.value(QStringLiteral("seed")).toInt(), meta.value(QStringLiteral("water")).toInt(60),
                     meta.value(QStringLiteral("type")).toString(QStringLiteral("continent")), meta.value(QStringLiteral("size")).toInt(1),
                     meta.value(QStringLiteral("climate")).toString(QStringLiteral("mixed")));
     for (int fi = 0; fi < 3; fi++) {
+        if (isImageWorld(w)) break;
         quint8 present = 0;
         ds >> present;
         if (!present) continue;
@@ -202,7 +252,7 @@ bool Store::loadMap(const QString& id, World& w, MapViewState& view) const
         ds >> packed;
         unpackDelta(fi == 0 ? w.h : fi == 1 ? w.m : w.k, packed, fi == 0 ? kQuantH : kQuantMK);
     }
-    w.ref = meta.value(QStringLiteral("ref")).toDouble(w.ref);
+    if (!isImageWorld(w)) w.ref = meta.value(QStringLiteral("ref")).toDouble(w.ref);
     w.scale = meta.value(QStringLiteral("scale")).toDouble(1.0);
     const QJsonObject v = meta.value(QStringLiteral("view")).toObject();
     view.ang = v.value(QStringLiteral("ang")).toDouble(0);

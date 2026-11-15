@@ -72,6 +72,7 @@ struct SaveJob {
     int W = 0, H = 0;
     std::vector<float> h, m, k;
     MapViewState view;
+    std::shared_ptr<const Backdrop> backdrop;   // mapa de imagem: a imagem vai num .png ao lado (só a primeira vez)
 };
 bool writeSave(const SaveJob& job);
 

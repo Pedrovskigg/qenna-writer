@@ -5790,7 +5790,7 @@ No cierres el programa si deja de responder.</translation>
     <name>HelpPanel</name>
     <message>
         <location filename="../src/HelpPanel.cpp" line="261"/>
-        <location filename="../src/HelpPanel.cpp" line="2942"/>
+        <location filename="../src/HelpPanel.cpp" line="2945"/>
         <source>Ajuda</source>
         <translation>Ayuda</translation>
     </message>
@@ -6027,20 +6027,20 @@ No cierres el programa si deja de responder.</translation>
         <location filename="../src/HelpPanel.cpp" line="2331"/>
         <location filename="../src/HelpPanel.cpp" line="2346"/>
         <location filename="../src/HelpPanel.cpp" line="2363"/>
-        <location filename="../src/HelpPanel.cpp" line="2430"/>
-        <location filename="../src/HelpPanel.cpp" line="2520"/>
-        <location filename="../src/HelpPanel.cpp" line="2541"/>
-        <location filename="../src/HelpPanel.cpp" line="2556"/>
-        <location filename="../src/HelpPanel.cpp" line="2580"/>
-        <location filename="../src/HelpPanel.cpp" line="2613"/>
-        <location filename="../src/HelpPanel.cpp" line="2638"/>
-        <location filename="../src/HelpPanel.cpp" line="2657"/>
-        <location filename="../src/HelpPanel.cpp" line="2684"/>
-        <location filename="../src/HelpPanel.cpp" line="2720"/>
-        <location filename="../src/HelpPanel.cpp" line="2735"/>
-        <location filename="../src/HelpPanel.cpp" line="2763"/>
-        <location filename="../src/HelpPanel.cpp" line="2775"/>
-        <location filename="../src/HelpPanel.cpp" line="2786"/>
+        <location filename="../src/HelpPanel.cpp" line="2433"/>
+        <location filename="../src/HelpPanel.cpp" line="2523"/>
+        <location filename="../src/HelpPanel.cpp" line="2544"/>
+        <location filename="../src/HelpPanel.cpp" line="2559"/>
+        <location filename="../src/HelpPanel.cpp" line="2583"/>
+        <location filename="../src/HelpPanel.cpp" line="2616"/>
+        <location filename="../src/HelpPanel.cpp" line="2641"/>
+        <location filename="../src/HelpPanel.cpp" line="2660"/>
+        <location filename="../src/HelpPanel.cpp" line="2687"/>
+        <location filename="../src/HelpPanel.cpp" line="2723"/>
+        <location filename="../src/HelpPanel.cpp" line="2738"/>
+        <location filename="../src/HelpPanel.cpp" line="2766"/>
+        <location filename="../src/HelpPanel.cpp" line="2778"/>
+        <location filename="../src/HelpPanel.cpp" line="2789"/>
         <source>Clique para expandir</source>
         <translation>Haz clic para expandir</translation>
     </message>
@@ -7258,97 +7258,107 @@ No cierres el programa si deja de responder.</translation>
         <translation>Haz clic en el botón Mapa de la barra lateral. En el primer mapa del proyecto, la ventana Nuevo mapa se abre sola: dale un nombre y elige el tamaño, el estilo (Continente, Archipiélago, Oceánico o Vacío, que es solo mar para dibujar a mano), el bioma dominante y cuánto es océano. La vista previa acompaña, y la misma semilla siempre da el mismo mundo. &quot;Generar territorios y lugares&quot; trae reinos, ciudades, caminos y nombres; desmarcado, viene solo el relieve y lo demás queda en tus manos. La flechita junto al título cambia de mapa, crea otro, regenera, renombra o elimina. Un proyecto puede tener varios mapas. Si tu historia ocurre en el espacio, el selector Galaxia, arriba en la ventana, crea otro tipo de mapa (mira el tema Galaxy Maps).</translation>
     </message>
     <message>
+        <location filename="../src/HelpPanel.cpp" line="2372"/>
+        <source>Já tem um mapa desenhado?</source>
+        <translation>¿Ya tienes un mapa dibujado?</translation>
+    </message>
+    <message>
         <location filename="../src/HelpPanel.cpp" line="2373"/>
+        <source>Na janela Novo mapa, escolha Imagem pronta na chave de cima e abra a imagem (PNG ou JPG), ou arraste o arquivo pra janela. Ela vira o chão do mapa: gira e inclina com a mesa, e dá pra pôr territórios, construções e nomes e usar o Explorar em cima dela. O Qenna acha o mar pela cor da borda da imagem e, na prévia, pinta de azul o que entendeu como mar, pra os territórios ficarem só na terra. Se pegou terra ou deixou mar de fora, ajuste o Mar. Quanto maior o tamanho, mais nítida a imagem fica de perto. Nesse mapa, Área, Pincel e Clima ficam desligados, porque o terreno é a imagem. Pra trocar a imagem ou ajustar o Mar depois, use Gerar: se o tamanho não mudar, os territórios, as construções e os nomes ficam.</source>
+        <translation>En la ventana Nuevo mapa, elige Imagen propia en el selector de arriba y abre la imagen (PNG o JPG), o arrastra el archivo a la ventana. Se vuelve el suelo del mapa: gira e inclina con la mesa, y puedes poner territorios, construcciones y nombres y usar Explorar encima. Qenna encuentra el mar por el color del borde de la imagen y, en la vista previa, pinta de azul lo que entendió como mar, para que los territorios queden solo en tierra. Si tomó tierra o dejó mar fuera, ajusta Mar. Cuanto mayor el tamaño, más nítida se ve la imagen de cerca. En este mapa, Área, Pincel y Clima quedan desactivados, porque el terreno es la imagen. Para cambiar la imagen o ajustar el Mar después, usa Generar: si el tamaño no cambia, los territorios, las construcciones y los nombres se quedan.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2376"/>
         <source>Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar. Arrastar com o botão direito gira e inclina, Q e E giram de 15 em 15 graus, e a tecla F enquadra o mapa inteiro de novo. Com um pincel ou outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo.</source>
         <translation>Arrastra con el botón izquierdo para moverte y usa la rueda para acercarte. Arrastrar con el botón derecho gira e inclina, Q y E giran de 15 en 15 grados, y la tecla F vuelve a encuadrar todo el mapa. Con un pincel u otra herramienta en la mano, el botón central (o Alt + arrastrar) sigue moviendo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2377"/>
+        <location filename="../src/HelpPanel.cpp" line="2380"/>
         <source>Um clique com o botão direito, sem arrastar, abre o anel: Mover, Gerar, Área, Pincel, Clima, Territórios, Construir, Nomes e Explorar. A pílula no canto de baixo mostra o que está na sua mão e abre o mesmo anel. Pelo teclado: H move, A área, B pincel, C clima, T territórios, K construir, N nomes, X explorar e R régua. Cada ferramenta leva o mapa pra vista em que ela funciona, e as opções aparecem numa doca que dá pra arrastar pelo título. Esc fecha uma coisa de cada vez e, no fim, volta pro Mover.</source>
         <translation>Un clic derecho, sin arrastrar, abre el anillo: Mover, Generar, Área, Pincel, Clima, Territorios, Construir, Nombres y Explorar. La píldora de la esquina inferior muestra lo que tienes en la mano y abre el mismo anillo. Con el teclado: H mueve, A área, B pincel, C clima, T territorios, K construir, N nombres, X explorar y R regla. Cada herramienta lleva el mapa a la vista donde funciona, y sus opciones aparecen en un panel que se puede arrastrar por el título. Esc cierra una cosa cada vez y, al final, vuelve a Mover.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2381"/>
+        <location filename="../src/HelpPanel.cpp" line="2384"/>
         <source>O instrumento no canto de baixo junta o que muda o jeito de ver. No disco ficam as vistas: Completo (o terreno com tudo em cima), Atlas (cores lisas, cada reino com a sua), Terreno (só o chão, onde se desenha) e as seis de arte: Tinta, Pergaminho, Carta náutica, Topográfico, Aquarela e Planta de guerra. Clicar de novo na vista de arte abre a lista. O Completo abre quando o mapa tem um território, uma construção ou um nome. Arraste o meio pra girar, clique na agulha pro norte e use o arco da direita pra inclinar. Quem preferir botões pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita), onde também dá pra trocar o visual do terreno e esconder árvores, casas e castelos.</source>
         <translation>El instrumento de la esquina inferior reúne lo que cambia la forma de ver. En el disco están las vistas: Completo (el terreno con todo encima), Atlas (colores lisos, cada reino con el suyo), Terreno (solo el suelo, donde se dibuja) y las seis de arte: Tinta, Pergamino, Carta náutica, Topográfico, Acuarela y Plano de guerra. Al hacer clic otra vez en la vista de arte se abre la lista. Completo se abre cuando el mapa tiene un territorio, una construcción o un nombre. Arrastra el centro para girar, haz clic en la aguja para el norte y usa el arco derecho para inclinar. Si prefieres botones, cambia a Cartela en Ajustes (el engranaje de la barra derecha), donde también puedes cambiar el aspecto del terreno y ocultar árboles, casas y castillos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2384"/>
+        <location filename="../src/HelpPanel.cpp" line="2387"/>
         <source>Dia e noite.</source>
         <translation>Día y noche.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2385"/>
+        <location filename="../src/HelpPanel.cpp" line="2388"/>
         <source>O sol anda pelo aro do Astrolábio: arraste pra mudar a hora, ou aperte P pra passar o dia sozinho. A hora muda a luz do relevo, e de noite as janelas, as tochas e os faróis acendem.</source>
         <translation>El sol recorre el aro del Astrolabio: arrástralo para cambiar la hora, o pulsa P para que el día pase solo. La hora cambia la luz del relieve, y de noche se encienden las ventanas, las antorchas y los faros.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2388"/>
+        <location filename="../src/HelpPanel.cpp" line="2391"/>
         <source>Desenhando o terreno.</source>
         <translation>Dibujar el terreno.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2389"/>
+        <location filename="../src/HelpPanel.cpp" line="2392"/>
         <source>Área: arraste um retângulo e nasce terra ali dentro. Pincel: Terra, Mar, Montanha, Suavizar e Rio mexem no relevo. Clima: mostra o mapa de clima por cima e dá os pincéis Úmido, Seco e Frio, que decidem o que a terra vira em cada lugar. Shift inverte o pincel (Terra vira Mar), [ e ] mudam o tamanho, e as teclas de 1 a 8 escolhem o pincel. Desenhar é sempre na vista Terreno, e a ferramenta leva você pra lá.</source>
         <translation>Área: arrastra un rectángulo y nace tierra dentro. Pincel: Tierra, Mar, Montaña, Suavizar y Río cambian el relieve. Clima: muestra el mapa de clima encima y da los pinceles Húmedo, Seco y Frío, que deciden en qué se convierte la tierra en cada lugar. Mayús invierte el pincel (Tierra pasa a Mar), [ y ] cambian el tamaño, y las teclas del 1 al 8 eligen el pincel. Se dibuja siempre en la vista Terreno, y la herramienta te lleva allí.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2393"/>
+        <location filename="../src/HelpPanel.cpp" line="2396"/>
         <source>Com &quot;Gerar territórios e locais&quot;, os reinos nascem do terreno, e você edita do seu jeito. Semear: clique no mapa pra plantar o território selecionado, e ele cresce pelo terreno, com a fronteira caindo nas serras, nos vales e na costa; arraste a semente pra mover, e Shift+clique apaga. Pintar: pinte uma área pro território, e a borda continua seguindo o relevo. Neutro: pinte terra sem dono, que vira barreira. O Alcance controla até onde cada um chega. Na lista, você troca a cor e o nome ou apaga, e &quot;+ Novo território&quot; cria outro.</source>
         <translation>Con &quot;Generar territorios y lugares&quot;, los reinos nacen del terreno, y los editas a tu manera. Sembrar: haz clic en el mapa para plantar el territorio seleccionado, y crece por el terreno, con la frontera cayendo en sierras, valles y la costa; arrastra la semilla para moverla, y Mayús+clic la borra. Pintar: pinta un área para el territorio, y el borde sigue el relieve. Neutro: pinta tierra sin dueño, que se vuelve barrera. El Alcance controla hasta dónde llega cada uno. En la lista cambias el color y el nombre o borras, y &quot;+ Nuevo territorio&quot; crea otro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2397"/>
+        <location filename="../src/HelpPanel.cpp" line="2400"/>
         <source>Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai &quot;Pelo vale&quot;, achando o caminho entre dois cliques, ou &quot;À mão&quot;. A engrenagem tem a Escala das construções (o mesmo continente parece maior) e a opção de esconder as cidades e estradas sugeridas.</source>
         <translation>Con Construir, el catálogo se abre abajo: Castillos (un estilo por pueblo, del humano al élfico, enano y sombrío), Únicos, Pinceles (aldea, ciudad, plantación, bosque, peñascos, muralla, camino y borrar), Más, Leyendas, Mar y Monumentos. Elige una carta y haz clic en el mapa. Con la flecha, haz clic en una construcción para seleccionarla: la píldora de encima da el nombre, el giro, el tamaño y el borrar, y arrastrar la cambia de lugar. Q y E giran, [ y ] cambian el tamaño, y Supr borra. El camino va &quot;Por el valle&quot;, buscando la ruta entre dos clics, o &quot;A mano&quot;. El engranaje tiene la Escala de las construcciones (el mismo continente parece mayor) y la opción de ocultar las ciudades y caminos sugeridos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2400"/>
+        <location filename="../src/HelpPanel.cpp" line="2403"/>
         <source>Nomes.</source>
         <translation>Nombres.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2401"/>
+        <location filename="../src/HelpPanel.cpp" line="2404"/>
         <source>O mapa sugere nomes pelo relevo: oceano, mares, serras, florestas, ilhas. Clique num nome pra trocar o texto ou o tamanho e arraste pra mover. &quot;Sugestão&quot; volta pro nome que o mapa deu, e Esconder tira ele do mapa. Clique num lugar vazio pra criar um nome seu; se arrastar enquanto clica, ele segue o traço, ótimo pra rio e serra. Dá pra escolher letras de terra ou de água e quantos nomes o mapa sugere.</source>
         <translation>El mapa sugiere nombres por el relieve: océano, mares, sierras, bosques, islas. Haz clic en un nombre para cambiar el texto o el tamaño y arrastra para moverlo. &quot;Sugerencia&quot; vuelve al nombre que dio el mapa, y Ocultar lo quita del mapa. Haz clic en un lugar vacío para crear un nombre tuyo; si arrastras al hacer clic, sigue el trazo, ideal para ríos y sierras. Puedes elegir letras de tierra o de agua y cuántos nombres sugiere el mapa.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2404"/>
+        <location filename="../src/HelpPanel.cpp" line="2407"/>
         <source>Explorar: os documentos no mapa.</source>
         <translation>Explorar: los documentos en el mapa.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2405"/>
+        <location filename="../src/HelpPanel.cpp" line="2408"/>
         <source>Com Explorar (X), cada território vira um lugar da sua história. O cartão mostra uma árvore: o mapa, os territórios e, dentro deles, as construções que você batizou e os grupos que criar. Clicar no território leva o mapa até ele e mostra os documentos: &quot;Novo documento&quot; cria um numa gaveta ou no Criador de Mundos, e &quot;Adicionar existente&quot; traz um do projeto. Dá pra arrastar um documento pra outro grupo da árvore. &quot;Grupo dentro de…&quot; cria uma cidade ou uma família. &quot;Filtrar por tag&quot; mostra só o que tem aquela tag e onde está no mapa. Os territórios são os mesmos grupos da barra lateral.</source>
         <translation>Con Explorar (X), cada territorio se vuelve un lugar de tu historia. La tarjeta muestra un árbol: el mapa, los territorios y, dentro de ellos, las construcciones que bautizaste y los grupos que crees. Hacer clic en el territorio lleva el mapa hasta él y muestra los documentos: &quot;Nuevo documento&quot; crea uno en un cajón o en el Creador de Mundos, y &quot;Añadir existente&quot; trae uno del proyecto. Se puede arrastrar un documento a otro grupo del árbol. &quot;Grupo dentro de…&quot; crea una ciudad o una familia. &quot;Filtrar por etiqueta&quot; muestra solo lo que tiene esa etiqueta y dónde está en el mapa. Los territorios son los mismos grupos de la barra lateral.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2408"/>
+        <location filename="../src/HelpPanel.cpp" line="2411"/>
         <source>O leitor e as conexões.</source>
         <translation>El lector y las conexiones.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2409"/>
+        <location filename="../src/HelpPanel.cpp" line="2412"/>
         <source>Clicar num documento abre o leitor ao lado do mapa, onde dá pra ler, editar, ampliar ou abrir no editor principal. O botão de conexões liga um território a outro: a ligação vira um arco no mapa, e clicar nela abre os dois lados e o texto da conexão lado a lado, bom pra guerras, tratados e rotas.</source>
         <translation>Al hacer clic en un documento se abre el lector junto al mapa, donde se puede leer, editar, ampliar o abrir en el editor principal. El botón de conexiones une un territorio con otro: la unión se vuelve un arco en el mapa, y al hacer clic se abren los dos lados y el texto de la conexión lado a lado, bueno para guerras, tratados y rutas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2412"/>
+        <location filename="../src/HelpPanel.cpp" line="2415"/>
         <source>Régua e imagem pro livro.</source>
         <translation>Regla e imagen para el libro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2413"/>
+        <location filename="../src/HelpPanel.cpp" line="2416"/>
         <source>A régua (R) mede o caminho: clique pra marcar e dê um duplo clique pra terminar. Ela mostra a distância em léguas e quilômetros e quanto tempo leva a pé, a cavalo ou de barco. O botão de imagem, na barra da direita, exporta a vista de agora como PNG, sem os botões, em 1×, 2× ou 3×, com ou sem a Cartela. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation>La regla (R) mide el camino: haz clic para marcar y doble clic para terminar. Muestra la distancia en leguas y kilómetros y cuánto se tarda a pie, a caballo o en barco. El botón de imagen, en la barra derecha, exporta la vista actual como PNG, sin los botones, en 1×, 2× o 3×, con o sin la Cartela. En la vista Tinta, se convierte en el mapa de las primeras páginas del libro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2432"/>
+        <location filename="../src/HelpPanel.cpp" line="2435"/>
         <source>O Galaxy Maps é o mapa de quem escreve no espaço: uma galáxia inteira que você atravessa com a rodinha do mouse, do braço espiral até a lua de um planeta. Os planetas têm temperatura, ano e atmosfera calculados pela estrela deles, e cada lugar pode guardar os documentos da sua história.</source>
         <translation>Galaxy Maps es el mapa de quien escribe en el espacio: una galaxia entera que recorres con la rueda del ratón, desde un brazo espiral hasta la luna de un planeta. Los planetas tienen temperatura, año y atmósfera calculados según su estrella, y cada lugar puede guardar los documentos de tu historia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2433"/>
+        <location filename="../src/HelpPanel.cpp" line="2436"/>
         <source>Parece muito na primeira vez, mas dá pra começar só com duas coisas: arrastar pra mover e usar a rodinha pra chegar perto. O resto você pega quando precisar. Colocar, mover e apagar voltam com Ctrl+Z, e a galáxia se salva sozinha.</source>
         <translation>Parece mucho la primera vez, pero puedes empezar con solo dos cosas: arrastrar para mover y usar la rueda para acercarte. Lo demás lo aprendes cuando lo necesites. Poner, mover y borrar se deshacen con Ctrl+Z, y la galaxia se guarda sola.</translation>
     </message>
@@ -7365,7 +7375,7 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">El instrumento de la esquina inferior reúne todo lo que cambia la forma de ver. En el disco están las vistas: Completo, Atlas, Cielo (solo el cielo, sin nombres ni órbitas) y las seis de arte (Tinta, Pergamino, Carta estelar, Topográfico, Acuarela y Plano de guerra), que se abren en una lista al hacer clic otra vez. Arrastra el centro para girar, haz clic en la aguja para volver al norte, usa el arco derecho para inclinar y el marcador del aro para adelantar el tiempo. P pausa los planetas. Si prefieres botones a un instrumento, cambia a Cartela en Ajustes (el engranaje de la barra derecha).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2473"/>
+        <location filename="../src/HelpPanel.cpp" line="2476"/>
         <source>Conexões e personagens.</source>
         <translation>Conexiones y personajes.</translation>
     </message>
@@ -7374,7 +7384,7 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">En un territorio o sistema, &quot;+ Nueva conexión…&quot; lo une a otro: haz clic en el mapa o elige en la lista. La conexión se vuelve un arco en el mapa y abre la vista lado a lado: los dos lugares en los extremos y, en el medio, el texto de lo que los une, bueno para guerras, tratados y rutas. En cualquier lugar, &quot;+ Personaje&quot; trae una ficha a Personajes de aquí, como quien vive allí o nació allí. Esto queda en la propia ficha, en Ubicación actual y Origen, y todo aparece también en el Creador de Mundos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2482"/>
+        <location filename="../src/HelpPanel.cpp" line="2485"/>
         <source>Com Construir (K), o catálogo abre embaixo: astros, luas e cometas, estações, mundos e megaestruturas. Pegue uma peça e aproxime até um sistema abrir: a sombra da peça mostra onde ela vai cair, e a dica diz o que falta. Clique pra pôr. Perto de um planeta, a peça fica em volta dele; longe, em órbita da estrela. Anel orbital e elevador pedem um planeta, e a Esfera de Dyson vai na estrela. Sem peça na mão, clique pra selecionar e arraste pra mudar de órbita. Q e E giram, [ e ] mudam o tamanho e Delete apaga. Estrela nova pode ser posta em qualquer lugar da galáxia.</source>
         <translation>Con Construir (K), el catálogo se abre abajo: astros, lunas y cometas, estaciones, mundos y megaestructuras. Toma una pieza y acércate hasta que se abra un sistema: la sombra de la pieza muestra dónde caerá, y la pista dice qué falta. Haz clic para ponerla. Cerca de un planeta, la pieza queda a su alrededor; lejos, en órbita de la estrella. El anillo orbital y el ascensor piden un planeta, y la Esfera de Dyson va en la estrella. Sin pieza en la mano, haz clic para seleccionar y arrastra para cambiar de órbita. Q y E giran, [ y ] cambian el tamaño y Supr borra. Una estrella nueva se puede poner en cualquier lugar de la galaxia.</translation>
     </message>
@@ -7757,112 +7767,112 @@ No cierres el programa si deja de responder.</translation>
         <translation>Una línea probable puede estar equivocada, sobre todo en escenas con tres personas hablando. Clic derecho en la tarjeta para confirmar o cambiar a quien habla: lo que corriges nunca se deshace. Las líneas de alguien fuera del reparto (&quot;el portero&quot;) van a Figurantes; asignar una de ellas a un personaje puede convertir la acotación en un alias suyo. Y la × quita una línea que no es diálogo, y no vuelve.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2434"/>
+        <location filename="../src/HelpPanel.cpp" line="2437"/>
         <source>O Galaxy Maps tem dois modos, e você escolhe um ao criar a galáxia: o Astrônomo, pra quem quer escrever, e o Navegador, pra quem quer explorar.</source>
         <translation>Galaxy Maps tiene dos modos, y eliges uno al crear la galaxia: Astrónomo, para quien quiere escribir, y Navegante, para quien quiere explorar.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2436"/>
+        <location filename="../src/HelpPanel.cpp" line="2439"/>
         <source>Criando uma galáxia.</source>
         <translation>Crear una galaxia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2372"/>
-        <location filename="../src/HelpPanel.cpp" line="2454"/>
+        <location filename="../src/HelpPanel.cpp" line="2375"/>
+        <location filename="../src/HelpPanel.cpp" line="2457"/>
         <source>Andando pelo mapa.</source>
         <translation>Moverse por el mapa.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2376"/>
-        <location filename="../src/HelpPanel.cpp" line="2457"/>
+        <location filename="../src/HelpPanel.cpp" line="2379"/>
+        <location filename="../src/HelpPanel.cpp" line="2460"/>
         <source>O anel de ferramentas.</source>
         <translation>El anillo de herramientas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2458"/>
+        <location filename="../src/HelpPanel.cpp" line="2461"/>
         <source>Um clique com o botão direito, sem arrastar, abre o anel com as ferramentas: Mover, Territórios, Construir, Nomes, Explorar, Editar e Tráfego. A pílula no canto de baixo mostra qual está na sua mão e abre o mesmo anel. Se preferir o teclado: H move, T territórios, K construir, N nomes, X explorar, R régua e C o Caderno. Esc desfaz uma coisa de cada vez: fecha o que está aberto, solta a peça da mão e, no fim, volta pro Mover.</source>
         <translation>Un clic derecho, sin arrastrar, abre el anillo con las herramientas: Mover, Territorios, Construir, Nombres, Explorar, Editar y Tráfico. La píldora de la esquina inferior muestra cuál tienes en la mano y abre el mismo anillo. Si prefieres el teclado: H mueve, T territorios, K construir, N nombres, X explorar, R regla y C el Cuaderno. Esc deshace una cosa cada vez: cierra lo que está abierto, suelta la pieza de la mano y, al final, vuelve a Mover.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2380"/>
-        <location filename="../src/HelpPanel.cpp" line="2461"/>
+        <location filename="../src/HelpPanel.cpp" line="2383"/>
+        <location filename="../src/HelpPanel.cpp" line="2464"/>
         <source>O Astrolábio e as vistas.</source>
         <translation>El Astrolabio y las vistas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2437"/>
+        <location filename="../src/HelpPanel.cpp" line="2440"/>
         <source>Abra o Mapa na barra lateral, clique na setinha ao lado do título e em &quot;Novo mapa…&quot;. Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha) e depois o modo, nos dois cartões: passe o mouse em cima de um deles pra ver os prós e os contras. Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços e tamanho. No Navegador, você também define a quantidade de sistemas e a mistura de mundos, e pode marcar &quot;Definir o espaço de cada classe&quot; pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia.</source>
         <translation>Abre el Mapa en la barra lateral, haz clic en la flechita junto al título y en &quot;Nuevo mapa…&quot;. En la ventana, elige Galaxia en el selector de arriba (en el primer mapa del proyecto, esta ventana se abre sola) y luego el modo, en las dos tarjetas: pasa el ratón por encima de una para ver sus pros y contras. En Galaxia lista está la Vía Láctea, con el Sistema Solar en su sitio, y otras galaxias reales; o inventa la tuya con estilo, brazos y tamaño. En el Navegante también defines la cantidad de sistemas y la mezcla de mundos, y puedes marcar &quot;Definir el espacio de cada clase&quot; para decir cuánto tendrá la galaxia de cada clase de planeta: arrastra los divisores de la barra o escribe el porcentaje. La vista previa sigue lo que eliges. La misma semilla siempre da la misma galaxia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2440"/>
+        <location filename="../src/HelpPanel.cpp" line="2443"/>
         <source>Os dois modos.</source>
         <translation>Los dos modos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2441"/>
+        <location filename="../src/HelpPanel.cpp" line="2444"/>
         <source>O Navegador já nasce com centenas de sistemas, planetas e luas, e tudo acontece em cima do mapa: você entra nos sistemas, constrói e escreve sobre o que encontrar. O Astrônomo nasce vazio e só existe o que você criar, na ordem que quiser; a tela é feita pra escrever, com o mapa a um clique. O modo é escolhido ao criar: a tela do Astrônomo só existe nas galáxias que nasceram nele. Os passos 3 a 5 são do Astrônomo e, do 6 em diante, do Navegador.</source>
         <translation>El Navegante nace con cientos de sistemas, planetas y lunas, y todo ocurre sobre el mapa: entras en los sistemas, construyes y escribes sobre lo que encuentras. El Astrónomo nace vacío y solo existe lo que crees, en el orden que quieras; la pantalla está hecha para escribir, con el mapa a un clic. El modo se elige al crear: la pantalla del Astrónomo solo existe en las galaxias que nacieron en él. Los pasos 3 a 5 son del Astrónomo y, del 6 en adelante, del Navegante.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2443"/>
+        <location filename="../src/HelpPanel.cpp" line="2446"/>
         <source>Astrônomo: criando.</source>
         <translation>Astrónomo: crear.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2444"/>
+        <location filename="../src/HelpPanel.cpp" line="2447"/>
         <source>A coluna da esquerda guarda o que você criou: os territórios, com os mundos e sistemas de cada um, e os mundos soltos. &quot;+ Território&quot; cria um império, e o &quot;+&quot; abre a aba de planeta novo, colada na coluna: nome (o dado sorteia um), tipo e construções. Enter cria e Esc fecha. O botão direito em qualquer coisa mostra o que dá pra fazer com ela: renomear, trocar o tipo, mover, tornar capital, ver no mapa, excluir. O que você cria e muda aqui volta com Ctrl+Z.</source>
         <translation>La columna de la izquierda guarda lo que has creado: los territorios, con los mundos y sistemas de cada uno, y los mundos sueltos. &quot;+ Territorio&quot; crea un imperio, y el &quot;+&quot; abre la pestaña de planeta nuevo, pegada a la columna: nombre (el dado sortea uno), tipo y construcciones. Enter crea y Esc cierra. El botón derecho sobre cualquier cosa muestra lo que puedes hacer con ella: renombrar, cambiar el tipo, mover, hacerla capital, ver en el mapa, eliminar. Lo que creas y cambias aquí se deshace con Ctrl+Z.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2447"/>
+        <location filename="../src/HelpPanel.cpp" line="2450"/>
         <source>Astrônomo: escrevendo.</source>
         <translation>Astrónomo: escribir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2448"/>
+        <location filename="../src/HelpPanel.cpp" line="2451"/>
         <source>Selecione um lugar e a folha dele abre no meio, com as fontes do app, formatação, corretor, Modo Foco, imagens e menções com @. A direita mostra onde você está e o planeta em 3D: arraste pra girar, use a rodinha pra aproximar e dê dois cliques pra voltar ao normal. &quot;+ Lua&quot; e &quot;+ Construção&quot; ficam ali mesmo, e &quot;Abrir ficha técnica completa&quot; mostra a aparência, a órbita e os outros dados. O app só gera o que você pedir: &quot;Gerar o que está vazio&quot;, na ficha completa, preenche os campos em branco, e você escolhe se fica com o resultado ou dispensa.</source>
         <translation>Selecciona un lugar y su hoja se abre en el centro, con las fuentes de la app, formato, corrector, Modo Foco, imágenes y menciones con @. La derecha muestra dónde estás y el planeta en 3D: arrastra para girar, usa la rueda para acercar y haz doble clic para volver a la normalidad. &quot;+ Luna&quot; y &quot;+ Construcción&quot; están ahí mismo, y &quot;Abrir ficha técnica completa&quot; muestra el aspecto, la órbita y los demás datos. La app solo genera lo que pidas: &quot;Generar lo que está vacío&quot;, en la ficha completa, rellena los campos en blanco, y tú eliges si te quedas con el resultado o lo descartas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2451"/>
+        <location filename="../src/HelpPanel.cpp" line="2454"/>
         <source>Astrônomo: o mapa.</source>
         <translation>Astrónomo: el mapa.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2452"/>
+        <location filename="../src/HelpPanel.cpp" line="2455"/>
         <source>No pé da coluna da esquerda fica o minimapa, só com o que você criou: a rodinha aproxima, arrastar move, o botão direito (ou Ctrl) gira, e clicar num lugar leva até ele. &quot;Ver no mapa&quot; abre o mapa da galáxia inteira, o mesmo do Navegador; &quot;Voltar pro Astrônomo&quot;, ao lado do nome da galáxia, traz você de volta, e a tecla W faz o mesmo.</source>
         <translation>Al pie de la columna izquierda está el minimapa, solo con lo que has creado: la rueda acerca, arrastrar mueve, el botón derecho (o Ctrl) gira, y hacer clic en un lugar te lleva hasta él. &quot;Ver en el mapa&quot; abre el mapa de toda la galaxia, el mismo del Navegante; &quot;Volver a Astrónomo&quot;, junto al nombre de la galaxia, te trae de vuelta, y la tecla W hace lo mismo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2462"/>
+        <location filename="../src/HelpPanel.cpp" line="2465"/>
         <source>O instrumento no canto de baixo junta tudo o que muda o jeito de ver. No disco ficam as vistas: Completo, Atlas, Céu (só o céu, sem nomes nem órbitas) e as de arte, que abrem numa lista quando você clica de novo. São oito nascidas do espaço (Holograma, Rotas, Domínios, Gravidade, Harmonia, Infravermelho, Raio-X e Chapa de vidro) e seis de papel, como as do Mapa (Tinta, Pergaminho, Carta estelar, Topográfico, Aquarela e Planta de guerra). Cada uma mostra uma coisa: Rotas, como se vai de um lugar a outro; Domínios, quem manda onde; Infravermelho, a temperatura de cada mundo; Raio-X, onde mora o perigo. Arraste o meio pra girar, clique na agulha pra voltar ao norte, use o arco da direita pra inclinar e o marcador do aro pra adiantar o tempo. P pausa os planetas. Quem preferir botões a um instrumento pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita).</source>
         <translation>El instrumento de la esquina inferior reúne todo lo que cambia la forma de ver. En el disco están las vistas: Completo, Atlas, Cielo (solo el cielo, sin nombres ni órbitas) y las de arte, que se abren en una lista al hacer clic otra vez. Ocho nacieron del espacio (Holograma, Rutas, Dominios, Gravedad, Armonía, Infrarrojo, Rayos X y Placa de vidrio) y seis son de papel, como las del Mapa (Tinta, Pergamino, Carta estelar, Topográfico, Acuarela y Plano de guerra). Cada una muestra algo: Rutas, cómo ir de un lugar a otro; Dominios, quién manda dónde; Infrarrojo, la temperatura de cada mundo; Rayos X, dónde vive el peligro. Arrastra el centro para girar, haz clic en la aguja para volver al norte, usa el arco derecho para inclinar y el marcador del aro para adelantar el tiempo. P pausa los planetas. Si prefieres botones a un instrumento, cambia a Cartela en Ajustes (el engranaje de la barra derecha).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2469"/>
+        <location filename="../src/HelpPanel.cpp" line="2472"/>
         <source>Escrevendo sobre um lugar.</source>
         <translation>Escribir sobre un lugar.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2470"/>
+        <location filename="../src/HelpPanel.cpp" line="2473"/>
         <source>Com Explorar (X), clique em qualquer lugar: o painel abre com a foto, os dados e as abas Visão geral, Documentos, Aqui dentro e Dados. A busca no alto leva o mapa até um nome. &quot;Escrever sobre…&quot; abre um documento preso àquele lugar, e &quot;Salvar em&quot; escolhe onde ele mora: numa gaveta ou no Criador de Mundos, numa pasta com o caminho do lugar. Dá pra mudar depois sem perder o texto. &quot;Lugar aqui&quot; e &quot;Grupo social&quot; criam o que não está no mapa, como uma cidade ou uma família. O documento vazio não fica pra trás.</source>
         <translation>Con Explorar (X), haz clic en cualquier lugar: el panel se abre con la foto, los datos y las pestañas Visión general, Documentos, Aquí dentro y Datos. La búsqueda de arriba lleva el mapa hasta un nombre. &quot;Escribir sobre…&quot; abre un documento ligado a ese lugar, y &quot;Guardar en&quot; elige dónde vive: en un cajón o en el Creador de Mundos, en una carpeta con la ruta del lugar. Se puede cambiar después sin perder el texto. &quot;Lugar aquí&quot; y &quot;Grupo social&quot; crean lo que no está en el mapa, como una ciudad o una familia. El documento vacío no se queda.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2392"/>
-        <location filename="../src/HelpPanel.cpp" line="2477"/>
+        <location filename="../src/HelpPanel.cpp" line="2395"/>
+        <location filename="../src/HelpPanel.cpp" line="2480"/>
         <source>Territórios.</source>
         <translation>Territorios.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2478"/>
+        <location filename="../src/HelpPanel.cpp" line="2481"/>
         <source>Com Territórios (T), crie um em &quot;+ Novo território&quot;, dê um nome e clique num sistema pra plantar: ele leva junto os vizinhos sem dono dentro do Alcance, e Shift+clique tira. Pintar passa o pincel e os sistemas embaixo entram no território; Neutro faz o contrário. Depois, em Explorar, clicar num território aproxima dele e desfoca o resto da galáxia; &quot;Sair do foco&quot; volta.</source>
         <translation>Con Territorios (T), crea uno en &quot;+ Nuevo territorio&quot;, dale un nombre y haz clic en un sistema para plantarlo: se lleva a los vecinos sin dueño dentro del Alcance, y Mayús+clic lo quita. Pintar pasa el pincel y los sistemas debajo entran en el territorio; Neutro hace lo contrario. Después, en Explorar, hacer clic en un territorio lo acerca y desenfoca el resto de la galaxia; &quot;Salir del foco&quot; vuelve.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2396"/>
-        <location filename="../src/HelpPanel.cpp" line="2481"/>
+        <location filename="../src/HelpPanel.cpp" line="2399"/>
+        <location filename="../src/HelpPanel.cpp" line="2484"/>
         <source>Construindo.</source>
         <translation>Construir.</translation>
     </message>
@@ -7871,7 +7881,7 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">Abre el Mapa en la barra lateral, haz clic en la flechita junto al título y en &quot;Nuevo mapa…&quot;. En la ventana, elige Galaxia en el selector de arriba (en el primer mapa del proyecto, esta ventana se abre sola). En Galaxia lista está la Vía Láctea, con el Sistema Solar en su lugar, y otras galaxias reales; o inventa la tuya con estilo, brazos, tamaño, cantidad de sistemas y mezcla de mundos. Marca &quot;Definir el espacio de cada clase&quot; para decir cuánto tendrá la galaxia de cada clase de planeta: arrastra los divisores de la barra o escribe el porcentaje. La vista previa sigue lo que eliges. La misma semilla siempre da la misma galaxia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2455"/>
+        <location filename="../src/HelpPanel.cpp" line="2458"/>
         <source>Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar: de longe cada sistema é um ponto, chegando perto ele abre em órbitas, e o planeta vira uma esfera girando; onde mora gente, as cidades acendem no lado da noite. Arrastar com o botão direito gira e inclina o mapa, e a tecla F enquadra tudo de novo. Com outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo. Passe o mouse em cima de um sistema, em Mover ou Explorar, e um card no canto mostra os planetas e os dados dele, sem precisar de zoom. Dá pra desligar nos Ajustes.</source>
         <translation>Arrastra con el botón izquierdo para moverte y usa la rueda para acercarte: de lejos cada sistema es un punto, de cerca se abre en órbitas, y el planeta se vuelve una esfera que gira; donde vive gente, las ciudades se encienden en el lado nocturno. Arrastrar con el botón derecho gira e inclina el mapa, y la tecla F vuelve a encuadrar todo. Con otra herramienta en la mano, el botón central (o Alt + arrastrar) sigue moviendo. Pasa el ratón sobre un sistema, en Mover o Explorar, y una tarjeta en la esquina muestra sus planetas y datos, sin necesidad de zoom. Se puede desactivar en Ajustes.</translation>
     </message>
@@ -7880,127 +7890,127 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">El instrumento de la esquina inferior reúne todo lo que cambia la forma de ver. En el disco están las vistas: Completo, Atlas, Cielo (solo el cielo, sin nombres ni órbitas) y las de arte, que se abren en una lista al hacer clic otra vez. Nueve nacieron del espacio (Holograma, Rutas, Dominios, Gravedad, Púlsar, Armonía, Infrarrojo, Rayos X y Placa de vidrio) y seis son de papel, como las del Mapa (Tinta, Pergamino, Carta estelar, Topográfico, Acuarela y Plano de guerra). Cada una muestra algo: Rutas, cómo ir de un lugar a otro; Dominios, quién manda dónde; Infrarrojo, la temperatura de cada mundo; Rayos X, dónde vive el peligro. Arrastra el centro para girar, haz clic en la aguja para volver al norte, usa el arco derecho para inclinar y el marcador del aro para adelantar el tiempo. P pausa los planetas. Si prefieres botones a un instrumento, cambia a Cartela en Ajustes (el engranaje de la barra derecha).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2465"/>
+        <location filename="../src/HelpPanel.cpp" line="2468"/>
         <source>As classes de planeta.</source>
         <translation>Las clases de planeta.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2466"/>
+        <location filename="../src/HelpPanel.cpp" line="2469"/>
         <source>Cada mundo tem uma classe, que diz quanto custa viver nele: I Éden, II Áspero, III Marginal, IV Hostil, V Letal e VI Sem chão. A conta sai da temperatura, da gravidade, do ar e da estrela. A tecla L (ou o botão na barra da direita) acende a vista: a galáxia escurece, cada sistema brilha na cor do melhor mundo que tem e, de perto, cada mundo ganha o selo da classe. Clique numa classe no cartão pra ver só ela. O painel e o Caderno mostram a classe e o porquê, e em Editar você escolhe a classe na mão ou marca que dá pra respirar o ar daquele mundo. A sua escolha fica, mesmo se a temperatura mudar depois.</source>
         <translation>Cada mundo tiene una clase, que dice cuánto cuesta vivir en él: I Edén, II Áspero, III Marginal, IV Hostil, V Letal y VI Sin suelo. El cálculo sale de la temperatura, la gravedad, el aire y la estrella. La tecla L (o el botón de la barra derecha) enciende la vista: la galaxia se oscurece, cada sistema brilla en el color de su mejor mundo y, de cerca, cada mundo lleva el sello de su clase. Haz clic en una clase de la tarjeta para ver solo esa. El panel y el Cuaderno muestran la clase y el porqué, y en Editar puedes elegir la clase a mano o marcar que el aire de ese mundo se puede respirar. Tu elección se queda, aunque la temperatura cambie después.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2474"/>
+        <location filename="../src/HelpPanel.cpp" line="2477"/>
         <source>Num território ou sistema, &quot;+ Nova conexão…&quot; liga ele a outro: clique no mapa ou escolha na lista. A conexão vira um arco no mapa e abre o lado a lado: os dois lugares nas pontas e, no meio, o texto do que liga os dois, bom pra guerras, tratados e rotas. Em qualquer lugar, &quot;+ Personagem&quot; traz uma ficha pra Personagens daqui, como quem mora ali ou quem nasceu ali. Isso fica na própria ficha, em Origem e &quot;Está em&quot;, e tudo aparece também no Criador de Mundos.</source>
         <translation>En un territorio o sistema, &quot;+ Nueva conexión…&quot; lo une a otro: haz clic en el mapa o elige en la lista. La conexión se vuelve un arco en el mapa y abre la vista lado a lado: los dos lugares en los extremos y, en el medio, el texto de lo que los une, bueno para guerras, tratados y rutas. En cualquier lugar, &quot;+ Personaje&quot; trae una ficha a Personajes de aquí, como quien vive allí o nació allí. Esto queda en la propia ficha, en Origen y &quot;Está en&quot;, y todo aparece también en el Creador de Mundos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2485"/>
+        <location filename="../src/HelpPanel.cpp" line="2488"/>
         <source>Editando os dados.</source>
         <translation>Editar los datos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2486"/>
+        <location filename="../src/HelpPanel.cpp" line="2489"/>
         <source>Editar fica no anel. Clique num planeta e a aba Editar deixa trocar o tipo, a temperatura, a água, a paisagem, a vegetação, as nuvens, a população, os anéis e as luas; num sistema, a estrela, e tudo em volta dela se recalcula. &quot;Gerar outro visual&quot; sorteia outra aparência sem mudar o resto.</source>
         <translation>Editar está en el anillo. Haz clic en un planeta y la pestaña Editar deja cambiar el tipo, la temperatura, el agua, el paisaje, la vegetación, las nubes, la población, los anillos y las lunas; en un sistema, la estrella, y todo a su alrededor se recalcula. &quot;Generar otro aspecto&quot; sortea otra apariencia sin cambiar lo demás.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2489"/>
+        <location filename="../src/HelpPanel.cpp" line="2492"/>
         <source>O Caderno.</source>
         <translation>El Cuaderno.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2490"/>
+        <location filename="../src/HelpPanel.cpp" line="2493"/>
         <source>A tecla C (ou o livrinho na barra da direita) abre a galáxia como um livro de consulta: a árvore de lugares à esquerda, a página do lugar no meio e, enquanto você escreve, a ficha técnica ao lado, pra não precisar sair do texto pra lembrar quanto dura o ano daquele planeta. &quot;Mostrar&quot; filtra a árvore por habitáveis, gasosos ou pelo que já tem nome ou documento. Esc sobe um nível, e &quot;Voltar pro mapa&quot; sai.</source>
         <translation>La tecla C (o el librito de la barra derecha) abre la galaxia como un libro de consulta: el árbol de lugares a la izquierda, la página del lugar en el medio y, mientras escribes, la ficha técnica al lado, para no salir del texto a recordar cuánto dura el año de ese planeta. &quot;Mostrar&quot; filtra el árbol por habitables, gaseosos o lo que ya tiene nombre o documento. Esc sube un nivel, y &quot;Volver al mapa&quot; sale.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2493"/>
+        <location filename="../src/HelpPanel.cpp" line="2496"/>
         <source>Os detalhes.</source>
         <translation>Los detalles.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2494"/>
+        <location filename="../src/HelpPanel.cpp" line="2497"/>
         <source>N põe e troca nomes: clique no vazio pra escrever um nome solto (o nome de um mar de estrelas, por exemplo) e Delete esconde um nome. R mede a distância em anos-luz: clique pra marcar o caminho e dê um duplo clique pra terminar. Tráfego, no anel, enche as rotas e os sistemas de naves. V troca o brilho da galáxia entre Cheio e Limpo, bom pra ler os nomes. E o quadradinho de imagem na barra da direita exporta um PNG da vista de agora, pronto pro livro.</source>
         <translation>N pone y cambia nombres: haz clic en el vacío para escribir un nombre suelto (el nombre de un mar de estrellas, por ejemplo) y Supr oculta un nombre. R mide la distancia en años luz: haz clic para marcar el camino y doble clic para terminar. Tráfico, en el anillo, llena las rutas y los sistemas de naves. V cambia el brillo de la galaxia entre Lleno y Limpio, bueno para leer los nombres. Y el cuadradito de imagen de la barra derecha exporta un PNG de la vista actual, listo para el libro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2502"/>
+        <location filename="../src/HelpPanel.cpp" line="2505"/>
         <source>O Glossário guarda as palavras que só existem no seu livro: siglas, facções, lugares, títulos, gírias. Ele mora numa aba própria do Pensário (F4 pra abrir), e alimenta o corretor ortográfico, a Mira e a Bíblia do universo.</source>
         <translation>El Glosario guarda las palabras que solo existen en tu libro: siglas, facciones, lugares, títulos, jerga. Vive en su propia pestaña del Pensario (F4 para abrirlo), y alimenta el corrector ortográfico, a Mira y la Biblia del universo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2507"/>
+        <location filename="../src/HelpPanel.cpp" line="2510"/>
         <source>Adicionando pelo texto.</source>
         <translation>Añadir desde el texto.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2508"/>
+        <location filename="../src/HelpPanel.cpp" line="2511"/>
         <source>Selecione a palavra no editor e use &quot;Adicionar ao Glossário&quot; no menu de seleção (o mesmo item aparece no botão direito de uma palavra que o corretor sublinhou). O popup já mostra a frase em que o termo aparece pela primeira vez no livro, quantas vezes ele aparece e em quantos capítulos; &quot;Ir até a primeira vez&quot; leva direto pra lá.</source>
         <translation>Selecciona la palabra en el editor y usa «Añadir al Glosario» en el menú de selección (la misma opción aparece con el clic derecho sobre una palabra que el corrector subrayó). El popup ya muestra la frase donde el término aparece por primera vez en el libro, cuántas veces aparece y en cuántos capítulos; «Ir a la primera vez» te lleva directo allí.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2521"/>
+        <location filename="../src/HelpPanel.cpp" line="2524"/>
         <source>Escolha um tipo (sigla, grupo, lugar, título, objeto ou gíria) e escreva a definição. Se o termo tem outras formas no texto, liste em &quot;Também escrito como&quot;, separadas por vírgula: &quot;CAL&quot; e &quot;Comando Alto Leste&quot; viram um termo só, e as contagens somam. Tudo além do termo é opcional. Selecionando uma palavra que já está no glossário (ou uma das outras grafias dela), o popup abre direto na edição.</source>
         <translation>Elige un tipo (sigla, grupo, lugar, título, objeto o jerga) y escribe la definición. Si el término tiene otras formas en el texto, anótalas en «También escrito como», separadas por comas: «RWG» y «River Weavers&apos; Guild» pasan a ser un solo término, y los recuentos se suman. Todo lo que no sea el término es opcional. Al seleccionar una palabra que ya está en el glosario (o una de sus otras grafías), el popup se abre directamente en edición.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2528"/>
+        <location filename="../src/HelpPanel.cpp" line="2531"/>
         <source>A aba Glossário.</source>
         <translation>La pestaña Glosario.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2529"/>
+        <location filename="../src/HelpPanel.cpp" line="2532"/>
         <source>Os termos ficam em ordem alfabética, com o alfabeto na borda direita pra pular de letra. Cada verbete mostra o tipo, as outras grafias, a definição e a primeira vez que o termo aparece. Clique num termo pra editar; o botão direito tem Editar, Ir até a primeira vez e Remover termo. A busca no topo procura nos termos, nas outras grafias e nas definições, e &quot;+ Novo termo&quot; cria um do zero.</source>
         <translation>Los términos están en orden alfabético, con el alfabeto en el borde derecho para saltar de letra. Cada entrada muestra el tipo, las otras grafías, la definición y la primera vez que aparece el término. Haz clic en un término para editarlo; el clic derecho tiene Editar, Ir a la primera vez y Quitar término. La búsqueda de arriba busca en los términos, las otras grafías y las definiciones, y «+ Nuevo término» crea uno desde cero.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2543"/>
+        <location filename="../src/HelpPanel.cpp" line="2546"/>
         <source>Termo no texto.</source>
         <translation>Término en el texto.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2544"/>
+        <location filename="../src/HelpPanel.cpp" line="2547"/>
         <source>No editor, os termos do glossário ganham um sublinhado pontilhado discreto. Pare o mouse em cima pra ver a ficha: tipo, definição, a primeira vez e quantas vezes aparece. &quot;1ª vez&quot; leva ao primeiro uso e &quot;Glossário&quot; abre o verbete na aba. Se preferir o texto limpo, desligue em Configurações › Corretor › Termos do glossário no texto.</source>
         <translation>En el editor, los términos del glosario tienen un subrayado punteado discreto. Pasa el ratón por encima para ver su ficha: tipo, definición, la primera vez y cuántas veces aparece. «1.ª vez» te lleva al primer uso y «Glosario» abre la entrada en la pestaña. Si prefieres el texto limpio, desactívalo en Configuración › Corrector › Términos del glosario en el texto.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2557"/>
+        <location filename="../src/HelpPanel.cpp" line="2560"/>
         <source>Uma sigla toda em maiúsculas só é reconhecida em maiúsculas: ROTA é o termo, e &quot;rota&quot; continua sendo palavra comum. E o corretor para de marcar como erro cada termo e cada grafia dele, então vale cadastrar os nomes inventados nem que seja só por isso.</source>
         <translation>Una sigla toda en mayúsculas solo se reconoce en mayúsculas: ROTA es el término, y «rota» sigue siendo una palabra común. Y el corrector deja de marcar como error cada término y cada una de sus grafías, así que vale la pena registrar los nombres inventados aunque sea solo por eso.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2686"/>
+        <location filename="../src/HelpPanel.cpp" line="2689"/>
         <source>Os sons ficam em seis cartões: Natureza, Chuva e mar, Lugares, Música calma, Aventura e Suspense. Abra um cartão e clique num som pra tocar. Dá pra misturar: uma música por vez (escolher outra troca a que está tocando) e até 3 sons junto com ela, como chuva, fogueira ou cidade. Clicar de novo num som tira ele da mistura.</source>
         <translation>Los sonidos están en seis tarjetas: Naturaleza, Lluvia y mar, Lugares, Música tranquila, Aventura y Suspense. Abre una tarjeta y haz clic en un sonido para reproducirlo. Puedes mezclar: una canción a la vez (elegir otra reemplaza la que suena) y hasta 3 sonidos junto con ella, como lluvia, una fogata o la ciudad. Haz clic de nuevo en un sonido para quitarlo de la mezcla.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2691"/>
+        <location filename="../src/HelpPanel.cpp" line="2694"/>
         <source>Em Mesa você ajusta o volume de cada som e o volume geral, escolhe uma mistura pronta e pode pedir pro som desligar sozinho em 15, 30 ou 60 minutos. A mistura e os volumes ficam salvos pra próxima vez que você abrir o app.</source>
         <translation>En Mezcla ajustas el volumen de cada sonido y el volumen general, eliges una mezcla lista y puedes hacer que el sonido se apague solo en 15, 30 o 60 minutos. La mezcla y los volúmenes se guardan para la próxima vez que abras la app.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2695"/>
+        <location filename="../src/HelpPanel.cpp" line="2698"/>
         <source>Gostou de uma combinação? Clique em Salvar esta mistura e dê um nome: ela vira uma pílula ao lado das prontas. Salvar com o mesmo nome atualiza a mistura; duplo clique na pílula renomeia, e o × dela exclui (com Desfazer logo em seguida).</source>
         <translation>¿Te gustó una combinación? Haz clic en Guardar esta mezcla y ponle un nombre: se convierte en una píldora junto a las listas. Guardar con el mismo nombre actualiza la mezcla; doble clic en la píldora para renombrarla, y su × la elimina (con Deshacer justo después).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2699"/>
+        <location filename="../src/HelpPanel.cpp" line="2702"/>
         <source>Pra usar suas próprias músicas, coloque arquivos .mp3 ou .ogg na pasta de sons (botão Abrir pasta). Elas aparecem num cartão novo, Suas músicas.</source>
         <translation>Para usar tu propia música, pon archivos .mp3 u .ogg en la carpeta de sonidos (botón Abrir carpeta). Aparecen en una tarjeta nueva, Tu música.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2852"/>
+        <location filename="../src/HelpPanel.cpp" line="2855"/>
         <source>‹ ANTERIOR</source>
         <translation>‹ ANTERIOR</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2853"/>
+        <location filename="../src/HelpPanel.cpp" line="2856"/>
         <source>PRÓXIMO ›</source>
         <translation>SIGUIENTE ›</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2871"/>
+        <location filename="../src/HelpPanel.cpp" line="2874"/>
         <source>NESTE TÓPICO</source>
         <translation>EN ESTE TEMA</translation>
     </message>
@@ -8194,87 +8204,87 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">Un detalle que no es obvio: los términos del Glosario no aparecen destacados en el texto, pero el corrector ortográfico deja de subrayarlos como error — así que vale la pena registrar nombres o términos inventados solo por esa ventaja, aunque nunca vuelvas a abrir el panel.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2570"/>
+        <location filename="../src/HelpPanel.cpp" line="2573"/>
         <source>O botão de Estatísticas fica na barra superior do editor, junto dos botões de Construtor, Pensário e Menu de Referência. Clique nele pra abrir o painel.</source>
         <translation>El botón de Estadísticas está en la barra superior del editor, junto a los botones de Constructor, Pensario y Menú de Referencia. Haz clic en él para abrir el panel.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2582"/>
+        <location filename="../src/HelpPanel.cpp" line="2585"/>
         <source>O painel tem duas partes: uma visão geral do projeto, e um mergulho fundo em cada personagem.</source>
         <translation>El panel tiene dos partes: una visión general del proyecto, y una inmersión profunda en cada personaje.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2587"/>
+        <location filename="../src/HelpPanel.cpp" line="2590"/>
         <source>Visão geral.</source>
         <translation>Visión general.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2588"/>
+        <location filename="../src/HelpPanel.cpp" line="2591"/>
         <source>Logo no topo, uma fileira com a foto de todos os personagens do projeto. Clicar em qualquer um deles abre a página individual dele (item 2 abaixo).</source>
         <translation>Justo arriba, una fila con la foto de todos los personajes del proyecto. Hacer clic en cualquiera de ellos abre su página individual (punto 2 más abajo).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2591"/>
+        <location filename="../src/HelpPanel.cpp" line="2594"/>
         <source>Embaixo da fileira, um gráfico de barrinhas mostra a &quot;Participação&quot; de cada personagem — a porcentagem de cenas do projeto em que ele aparece (mesma detecção automática por nome que já existia).</source>
         <translation>Debajo de la fila, un gráfico de barras muestra la &quot;Participación&quot; de cada personaje — el porcentaje de escenas del proyecto en las que aparece (la misma detección automática por nombre que ya existía).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2595"/>
+        <location filename="../src/HelpPanel.cpp" line="2598"/>
         <source>Mais embaixo, &quot;Manuscrito, por capítulo&quot; — um gráfico de barras com um capítulo por coluna, numerados na ordem da obra. Um menu no canto (&quot;Palavras ▾&quot;) deixa escolher a métrica: palavras por capítulo, ou % de diálogo em relação à narração. Clicar numa barra abre as estatísticas daquele capítulo específico (a mesma janela que já existe no Manuscrito).</source>
         <translation>Más abajo, &quot;Manuscrito, por capítulo&quot; — un gráfico de barras con un capítulo por columna, numerados en el orden de la obra. Un menú en la esquina (&quot;Palabras ▾&quot;) permite elegir la métrica: palabras por capítulo, o % de diálogo respecto a la narración. Hacer clic en una barra abre las estadísticas de ese capítulo específico (la misma ventana que ya existe en el Manuscrito).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2601"/>
+        <location filename="../src/HelpPanel.cpp" line="2604"/>
         <source>Por fim, &quot;Resumo do projeto&quot;: total de palavras, quantos capítulos e cenas tem o manuscrito atual, qual foi o maior e o menor capítulo (em palavras), quantos Vínculos existem por tipo, e um resumo da sua sequência de escrita (streak atual, recorde, páginas estimadas).</source>
         <translation>Por último, &quot;Resumen del proyecto&quot;: total de palabras, cuántos capítulos y escenas tiene el manuscrito actual, cuál fue el capítulo más largo y el más corto (en palabras), cuántos Vínculos existen por tipo, y un resumen de tu racha de escritura (racha actual, récord, páginas estimadas).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2616"/>
+        <location filename="../src/HelpPanel.cpp" line="2619"/>
         <source>Por personagem.</source>
         <translation>Por personaje.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2617"/>
+        <location filename="../src/HelpPanel.cpp" line="2620"/>
         <source>Clicando numa foto na fileira, você entra na página daquele personagem. Um botão de voltar (←) no cabeçalho do painel te traz de volta pra visão geral.</source>
         <translation>Al hacer clic en una foto de la fila, entras a la página de ese personaje. Un botón de volver (←) en el encabezado del panel te lleva de regreso a la visión general.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2620"/>
+        <location filename="../src/HelpPanel.cpp" line="2623"/>
         <source>Aqui você encontra: a foto e o nome, um resumo de presença (em quantas cenas/capítulos ele aparece), quantas falas e palavras faladas o Detector de Diálogos já achou pra ele, e dois botões — Status e Local — que fazem exatamente o que faziam no antigo Modo Consistência (que não existe mais — tudo que ele fazia foi pra cá). Se o personagem estiver marcado como Morto ou Desaparecido mas ainda aparecer em alguma cena depois disso, um aviso chama atenção pra essa inconsistência.</source>
         <translation>Aquí encuentras: la foto y el nombre, un resumen de presencia (en cuántas escenas/capítulos aparece), cuántas líneas y palabras habladas el Detector de Diálogos ya encontró para él, y dos botones — Estado y Lugar — que hacen exactamente lo que hacían en el antiguo Modo de Consistencia (que ya no existe — todo lo que hacía se mudó para acá). Si el personaje está marcado como Muerto o Desaparecido pero todavía aparece en alguna escena después de eso, un aviso llama la atención sobre esa inconsistencia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2627"/>
+        <location filename="../src/HelpPanel.cpp" line="2630"/>
         <source>Logo abaixo, a lista de Vínculos daquele personagem (mesmos vínculos que você já cria arrastando um personagem em cima do outro na gaveta) — aqui é só consulta, criar/editar vínculo continua sendo na gaveta mesmo.</source>
         <translation>Justo debajo, la lista de Vínculos de ese personaje (los mismos vínculos que ya creas arrastrando un personaje encima de otro en el cajón) — aquí es solo consulta, crear/editar un vínculo se sigue haciendo en el cajón.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2641"/>
+        <location filename="../src/HelpPanel.cpp" line="2644"/>
         <source>Química.</source>
         <translation>Química.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2642"/>
+        <location filename="../src/HelpPanel.cpp" line="2645"/>
         <source>Essa é nova: uma lista mostrando com quem aquele personagem mais &quot;contracenou&quot; — quantas cenas, capítulos e falas cruzadas ele tem com cada outro personagem do elenco. Um menu deixa escolher qual dessas três métricas ordena a lista.</source>
         <translation>Esta es nueva: una lista que muestra con quién ese personaje más &quot;coprotagonizó&quot; — cuántas escenas, capítulos y diálogos cruzados tiene con cada otro personaje del elenco. Un menú permite elegir cuál de estas tres métricas ordena la lista.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2646"/>
+        <location filename="../src/HelpPanel.cpp" line="2649"/>
         <source>Clicando num nome da lista, abre um popup só com os diálogos entre aquele par de personagens, com um menu no topo pra pular direto pra um capítulo específico. O popup pode ser arrastado pelo título, pra tirar ele do meio do caminho.</source>
         <translation>Al hacer clic en un nombre de la lista, se abre un popup solo con los diálogos entre ese par de personajes, con un menú arriba para saltar directo a un capítulo específico. El popup se puede arrastrar por el título, para sacarlo del medio.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2660"/>
+        <location filename="../src/HelpPanel.cpp" line="2663"/>
         <source>Ficha / documento.</source>
         <translation>Ficha / documento.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2661"/>
+        <location filename="../src/HelpPanel.cpp" line="2664"/>
         <source>Por último, o conteúdo real da ficha (ou do documento livre, se o personagem não usa ficha estruturada) daquele personagem, exibido ali mesmo — sem precisar abrir a gaveta. Só o texto: fotos que estejam dentro da ficha/doc não aparecem aqui (a foto do personagem já está lá em cima). A área tem altura limitada e rola por dentro se o conteúdo for grande.</source>
         <translation>Por último, el contenido real de la ficha (o del documento libre, si el personaje no usa ficha estructurada) de ese personaje, mostrado ahí mismo — sin necesidad de abrir el cajón. Solo texto: las fotos que estén dentro de la ficha/documento no aparecen aquí (la foto del personaje ya está arriba). El área tiene una altura limitada y se desplaza por dentro si el contenido es largo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2675"/>
+        <location filename="../src/HelpPanel.cpp" line="2678"/>
         <source>Fica na barra superior, ao lado do botão de Lembretes.</source>
         <translation>Está en la barra superior, al lado del botón de Recordatorios.</translation>
     </message>
@@ -8283,52 +8293,52 @@ No cierres el programa si deja de responder.</translation>
         <translation type="vanished">La app recorre una carpeta de sonidos de tu computadora y lista los archivos de audio que encuentra en ella. Solo suena una pista a la vez (elegir una nueva cambia la que estaba sonando), en bucle continuo, con un control de volumen único para todas. Tu pista y volumen elegidos quedan guardados y vuelven igual la próxima vez que abras la app.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2710"/>
+        <location filename="../src/HelpPanel.cpp" line="2713"/>
         <source>Fica na barra superior, ao lado do Som Imersivo. Um aviso vermelho aparece no botão quando você tem lembretes ativos.</source>
         <translation>Está en la barra superior, al lado de Sonido Inmersivo. Aparece un aviso rojo en el botón cuando tienes recordatorios activos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2722"/>
+        <location filename="../src/HelpPanel.cpp" line="2725"/>
         <source>Digite o texto do lembrete e aperte Enter (ou o &quot;+&quot;) pra criá-lo. Se marcar &quot;Notificar às&quot;, escolha um horário do dia — ao chegar nesse horário, um aviso aparece dentro do próprio app (não é uma notificação do Windows). Lembretes não têm data específica (só horário), nem prioridade, nem vínculo com capítulos ou documentos — são só lembretes de texto livre mesmo.</source>
         <translation>Escribe el texto del recordatorio y presiona Enter (o el &quot;+&quot;) para crearlo. Si marcas &quot;Notificar a las&quot;, elige un horario del día — al llegar ese horario, aparece un aviso dentro de la propia app (no es una notificación de Windows). Los recordatorios no tienen fecha específica (solo horario), ni prioridad, ni vínculo con capítulos o documentos — son solo recordatorios de texto libre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2737"/>
+        <location filename="../src/HelpPanel.cpp" line="2740"/>
         <source>Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de &quot;Concluídos&quot; que pode ser expandida ou escondida, com opção de limpar tudo de uma vez.</source>
         <translation>Marca la casilla de un recordatorio para completarlo; pasa a una lista de &quot;Completados&quot; que se puede expandir o esconder, con opción de borrar todo de una vez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2748"/>
+        <location filename="../src/HelpPanel.cpp" line="2751"/>
         <source>Caso você tenha escrito uma cena, gostou dela, mas por algum motivo quer reescrevê-la, dá pra fazer isso sem perder a cena que já escreveu — e é mais simples do que parece.</source>
         <translation>Si escribiste una escena, te gustó, pero por algún motivo quieres reescribirla, puedes hacerlo sin perder la escena que ya escribiste — y es más simple de lo que parece.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2752"/>
+        <location filename="../src/HelpPanel.cpp" line="2755"/>
         <source>No painel de Manuscrito, acesse a sua cena diretamente — essa opção não é acessível em capítulos completos, só em cenas isoladas. Então você precisa abrir a cena sozinha no editor, não o capítulo inteiro.</source>
         <translation>En el panel de Manuscrito, accede directamente a tu escena — esta opción no está disponible en capítulos completos, solo en escenas aisladas. Así que necesitas abrir la escena sola en el editor, no el capítulo entero.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2765"/>
+        <location filename="../src/HelpPanel.cpp" line="2768"/>
         <source>Quando a cena abrir sozinha, aparece um botão discreto ao lado do nome dela, na barra superior. Clique nele — sim, ele é bem pequeno e discreto mesmo, é de propósito.</source>
         <translation>Cuando la escena se abre sola, aparece un botón discreto al lado de su nombre, en la barra superior. Haz clic en él — sí, es bien pequeño y discreto a propósito.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2777"/>
+        <location filename="../src/HelpPanel.cpp" line="2780"/>
         <source>Ao clicar, aparecem três opções: nova, primária e apagar.</source>
         <translation>Al hacer clic, aparecen tres opciones: nueva, principal y eliminar.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2788"/>
+        <location filename="../src/HelpPanel.cpp" line="2791"/>
         <source>&lt;b&gt;+ nova&lt;/b&gt; cria outra variação da cena: um popup pede um nome pra ela e, ao confirmar, a variação já abre em branco no editor, pronta pra escrever.</source>
         <translation>&lt;b&gt;+ nueva&lt;/b&gt; crea otra variación de la escena: aparece un popup pidiendo un nombre para ella y, al confirmar, la variación se abre en blanco en el editor, lista para escribir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2791"/>
+        <location filename="../src/HelpPanel.cpp" line="2794"/>
         <source>&lt;b&gt;★ primária&lt;/b&gt; define qual variação é a principal — é ela que aparece quando o capítulo inteiro é aberto de uma vez e também a que sai na exportação.</source>
         <translation>&lt;b&gt;★ principal&lt;/b&gt; define cuál variación es la principal — es la que aparece cuando se abre el capítulo entero de una vez y también la que se incluye en la exportación.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2794"/>
+        <location filename="../src/HelpPanel.cpp" line="2797"/>
         <source>&lt;b&gt;✕ apagar&lt;/b&gt; exclui a variação que está aberta no momento.</source>
         <translation>&lt;b&gt;✕ eliminar&lt;/b&gt; borra la variación que está abierta en este momento.</translation>
     </message>
@@ -37813,17 +37823,17 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
 <context>
     <name>carto::Canvas</name>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="162"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="163"/>
         <source>prévia em %1 ms</source>
         <translation>vista previa en %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="189"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="190"/>
         <source>pintou em %1 ms</source>
         <translation>pintado en %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1126"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1131"/>
         <source>acabamento em %1 ms</source>
         <translation>terminado en %1 ms</translation>
     </message>
@@ -38503,256 +38513,346 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
 <context>
     <name>carto::NewMap</name>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="49"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="56"/>
         <source>Ilha</source>
         <translation>Isla</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="50"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="57"/>
         <source>Região</source>
         <translation>Región</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="51"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="58"/>
         <source>Mundo</source>
         <translation>Mundo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="52"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="59"/>
         <source>Épico</source>
         <translation>Épico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="53"/>
-        <location filename="../src/carto/CartoNewMap.cpp" line="434"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="60"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="485"/>
         <source>Continente</source>
         <translation>Continente</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="54"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="61"/>
         <source>Supercontinente</source>
         <translation>Supercontinente</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="116"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="126"/>
+        <source>Escolha a imagem do mapa</source>
+        <translation>Elige la imagen del mapa</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="133"/>
+        <source>Clique aqui ou arraste o arquivo (PNG ou JPG).</source>
+        <translation>Haz clic aquí o arrastra el archivo (PNG o JPG).</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="145"/>
         <source>Mar vazio</source>
         <translation>Mar vacío</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="123"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="152"/>
         <source>Você desenha a terra com os pincéis.</source>
         <translation>Tú dibujas la tierra con los pinceles.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="139"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="168"/>
         <source>Gerando…</source>
         <translation>Generando…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="308"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="339"/>
         <source>Fechar</source>
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="328"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="359"/>
         <source>Terra</source>
         <translation>Tierra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="330"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="361"/>
+        <source>Imagem pronta</source>
+        <translation>Imagen propia</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="362"/>
+        <source>Um mapa que você já tem (desenhado à mão, de outro programa) vira o chão: territórios, construções, nomes e o Explorar em cima dele.</source>
+        <translation>Un mapa que ya tienes (dibujado a mano, de otro programa) se vuelve el suelo: territorios, construcciones, nombres y Explorar encima de él.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="363"/>
         <source>Galáxia</source>
         <translation>Galaxia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="367"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="405"/>
+        <source>Trocar a imagem…</source>
+        <translation>Cambiar la imagen…</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="409"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="963"/>
+        <source>O azul é o que o Qenna entendeu como mar: os territórios ficam fora dele. Se pegou terra ou deixou mar de fora, ajuste o Mar ao lado.</source>
+        <translation>El azul es lo que Qenna entendió como mar: los territorios quedan fuera de él. Si tomó tierra o dejó mar fuera, ajusta Mar al lado.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="412"/>
         <source>BIOMA DOMINANTE</source>
         <translation>BIOMA DOMINANTE</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="371"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="419"/>
         <source>Misto</source>
         <translation>Mixto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="371"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="419"/>
         <source>Frio</source>
         <translation>Frío</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="371"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="419"/>
         <source>Árido</source>
         <translation>Árido</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="371"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="419"/>
         <source>Verde</source>
         <translation>Verde</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="394"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="442"/>
         <source>NOME DO MAPA</source>
         <translation>NOMBRE DEL MAPA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="401"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="449"/>
         <source>Em branco, o mapa fica com o nome sugerido.</source>
         <translation>En blanco, el mapa se queda con el nombre sugerido.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="410"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="458"/>
         <source>TAMANHO</source>
         <translation>TAMAÑO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="419"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="467"/>
         <source>2× o Épico</source>
         <translation>2× el Épico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="420"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="468"/>
         <source>3× o Épico</source>
         <translation>3× el Épico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="426"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="474"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="734"/>
         <source>Quanto maior, mais espaço pra desenhar e mais pesado fica.</source>
         <translation>Cuanto más grande, más espacio para dibujar y más pesado se vuelve.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="430"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="478"/>
         <source>ESTILO</source>
         <translation>ESTILO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="434"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="485"/>
         <source>Arquipélago</source>
         <translation>Archipiélago</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="434"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="485"/>
         <source>Oceânico</source>
         <translation>Oceánico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="434"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="485"/>
         <source>Vazio</source>
         <translation>Vacío</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="447"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="498"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="732"/>
         <source>OCEANO</source>
         <translation>OCÉANO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="456"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="507"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="733"/>
         <source>Quanto do mapa é mar</source>
         <translation>Cuánto del mapa es mar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="472"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="523"/>
         <source>SEMENTE</source>
         <translation>SEMILLA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="482"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="534"/>
         <source>Semente aleatória</source>
         <translation>Semilla aleatoria</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="491"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="543"/>
         <source>Gerar territórios e locais</source>
         <translation>Generar territorios y lugares</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="492"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="544"/>
         <source>Reinos, cidades, estradas e nomes sugeridos pelo terreno. Desmarcado, o mapa vem só com o relevo e o resto é com você.</source>
         <translation>Reinos, ciudades, caminos y nombres sugeridos por el terreno. Sin marcar, el mapa viene solo con el relieve y el resto depende de ti.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="558"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="621"/>
         <source>Regenerar mapa</source>
         <translation>Regenerar mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="558"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="621"/>
         <source>Novo mapa</source>
         <translation>Nuevo mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="559"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="622"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="730"/>
         <source>O mapa atual é substituído. Ctrl+Z desfaz.</source>
         <translation>El mapa actual se reemplaza. Ctrl+Z lo deshace.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="560"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="623"/>
         <source>Escolha como o seu mundo começa. Depois, dá pra redesenhar tudo com os pincéis.</source>
         <translation>Elige cómo empieza tu mundo. Después puedes redibujarlo todo con los pinceles.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="614"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="689"/>
         <source>Uma terra grande cercada de mar.</source>
         <translation>Una gran tierra rodeada de mar.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="614"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="689"/>
         <source>Muitas ilhas, grandes e pequenas, espalhadas.</source>
         <translation>Muchas islas, grandes y pequeñas, dispersas.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="615"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="690"/>
         <source>Mais mar do que terra, com ilhas soltas.</source>
         <translation>Más mar que tierra, con islas sueltas.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="615"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="690"/>
         <source>Só oceano: desenhe o mundo com os pincéis.</source>
         <translation>Solo océano: dibuja el mundo con los pinceles.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="618"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="693"/>
         <source>Sorteia a latitude, se o mundo é mais frio ou mais quente, e manchas de clima maiores.</source>
         <translation>Sortea la latitud, si el mundo es más frío o más cálido, y manchas de clima más grandes.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="619"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="694"/>
         <source>Perto do polo, cheio de gelo e tundra. No Mundo e acima, era do gelo.</source>
         <translation>Cerca del polo, lleno de hielo y tundra. En Mundo y mayores, una edad de hielo.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="620"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="695"/>
         <source>Cinturão de desertos, com oásis onde sobra umidade.</source>
         <translation>Un cinturón de desiertos, con oasis donde sobra humedad.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="621"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="696"/>
         <source>Úmido: floresta e pântano.</source>
         <translation>Húmedo: bosque y pantano.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="632"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="709"/>
+        <source>MAR</source>
+        <translation>MAR</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="710"/>
+        <source>Quanto da cor da borda da imagem conta como mar. No zero, a imagem inteira é terra.</source>
+        <translation>Cuánto del color del borde de la imagen cuenta como mar. En cero, toda la imagen es tierra.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="711"/>
+        <source>nenhum</source>
+        <translation>ninguno</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="713"/>
+        <source>Criar mapa</source>
+        <translation>Crear mapa</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="723"/>
+        <source>imagem de %1×%2</source>
+        <translation>imagen de %1×%2</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="724"/>
+        <source>Quanto maior, mais nítida a imagem fica de perto, e mais pesado o mapa.</source>
+        <translation>Cuanto más grande, más nítida se ve la imagen de cerca, y más pesado el mapa.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="725"/>
+        <source>Mapa</source>
+        <translation>Mapa</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="727"/>
+        <source>Territórios, construções e nomes ficam se o tamanho não mudar. Ctrl+Z desfaz.</source>
+        <translation>Territorios, construcciones y nombres se quedan si el tamaño no cambia. Ctrl+Z deshace.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="749"/>
         <source>Criar mar vazio</source>
         <translation>Crear mar vacío</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="632"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="749"/>
         <source>Gerar mapa</source>
         <translation>Generar mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNewMap.cpp" line="636"/>
+        <location filename="../src/carto/CartoNewMap.cpp" line="753"/>
         <source>semente %1</source>
         <translation>semilla %1</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="936"/>
+        <source>Imagem do mapa</source>
+        <translation>Imagen del mapa</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="936"/>
+        <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation>Imágenes (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoNewMap.cpp" line="949"/>
+        <source>Não deu pra abrir essa imagem. Tente um PNG ou JPG.</source>
+        <translation>No se pudo abrir esta imagen. Prueba con un PNG o JPG.</translation>
     </message>
 </context>
 <context>
     <name>carto::Panel</name>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="43"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="44"/>
         <source>Completo</source>
         <translation>Completo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="44"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="45"/>
         <source>Atlas</source>
         <translation>Atlas</translation>
     </message>
@@ -38761,149 +38861,150 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Tinta</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="46"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="47"/>
         <source>Terreno</source>
         <translation>Terreno</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="46"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="51"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="52"/>
         <source>Ilha</source>
         <translation>Isla</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="52"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="53"/>
         <source>Região</source>
         <translation>Región</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="53"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="54"/>
         <source>Mundo</source>
         <translation>Mundo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="54"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="55"/>
         <source>Épico</source>
         <translation>Épico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="55"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="56"/>
         <source>Continente</source>
         <translation>Continente</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="56"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="57"/>
         <source>Supercontinente</source>
         <translation>Supercontinente</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="62"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="63"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="361"/>
         <source>Terra</source>
         <translation>Tierra</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="362"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="63"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="64"/>
         <source>Mar</source>
         <translation>Mar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="64"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="65"/>
         <source>Montanha</source>
         <translation>Montaña</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="65"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="66"/>
         <source>Suavizar</source>
         <translation>Suavizar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="66"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="67"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="39"/>
         <source>Rio</source>
         <translation>Río</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="67"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="572"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="68"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="573"/>
         <source>Úmido</source>
         <translation>Húmedo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="68"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="69"/>
         <source>Seco</source>
         <translation>Seco</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="69"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="70"/>
         <source>Frio</source>
         <translation>Frío</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="82"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="83"/>
         <source>Noite</source>
         <translation>Noche</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="83"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="84"/>
         <source>Amanhecer</source>
         <translation>Amanecer</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="84"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="85"/>
         <source>Manhã</source>
         <translation>Mañana</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="85"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="86"/>
         <source>Meio-dia</source>
         <translation>Mediodía</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="86"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="87"/>
         <source>Tarde</source>
         <translation>Tarde</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="87"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="88"/>
         <source>Entardecer</source>
         <translation>Atardecer</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="88"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="89"/>
         <source>Anoitecer</source>
         <translation>Anochecer</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="96"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="883"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="975"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="97"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="884"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="980"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1256"/>
         <source>Mapa</source>
         <translation>Mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="146"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="147"/>
         <source>Galáxia</source>
         <translation>Galaxia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="189"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="190"/>
         <source>Não deu pra abrir essa galáxia: o arquivo dela sumiu ou está estragado.</source>
         <translation>No se pudo abrir esta galaxia: su archivo falta o está dañado.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="233"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="234"/>
         <source>Regenerar galáxia</source>
         <translation>Regenerar galaxia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="296"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="297"/>
         <source>Clique pra trocar o nome do mapa</source>
         <translation>Haz clic para cambiar el nombre del mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="314"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="315"/>
         <source>Trocar, criar, renomear ou excluir mapas</source>
         <translation>Cambiar, crear, renombrar o eliminar mapas</translation>
     </message>
@@ -38916,33 +39017,33 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Rehacer (Ctrl+Y)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="318"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="319"/>
         <source>Gerar mapa (G)</source>
         <translation>Generar mapa (G)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="318"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="441"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="319"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="442"/>
         <source>Gerar</source>
         <translation>Generar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="347"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="348"/>
         <source>Enquadrar (F)</source>
         <translation>Encuadrar (F)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="349"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="350"/>
         <source>Ajustes</source>
         <translation>Ajustes</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="352"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="353"/>
         <source>Régua: distância e tempo de viagem (R)</source>
         <translation>Regla: distancia y tiempo de viaje (R)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="355"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="356"/>
         <source>Exportar imagem (PNG pro livro)</source>
         <translation>Exportar imagen (PNG para el libro)</translation>
     </message>
@@ -38951,119 +39052,119 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Cerrar el mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="376"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="377"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="112"/>
         <source>Passar o dia (P)</source>
         <translation>Pasar el día (P)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="385"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="386"/>
         <source>Ferramentas (ou botão direito no mapa)</source>
         <translation>Herramientas (o clic derecho en el mapa)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="440"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="874"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="441"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="25"/>
         <source>Mover</source>
         <translation>Mover</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="442"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="865"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="443"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="866"/>
         <source>Área</source>
         <translation>Área</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="443"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="497"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="864"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="902"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="444"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="498"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="865"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="907"/>
         <source>Pincel</source>
         <translation>Pincel</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="444"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="864"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="902"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="865"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="907"/>
         <source>Clima</source>
         <translation>Clima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="868"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="446"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="132"/>
         <source>Territórios</source>
         <translation>Territorios</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="446"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="870"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="447"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="871"/>
         <source>Construir</source>
         <translation>Construir</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="447"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="871"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="448"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="344"/>
         <source>Nomes</source>
         <translation>Nombres</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="448"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="873"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="449"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="874"/>
         <source>Explorar</source>
         <translation>Explorar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="529"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="530"/>
         <source>RELEVO</source>
         <translation>RELIEVE</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="530"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
         <source>CLIMA</source>
         <translation>CLIMA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="543"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="544"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="394"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="258"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="264"/>
         <source>TAMANHO</source>
         <translation>TAMAÑO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="544"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="545"/>
         <source>FORÇA</source>
         <translation>FUERZA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="557"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="558"/>
         <source>Shift inverte o pincel (Terra vira Mar, Úmido vira Seco). [&#xa0;e&#xa0;] mudam o tamanho.</source>
         <translation>Shift invierte el pincel (Tierra se vuelve Mar, Húmedo se vuelve Seco). [&#xa0;y&#xa0;] cambian el tamaño.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="569"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="570"/>
         <source>Mapa de clima</source>
         <translation>Mapa de clima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="572"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="573"/>
         <source>Gélido</source>
         <translation>Gélido</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="572"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="573"/>
         <source>Temperado</source>
         <translation>Templado</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="572"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="573"/>
         <source>Árido</source>
         <translation>Árido</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="584"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="585"/>
         <source>É o que a terra vira em cada lugar. Pinte com Úmido, Seco e Frio, até no mar. Terra bem baixa e úmida em clima quente vira pântano.</source>
         <translation>Es en lo que se convierte la tierra en cada lugar. Pinta con Húmedo, Seco y Frío, incluso en el mar. La tierra muy baja y húmeda en clima cálido se vuelve pantano.</translation>
     </message>
@@ -39172,57 +39273,57 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Cuanto más grande, más espacio para dibujar y más pesado se vuelve.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="599"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="600"/>
         <source>Ajustes do mapa</source>
         <translation>Ajustes del mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="602"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="603"/>
         <source>VISUAL DO TERRENO</source>
         <translation>ESTILO DEL TERRENO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="608"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="609"/>
         <source>Mira</source>
         <translation>Mira</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="608"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="609"/>
         <source>Novo</source>
         <translation>Nuevo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="609"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="610"/>
         <source>O visual original do Mira (V)</source>
         <translation>El estilo original de Mira (V)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="609"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="610"/>
         <source>Tons variados, texturas e luz de fim de tarde (V)</source>
         <translation>Tonos variados, texturas y luz de atardecer (V)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="626"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="627"/>
         <source>INTERFACE</source>
         <translation>INTERFAZ</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="629"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="630"/>
         <source>Astrolábio</source>
         <translation>Astrolabio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="629"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="630"/>
         <source>Cartela</source>
         <translation>Cartela</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="630"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="631"/>
         <source>O instrumento no canto junta vista, rotação, inclinação e hora; as ferramentas abrem num anel</source>
         <translation>El instrumento de la esquina reúne vista, giro, inclinación y hora; las herramientas se abren en un anillo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="631"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="632"/>
         <source>Vistas na pílula de cima, ferramentas na barra do lado; a bússola no canto gira o mapa</source>
         <translation>Vistas en la píldora de arriba, herramientas en la barra lateral; la brújula de la esquina gira el mapa</translation>
     </message>
@@ -39231,70 +39332,75 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">La leyenda del mapa es la paleta; la rosa de los vientos gira el mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="650"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="651"/>
         <source>Cartela no mapa (legenda, escala e título)</source>
         <translation>Cartela en el mapa (leyenda, escala y título)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="655"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="656"/>
         <source>Árvores, casas e castelos</source>
         <translation>Árboles, casas y castillos</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="661"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="662"/>
         <source>Moldura do mapa (onde dá pra desenhar)</source>
         <translation>Marco del mapa (donde se puede dibujar)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="868"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Pintar</source>
         <translation>Pintar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="868"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Neutro</source>
         <translation>Neutral</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="868"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Semear</source>
         <translation>Sembrar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="873"/>
         <source>Régua</source>
         <translation>Regla</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="884"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="886"/>
         <source>semente %1</source>
         <translation>semilla %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="885"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="886"/>
+        <source>da imagem</source>
+        <translation>de imagen</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="890"/>
         <source> · pintando…</source>
         <translation> · pintando…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="911"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="916"/>
         <source>%1 × %2 px</source>
         <translation>%1 × %2 px</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="916"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="921"/>
         <source>Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Área: arrastra un rectángulo para crear tierra · rueda: zoom · botón derecho: herramientas (arrastrando gira e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="917"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="922"/>
         <source>%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>%1 · Shift invierte · [ y ] tamaño · botón derecho: herramientas (arrastrando gira e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="918"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="923"/>
         <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
         <translation>Territorios: sembrar, pintar o neutral (en el panel) · Ctrl+Z deshace · botón derecho: herramientas</translation>
     </message>
@@ -39303,17 +39409,17 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Construir: elige en el panel · Q/E giran lo seleccionado · Supr lo elimina · Ctrl+Z deshace</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="920"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="925"/>
         <source>Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde</source>
         <translation>Nombres: haz clic en un nombre para editarlo, arrastra para moverlo · haz clic en el mapa para poner un nombre nuevo (arrastrando, sigue el trazo) · Supr oculta</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="921"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
         <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
         <translation>Regla: haz clic para marcar el camino · doble clic termina · Esc borra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="923"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="928"/>
         <source>Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Arrastra para mover · rueda: zoom · botón derecho: herramientas (arrastrando gira e inclina)</translation>
     </message>
@@ -39330,52 +39436,57 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Crear</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="232"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="233"/>
         <source>Novo mapa…</source>
         <translation>Nuevo mapa…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="233"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="234"/>
         <source>Regenerar mapa</source>
         <translation>Regenerar mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="234"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="235"/>
         <source>Renomear…</source>
         <translation>Renombrar…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="238"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="239"/>
         <source>Excluir este mapa…</source>
         <translation>Eliminar este mapa…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="241"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="242"/>
         <source>Excluir mapa</source>
         <translation>Eliminar mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="241"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="242"/>
         <source>Excluir o mapa &quot;%1&quot;?</source>
         <translation>¿Eliminar el mapa &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="242"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="243"/>
         <source>O mapa some do projeto. Um backup do projeto traz ele de volta.</source>
         <translation>El mapa sale del proyecto. Una copia de seguridad del proyecto lo trae de vuelta.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="242"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="243"/>
         <source>Excluir</source>
         <translation>Eliminar</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="358"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="359"/>
         <source>Como usar o Mapa</source>
         <translation>Cómo usar el Mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1203"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1106"/>
+        <source>Neste mapa o terreno é a imagem: Área, Pincel e Clima ficam desligados.</source>
+        <translation>En este mapa el terreno es la imagen: Área, Pincel y Clima quedan desactivados.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="1212"/>
         <source>O Completo abre quando o mapa tiver um território, uma construção ou um nome. Crie um pelas ferramentas ou gere com territórios e locais.</source>
         <translation>Completo se abre cuando el mapa tenga un territorio, una construcción o un nombre. Crea uno con las herramientas o genera con territorios y lugares.</translation>
     </message>
@@ -39495,7 +39606,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="461"/>
         <location filename="../src/carto/CartoBuild.cpp" line="462"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="172"/>
         <source>Pequeno</source>
         <translation>Pequeño</translation>
@@ -39547,33 +39658,33 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>ESCALA DEL MUNDO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="357"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
         <source>Menor</source>
         <translation>Menor</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
         <source>Mínima</source>
         <translation>Mínima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="568"/>
         <source>Tudo que é construído ou plantado no tamanho de sempre</source>
         <translation>Todo lo construido o plantado en el tamaño de siempre</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="568"/>
         <source>Construções e árvores menores: o mesmo continente parece um mundo maior</source>
         <translation>Construcciones y árboles más pequeños: el mismo continente parece un mundo más grande</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="568"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="569"/>
         <source>Ainda menores: o continente vira um império</source>
         <translation>Aún más pequeños: el continente se vuelve un imperio</translation>
     </message>
@@ -39932,37 +40043,47 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Escala del mundo y ciudades sugeridas</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="626"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
+        <source>Pequena</source>
+        <translation>Pequeña</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="569"/>
+        <source>As menores de todas: cada vila vira um pontinho num mapa de império inteiro</source>
+        <translation>Las más pequeñas: cada aldea se vuelve un puntito en un mapa de imperio entero</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="627"/>
         <source>Tamanho (teclas [ e ]; duplo clique volta pra 100%)</source>
         <translation>Tamaño (teclas [ y ]; doble clic vuelve al 100%)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="786"/>
         <source>Peq.</source>
         <translation>Peq.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="786"/>
         <source>Méd.</source>
         <translation>Med.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="786"/>
         <source>Gde.</source>
         <translation>Gde.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="786"/>
         <source>Col.</source>
         <translation>Col.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="787"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="788"/>
         <source>Vale</source>
         <translation>Valle</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="841"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="842"/>
         <source>%1 · sem nome</source>
         <translation>%1 · sin nombre</translation>
     </message>
@@ -40109,21 +40230,21 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="461"/>
         <location filename="../src/carto/CartoBuild.cpp" line="462"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Médio</source>
         <translation>Mediano</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="461"/>
         <location filename="../src/carto/CartoBuild.cpp" line="462"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Grande</source>
         <translation>Grande</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="461"/>
         <location filename="../src/carto/CartoBuild.cpp" line="462"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Colossal</source>
         <translation>Colosal</translation>
     </message>
@@ -40133,7 +40254,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoBuild.cpp" line="499"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="787"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="788"/>
         <source>Pelo vale</source>
         <translation>Por el valle</translation>
     </message>
@@ -40182,23 +40303,23 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Nombre (opcional)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="615"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="616"/>
         <source>Girar (Q)</source>
         <translation>Girar (Q)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="616"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="617"/>
         <source>Girar (E)</source>
         <translation>Girar (E)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="661"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="662"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="461"/>
         <source>Apagar (Delete)</source>
         <translation>Eliminar (Supr)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="588"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="589"/>
         <source>Mostrar cidades e estradas sugeridas pelo terreno</source>
         <translation>Mostrar ciudades y caminos sugeridos por el terreno</translation>
     </message>
@@ -40624,72 +40745,81 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Región del %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="255"/>
+        <source>Mapa de imagem: a vista fica sempre de cima.</source>
+        <translation type="vanished">Mapa de imagen: la vista siempre queda desde arriba.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="216"/>
+        <source>Mapa de imagem: inclina só até 70°, pra imagem não deitar.</source>
+        <translation>Mapa de imagen: inclina solo hasta 70°, para que la imagen no se acueste.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
         <source>Exportar imagem</source>
         <translation>Exportar imagen</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
         <source>1×</source>
         <translation>1×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
         <source>2×</source>
         <translation>2×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
         <source>3×</source>
         <translation>3×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="262"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
         <source>Do tamanho da tela</source>
         <translation>Tamaño de la pantalla</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="262"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
         <source>Dobro: bom pra imprimir</source>
         <translation>Doble: bueno para imprimir</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="262"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
         <source>Triplo: pra página inteira do livro</source>
         <translation>Triple: para una página entera del libro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="272"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="278"/>
         <source>Cartela (título, escala e legenda)</source>
         <translation>Cartela (título, escala y leyenda)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="277"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="283"/>
         <source>Salvar PNG…</source>
         <translation>Guardar PNG…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="282"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="288"/>
         <source>Sai a vista de agora, sem os botões. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation>La vista actual, sin los botones. En la vista Tinta, se vuelve el mapa de las primeras páginas del libro.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="304"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="310"/>
         <source>Exportar mapa</source>
         <translation>Exportar mapa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="304"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="310"/>
         <source>Imagem PNG (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="330"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="336"/>
         <source>Não deu pra salvar a imagem nesse lugar.</source>
         <translation>No se pudo guardar la imagen en ese lugar.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="332"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="338"/>
         <source>Imagem salva: %1</source>
         <translation>Imagen guardada: %1</translation>
     </message>

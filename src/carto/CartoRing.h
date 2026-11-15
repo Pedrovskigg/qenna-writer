@@ -21,6 +21,7 @@ class Ring : public QWidget {
 public:
     explicit Ring(QWidget* parent);
     void setItems(const QVector<RingItem>& items) { m_items = items; }
+    void setItemEnabled(const QString& id, bool on) { for (RingItem& it : m_items) if (it.id == id) it.enabled = on; }
     // abre centrado em `at` (coordenadas do pai); `active` = fatia em destaque; centro mostra o rótulo
     void openAt(QPoint at, const QString& active, const QString& centerTitle, const QString& centerSub);
     QPoint center() const { return m_c; }
