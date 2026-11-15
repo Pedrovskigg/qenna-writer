@@ -9248,7 +9248,19 @@ void MainWindow::onExportRequested()
 
     auto* panel = new ExportPanel(projectModel, this);
     panel->setAttribute(Qt::WA_DeleteOnClose);
-    connect(panel, &ExportPanel::previewRequested, this, &MainWindow::openReaderPreview);
+    {
+        // A folha da prévia é montada pelo exportador de verdade, com o
+        // estilo de parágrafo do projeto; as palavras vêm do contador do app.
+        Exporter::DocStyle style;
+        style.fontFamily = currentFontFamily;
+        style.fontSize = currentFontSize;
+        style.lineHeightPercent = currentLineHeight;
+        style.firstLineIndent = firstLineIndentEnabled;
+        style.spacingBefore = paragraphSpacingBefore;
+        style.spacingAfter = paragraphSpacingAfter;
+        panel->chapterWords = [this](const QString& id) { return wordCounter ? wordCounter->countChapter(id) : 0; };
+        panel->setPreviewSource(projectRoot, style);
+    }
     connect(panel, &ExportPanel::bibleRequested, this, [this](Exporter::Format fmt) {
         Exporter::DocStyle style;
         style.fontFamily = currentFontFamily;

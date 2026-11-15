@@ -1,249 +1,461 @@
 #include "ExportPanel.h"
 
 #include "ProjectModel.h"
-
-#include <QMenu>
 #include "Theme.h"
 
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QDialogButtonBox>
-#include <QFormLayout>
-#include <QLineEdit>
-#include <QTextEdit>
-
-#include <QButtonGroup>
 #include <QFont>
+#include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
+#include <QLocale>
+#include <QMenu>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPushButton>
-#include <QRadioButton>
+#include <QSettings>
+#include <QSignalBlocker>
+#include <QStyle>
+#include <QTextEdit>
+#include <QTimer>
+#include <QToolButton>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 #include <algorithm>
 #include <functional>
+
+namespace {
+
+QColor mixTo(const QColor& a, const QColor& b, qreal t) {
+    return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t, a.greenF() + (b.greenF() - a.greenF()) * t,
+                            a.blueF() + (b.blueF() - a.blueF()) * t, 1.0);
+}
+
+// O poço onde a folha fica: um tom abaixo do painel.
+QColor wellColor() {
+    const QColor panel = Theme::toColor(Theme::panelBackground());
+    const bool dark = qGray(panel.rgb()) < 128;
+    return mixTo(panel, QColor(0, 0, 0), dark ? 0.35 : 0.08);
+}
+
+// Chave liga/desliga (a mesma cara da das Configurações).
+class Switch : public QCheckBox {
+public:
+    explicit Switch(QWidget* parent = nullptr) : QCheckBox(parent) {
+        setCursor(Qt::PointingHandCursor);
+        setFixedSize(30, 17);
+    }
+protected:
+    bool hitButton(const QPoint&) const override { return true; }
+    void paintEvent(QPaintEvent*) override {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        const bool on = isChecked();
+        QColor track = Theme::toColor(on ? Theme::accentDefault() : Theme::borderStrong());
+        QColor knob = on ? QColor(Qt::white) : Theme::toColor(Theme::textPrimary());
+        if (!isEnabled()) { track.setAlphaF(track.alphaF() * 0.4); knob.setAlphaF(0.5); }
+        p.setPen(Qt::NoPen);
+        p.setBrush(track);
+        const QRectF r(0.5, 0.5, width() - 1.0, height() - 1.0);
+        p.drawRoundedRect(r, r.height() / 2, r.height() / 2);
+        const qreal d = height() - 6.0;
+        p.setBrush(knob);
+        p.drawEllipse(QRectF(on ? width() - 3.0 - d : 3.0, 3.0, d, d));
+    }
+};
+
+} // namespace
+
+// ============================================================ A folha
+// Desenha a página da prévia no centro do poço, com sombra; no EPUB, a tela
+// dentro de um e-reader.
+class ExportPreviewView : public QWidget {
+public:
+    explicit ExportPreviewView(QWidget* parent) : QWidget(parent) {
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        setMinimumSize(300, 300);
+    }
+    void setPage(const Exporter::PagePreview* p, int index) {
+        m_p = p;
+        m_index = index;
+        m_cache = QImage();
+        update();
+    }
+    QString emptyText;
+    // A roda do mouse folheia: cada entalhe é uma página (o touchpad soma os
+    // pedacinhos até dar um entalhe).
+    std::function<void(int)> onStep;
+
+protected:
+    void resizeEvent(QResizeEvent*) override { m_cache = QImage(); }
+    void wheelEvent(QWheelEvent* e) override {
+        e->accept();
+        if (!onStep) return;
+        m_wheelAcc += e->angleDelta().y();
+        while (qAbs(m_wheelAcc) >= 120) {
+            const int dir = m_wheelAcc > 0 ? -1 : 1;
+            m_wheelAcc -= (m_wheelAcc > 0 ? 120 : -120);
+            onStep(dir);
+        }
+    }
+    void paintEvent(QPaintEvent*) override {
+        QPainter g(this);
+        g.setRenderHint(QPainter::Antialiasing);
+        g.setRenderHint(QPainter::SmoothPixmapTransform);
+        g.fillRect(rect(), wellColor());
+        if (!m_p || m_p->isEmpty()) {
+            g.setPen(Theme::toColor(Theme::textMuted()));
+            QFont f = font();
+            f.setPixelSize(13);
+            g.setFont(f);
+            g.drawText(rect(), Qt::AlignCenter, emptyText);
+            return;
+        }
+        const bool reader = (m_p->kind == Exporter::PagePreview::Reader);
+        const QSizeF page = m_p->pagePx;
+        // e-reader: a moldura soma em volta da tela
+        const qreal padX = reader ? 16 : 0, padTop = reader ? 22 : 0, padBot = reader ? 34 : 0;
+        const QRectF avail = QRectF(rect()).adjusted(32, 26, -32, -10);
+        const qreal outerW = page.width() + 2 * padX, outerH = page.height() + padTop + padBot;
+        const qreal k = qMin(avail.width() / outerW, avail.height() / outerH);
+        const QSizeF outer(outerW * k, outerH * k);
+        const QRectF box(avail.center().x() - outer.width() / 2, avail.center().y() - outer.height() / 2,
+                         outer.width(), outer.height());
+        const QRectF pageRect(box.left() + padX * k, box.top() + padTop * k, page.width() * k, page.height() * k);
+
+        const int w = qRound(pageRect.width());
+        const qreal dpr = devicePixelRatioF();
+        if (m_cache.isNull() || m_cacheW != w || !qFuzzyCompare(m_cacheDpr, dpr)) {
+            m_cache = Exporter::renderPreviewPage(*m_p, m_index, w, dpr);
+            m_cacheW = w;
+            m_cacheDpr = dpr;
+        }
+        // sombra macia
+        const QRectF shadowOf = reader ? box : pageRect;
+        const qreal rr = reader ? 26 * k : 0;
+        g.setPen(Qt::NoPen);
+        for (int i = 8; i >= 1; --i) {
+            g.setBrush(QColor(0, 0, 0, 7));
+            g.drawRoundedRect(shadowOf.adjusted(-i, -i + 6, i, i + 6), rr + i, rr + i);
+        }
+        if (reader) {
+            g.setBrush(QColor(0x15, 0x15, 0x13));
+            g.drawRoundedRect(box, rr, rr);
+            QPainterPath clip;
+            clip.addRoundedRect(pageRect, 6 * k, 6 * k);
+            g.save();
+            g.setClipPath(clip);
+            g.drawImage(pageRect.topLeft(), m_cache);
+            g.restore();
+        } else {
+            g.drawImage(pageRect.topLeft(), m_cache);
+        }
+    }
+
+private:
+    const Exporter::PagePreview* m_p = nullptr;
+    int m_index = 0;
+    QImage m_cache;
+    int m_cacheW = 0;
+    qreal m_cacheDpr = 1.0;
+    int m_wheelAcc = 0;
+};
+
+// ============================================================ Painel
 
 ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     : QDialog(parent), m_model(model) {
     setObjectName(QStringLiteral("exportPanel"));
-    setWindowTitle(tr("Exportar projeto"));
+    setWindowTitle(tr("Exportar"));
     setModal(true);
-    resize(480, 620);
+    {
+        int w = 1040, h = 720;
+        if (parent) { w = qMin(w, parent->width() - 60); h = qMin(h, parent->height() - 60); }
+        resize(qMax(820, w), qMax(560, h));
+    }
+    const bool screenplay = m_model && m_model->isScreenplay();
+    m_format = QSettings().value(QStringLiteral("ui/exportFormat"), QStringLiteral("pdf")).toString();
 
-    auto* root = new QVBoxLayout(this);
+    auto* root = new QHBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
 
-    // ── Header ──
-    auto* header = new QWidget(this);
-    auto* hl = new QHBoxLayout(header);
-    hl->setContentsMargins(18, 14, 12, 14);
-    auto* title = new QLabel(tr("Exportar projeto"), header);
+    // ── A folha ──
+    auto* well = new QWidget(this);
+    well->setObjectName(QStringLiteral("exportWell"));
+    auto* wl = new QVBoxLayout(well);
+    wl->setContentsMargins(0, 0, 0, 16);
+    wl->setSpacing(10);
+    m_view = new ExportPreviewView(well);
+    m_view->emptyText = tr("Escolha o que vai sair.");
+    m_view->onStep = [this](int d) { stepPage(d); };
+    wl->addWidget(m_view, 1);
+    auto* nav = new QHBoxLayout;
+    nav->setSpacing(12);
+    nav->addStretch(1);
+    m_prevBtn = new QToolButton(well);
+    m_prevBtn->setObjectName(QStringLiteral("exportNavBtn"));
+    m_prevBtn->setText(QStringLiteral("‹"));
+    m_prevBtn->setCursor(Qt::PointingHandCursor);
+    m_prevBtn->setFixedSize(28, 28);
+    m_nextBtn = new QToolButton(well);
+    m_nextBtn->setObjectName(QStringLiteral("exportNavBtn"));
+    m_nextBtn->setText(QStringLiteral("›"));
+    m_nextBtn->setCursor(Qt::PointingHandCursor);
+    m_nextBtn->setFixedSize(28, 28);
+    m_navLabel = new QLabel(well);
+    m_navLabel->setObjectName(QStringLiteral("exportNavLabel"));
+    connect(m_prevBtn, &QToolButton::clicked, this, [this]() { stepPage(-1); });
+    connect(m_nextBtn, &QToolButton::clicked, this, [this]() { stepPage(1); });
+    nav->addWidget(m_prevBtn);
+    nav->addWidget(m_navLabel);
+    nav->addWidget(m_nextBtn);
+    nav->addStretch(1);
+    wl->addLayout(nav);
+    root->addWidget(well, 1);
+
+    // ── A coluna ──
+    auto* side = new QWidget(this);
+    side->setObjectName(QStringLiteral("exportSide"));
+    side->setFixedWidth(300);
+    auto* sl = new QVBoxLayout(side);
+    sl->setContentsMargins(0, 0, 0, 0);
+    sl->setSpacing(0);
+    root->addWidget(side);
+
+    auto* head = new QHBoxLayout;
+    head->setContentsMargins(20, 14, 12, 4);
+    auto* title = new QLabel(tr("Exportar"), side);
     title->setObjectName(QStringLiteral("exportTitle"));
-    auto* closeBtn = new QPushButton(QStringLiteral("✕"), header);
+    auto* closeBtn = new QPushButton(QStringLiteral("✕"), side);
     closeBtn->setObjectName(QStringLiteral("exportClose"));
     closeBtn->setCursor(Qt::PointingHandCursor);
     closeBtn->setFixedSize(26, 26);
     connect(closeBtn, &QPushButton::clicked, this, &QDialog::reject);
-    hl->addWidget(title);
-    hl->addStretch();
-    hl->addWidget(closeBtn);
-    root->addWidget(header);
+    head->addWidget(title);
+    head->addStretch(1);
+    head->addWidget(closeBtn);
+    sl->addLayout(head);
 
-    // ── Barra selecionar/desmarcar tudo ──
-    auto* selBar = new QWidget(this);
-    selBar->setObjectName(QStringLiteral("exportSelBar"));
-    auto* sl = new QHBoxLayout(selBar);
-    sl->setContentsMargins(18, 7, 18, 7);
-    sl->setSpacing(8);
-    auto* selectAll = new QPushButton(tr("Selecionar tudo"), selBar);
-    auto* deselectAll = new QPushButton(tr("Desmarcar tudo"), selBar);
-    selectAll->setObjectName(QStringLiteral("exportLink"));
-    deselectAll->setObjectName(QStringLiteral("exportLink"));
-    selectAll->setCursor(Qt::PointingHandCursor);
-    deselectAll->setCursor(Qt::PointingHandCursor);
-    auto* dot = new QLabel(QStringLiteral("·"), selBar);
-    dot->setObjectName(QStringLiteral("exportDot"));
-    m_countLabel = new QLabel(selBar);
-    m_countLabel->setObjectName(QStringLiteral("exportCount"));
-    connect(selectAll, &QPushButton::clicked, this, [this]() { setAllChecked(true); });
-    connect(deselectAll, &QPushButton::clicked, this, [this]() { setAllChecked(false); });
-    sl->addWidget(selectAll);
-    sl->addWidget(dot);
-    sl->addWidget(deselectAll);
-    sl->addStretch();
-    sl->addWidget(m_countLabel);
-    root->addWidget(selBar);
-
-    // ── Árvore ──
-    m_tree = new QTreeWidget(this);
-    m_tree->setObjectName(QStringLiteral("exportTree"));
-    m_tree->setHeaderHidden(true);
-    m_tree->setColumnCount(1);
-    m_tree->setIndentation(16);
-    m_tree->setRootIsDecorated(true);
-    m_tree->setUniformRowHeights(true);
-    connect(m_tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*, int) {
-        if (!m_building) recomputeCount();
-    });
-    root->addWidget(m_tree, /*stretch=*/1);
-
-    // ── Footer ──
-    auto* footer = new QWidget(this);
-    footer->setObjectName(QStringLiteral("exportFooter"));
-    auto* fl = new QVBoxLayout(footer);
-    fl->setContentsMargins(18, 12, 18, 14);
-    fl->setSpacing(10);
-
-    auto* note = new QLabel(
-        tr("Ao exportar capítulos, caso haja cenas com variações criadas, o app "
-           "exportará com a variação que estiver definida como primária."),
-        footer);
-    note->setObjectName(QStringLiteral("exportNote"));
-    note->setWordWrap(true);
-    fl->addWidget(note);
-
-    // Linha: formato
-    auto* fmtRow = new QHBoxLayout;
-    fmtRow->setSpacing(6);
-    auto* fmtLabel = new QLabel(tr("Formato:"), footer);
-    fmtLabel->setObjectName(QStringLiteral("exportFieldLabel"));
-    fmtRow->addWidget(fmtLabel);
-    // Roteiro: PDF, DOCX e Fountain na frente; ODT e EPUB no "Mais ▾" (no
-    // máximo 4 pílulas por linha). Livro segue com os quatro de sempre.
-    const bool screenplay = m_model && m_model->isScreenplay();
-    if (screenplay) m_format = QStringLiteral("pdf");
-    const QStringList formats = screenplay
-        ? QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("fountain") }
-        : QStringList{ QStringLiteral("odt"), QStringLiteral("pdf"), QStringLiteral("epub"), QStringLiteral("docx") };
-    auto selectFormat = [this](const QString& f) {
-        m_format = f;
-        for (QPushButton* btn : m_formatBtns) {
-            const QString bf = btn->property("fmt").toString();
-            if (bf == QLatin1String("more")) {
-                const bool inMore = (f == QLatin1String("odt") || f == QLatin1String("epub"));
-                btn->setChecked(inMore);
-                btn->setText((inMore ? f.toUpper() : tr("Mais")) + QStringLiteral(" \u25BE"));
-            } else {
-                btn->setChecked(bf == f);
-            }
+    bool firstGroup = true;
+    auto group = [&](const QString& caps) {
+        auto* g = new QWidget(side);
+        g->setObjectName(QStringLiteral("exportGroup"));
+        g->setProperty("first", firstGroup);
+        firstGroup = false;
+        auto* v = new QVBoxLayout(g);
+        v->setContentsMargins(20, 12, 20, 12);
+        v->setSpacing(8);
+        if (!caps.isEmpty()) {
+            auto* l = new QLabel(caps.toUpper(), g);
+            l->setObjectName(QStringLiteral("exportCaps"));
+            v->addWidget(l);
         }
-        refreshSubmissionAvailability();
+        sl->addWidget(g);
+        return v;
     };
-    for (const QString& f : formats) {
-        auto* b = new QPushButton(f == QLatin1String("fountain") ? QStringLiteral("Fountain") : f.toUpper(), footer);
-        b->setObjectName(QStringLiteral("exportFormat"));
+    auto tabsRow = [&](QWidget* parentW) {
+        auto* w = new QWidget(parentW);
+        w->setObjectName(QStringLiteral("exportTabs"));
+        auto* h = new QHBoxLayout(w);
+        h->setContentsMargins(2, 2, 2, 2);
+        h->setSpacing(2);
+        return std::make_pair(w, h);
+    };
+    auto tabBtn = [](const QString& text, QWidget* parentW) {
+        auto* b = new QPushButton(text, parentW);
+        b->setObjectName(QStringLiteral("exportTab"));
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
-        b->setProperty("fmt", f);
-        b->setEnabled(true);
-        b->setChecked(f == m_format);
-        connect(b, &QPushButton::clicked, this, [selectFormat, f]() { selectFormat(f); });
-        m_formatBtns.append(b);
-        fmtRow->addWidget(b);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        return b;
+    };
+    auto switchRow = [&](QWidget* parentW, const QString& text, QCheckBox*& sw, QLabel** labelOut = nullptr) {
+        auto* row = new QWidget(parentW);
+        auto* h = new QHBoxLayout(row);
+        h->setContentsMargins(0, 2, 0, 2);
+        auto* l = new QLabel(text, row);
+        l->setObjectName(QStringLiteral("exportRowLabel"));
+        sw = new Switch(row);
+        h->addWidget(l, 1);
+        h->addWidget(sw);
+        if (labelOut) *labelOut = l;
+        return row;
+    };
+
+    // Formato. Livro: os quatro. Roteiro: PDF, DOCX e Fountain na frente, ODT
+    // e EPUB no "Mais" (no máximo 4 por linha).
+    {
+        QVBoxLayout* v = group(tr("Formato"));
+        auto [w, h] = tabsRow(side);
+        const QStringList fronts = screenplay
+            ? QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("fountain") }
+            : QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("epub"), QStringLiteral("odt") };
+        for (const QString& f : fronts) {
+            auto* b = tabBtn(f == QLatin1String("fountain") ? QStringLiteral("Fountain") : f.toUpper(), w);
+            b->setProperty("fmt", f);
+            connect(b, &QPushButton::clicked, this, [this, f]() { selectFormat(f); });
+            m_formatBtns.append(b);
+            h->addWidget(b);
+        }
+        if (screenplay) {
+            auto* more = tabBtn(tr("Mais") + QStringLiteral(" ▾"), w);
+            more->setProperty("fmt", QStringLiteral("more"));
+            auto* menu = new QMenu(more);
+            for (const QString& f : { QStringLiteral("odt"), QStringLiteral("epub") })
+                menu->addAction(f.toUpper(), this, [this, f]() { selectFormat(f); });
+            connect(more, &QPushButton::clicked, this, [this, more, menu]() {
+                more->setChecked(m_format == QLatin1String("odt") || m_format == QLatin1String("epub"));
+                menu->popup(more->mapToGlobal(QPoint(0, more->height())));
+            });
+            m_formatBtns.append(more);
+            h->addWidget(more);
+        }
+        v->addWidget(w);
     }
-    if (screenplay) {
-        auto* more = new QPushButton(tr("Mais") + QStringLiteral(" \u25BE"), footer);
-        more->setObjectName(QStringLiteral("exportFormat"));
-        more->setCheckable(true);
-        more->setCursor(Qt::PointingHandCursor);
-        more->setProperty("fmt", QStringLiteral("more"));
-        auto* menu = new QMenu(more);
-        for (const QString& f : { QStringLiteral("odt"), QStringLiteral("epub") })
-            menu->addAction(f.toUpper(), this, [selectFormat, f]() { selectFormat(f); });
-        connect(more, &QPushButton::clicked, this, [this, more, menu]() {
-            more->setChecked(m_format == QLatin1String("odt") || m_format == QLatin1String("epub"));
-            menu->popup(more->mapToGlobal(QPoint(0, more->height())));
+
+    // O que vai: um seletor; a lista abre só quando pedida.
+    {
+        QVBoxLayout* v = group(tr("O que vai"));
+        m_pickBtn = new QPushButton(side);
+        m_pickBtn->setObjectName(QStringLiteral("exportPick"));
+        m_pickBtn->setCursor(Qt::PointingHandCursor);
+        m_pickBtn->setMinimumHeight(34);
+        auto* ph = new QHBoxLayout(m_pickBtn);
+        ph->setContentsMargins(10, 0, 10, 0);
+        m_pickText = new QLabel(m_pickBtn);
+        m_pickText->setObjectName(QStringLiteral("exportPickText"));
+        m_pickText->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_pickCaret = new QLabel(QStringLiteral("▾"), m_pickBtn);
+        m_pickCaret->setObjectName(QStringLiteral("exportPickCaret"));
+        m_pickCaret->setAttribute(Qt::WA_TransparentForMouseEvents);
+        ph->addWidget(m_pickText, 1);
+        ph->addWidget(m_pickCaret);
+        connect(m_pickBtn, &QPushButton::clicked, this, [this]() { setListOpen(!m_listOpen); });
+        v->addWidget(m_pickBtn);
+
+        m_listBox = new QWidget(side);
+        auto* lv = new QVBoxLayout(m_listBox);
+        lv->setContentsMargins(0, 0, 0, 0);
+        lv->setSpacing(4);
+        auto* links = new QHBoxLayout;
+        links->setSpacing(10);
+        auto* all = new QPushButton(tr("Tudo"), m_listBox);
+        auto* none = new QPushButton(tr("Nada"), m_listBox);
+        for (QPushButton* b : { all, none }) { b->setObjectName(QStringLiteral("exportLink")); b->setCursor(Qt::PointingHandCursor); }
+        connect(all, &QPushButton::clicked, this, [this]() { setAllChecked(true); });
+        connect(none, &QPushButton::clicked, this, [this]() { setAllChecked(false); });
+        m_countLabel = new QLabel(m_listBox);
+        m_countLabel->setObjectName(QStringLiteral("exportHint"));
+        links->addWidget(all);
+        links->addWidget(none);
+        links->addStretch(1);
+        links->addWidget(m_countLabel);
+        lv->addLayout(links);
+        m_tree = new QTreeWidget(m_listBox);
+        m_tree->setObjectName(QStringLiteral("exportTree"));
+        m_tree->setHeaderHidden(true);
+        m_tree->setColumnCount(1);
+        m_tree->setIndentation(14);
+        m_tree->setRootIsDecorated(false);
+        m_tree->setUniformRowHeights(true);
+        // Aberta, a lista ocupa o que sobra da coluna (setListOpen).
+        m_tree->setMinimumHeight(110);
+        m_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        connect(m_tree, &QTreeWidget::itemChanged, this, [this](QTreeWidgetItem*, int) {
+            if (!m_building) recomputeCount();
         });
-        m_formatBtns.append(more);
-        fmtRow->addWidget(more);
+        lv->addWidget(m_tree);
+        auto* note = new QLabel(tr("Cena com variações sai com a variação primária."), m_listBox);
+        note->setObjectName(QStringLiteral("exportHint"));
+        note->setWordWrap(true);
+        lv->addWidget(note);
+        m_listBox->hide();
+        v->addWidget(m_listBox, 1);
+        m_whatGroup = v->parentWidget();
     }
-    fmtRow->addStretch();
-    fl->addLayout(fmtRow);
 
-    // Linha: modo do manuscrito
-    auto* modeRow = new QHBoxLayout;
-    modeRow->setSpacing(8);
-    auto* modeLabel = new QLabel(tr("Manuscrito:"), footer);
-    modeLabel->setObjectName(QStringLiteral("exportFieldLabel"));
-    m_singleRadio = new QRadioButton(tr("Documento único"), footer);
-    m_separateRadio = new QRadioButton(tr("Capítulos separados"), footer);
-    m_singleRadio->setChecked(true);
-    auto* modeGroup = new QButtonGroup(this);
-    modeGroup->addButton(m_singleRadio);
-    modeGroup->addButton(m_separateRadio);
-    modeRow->addWidget(modeLabel);
-    modeRow->addWidget(m_singleRadio);
-    modeRow->addWidget(m_separateRadio);
-    modeRow->addStretch();
-    connect(m_separateRadio, &QRadioButton::toggled, this,
-            [this]() { refreshSubmissionAvailability(); });
-    fl->addLayout(modeRow);
+    // Manuscrito: um arquivo ou um por capítulo; marcadores.
+    {
+        QVBoxLayout* v = group(tr("Manuscrito"));
+        auto [w, h] = tabsRow(side);
+        m_singleBtn = tabBtn(tr("Um arquivo"), w);
+        m_separateBtn = tabBtn(tr("Um por capítulo"), w);
+        connect(m_singleBtn, &QPushButton::clicked, this, [this]() { setSingleDocument(true); });
+        connect(m_separateBtn, &QPushButton::clicked, this, [this]() { setSingleDocument(false); });
+        h->addWidget(m_singleBtn);
+        h->addWidget(m_separateBtn);
+        v->addWidget(w);
+        m_markersRow = switchRow(side, tr("Levar os marcadores"), m_markersSwitch);
+        m_markersSwitch->setChecked(true);
+        m_markersSwitch->setToolTip(tr("Os trechos marcados no texto saem grifados no arquivo."));
+        connect(m_markersSwitch, &QCheckBox::toggled, this, [this]() { refreshSummary(); schedulePreview(); });
+        v->addWidget(m_markersRow);
+    }
 
-    // Linha: marcadores (marca-texto) no documento exportado
-    auto* markersRow = new QHBoxLayout;
-    markersRow->setSpacing(8);
-    auto* markersLabel = new QLabel(tr("Marcadores:"), footer);
-    markersLabel->setObjectName(QStringLiteral("exportFieldLabel"));
-    m_markersIncludeRadio = new QRadioButton(tr("Incluir"), footer);
-    m_markersRemoveRadio = new QRadioButton(tr("Remover"), footer);
-    m_markersIncludeRadio->setChecked(true);
-    auto* markersGroup = new QButtonGroup(this);
-    markersGroup->addButton(m_markersIncludeRadio);
-    markersGroup->addButton(m_markersRemoveRadio);
-    markersRow->addWidget(markersLabel);
-    markersRow->addWidget(m_markersIncludeRadio);
-    markersRow->addWidget(m_markersRemoveRadio);
-    markersRow->addStretch();
-    fl->addLayout(markersRow);
+    // Formato de editora (livro) ou numerar as cenas (roteiro).
+    {
+        QVBoxLayout* v = group(QString());
+        m_editorGroup = v->parentWidget();
+        v->addWidget(switchRow(side, screenplay ? tr("Numerar as cenas") : tr("Formato de editora (Shunn)"),
+                               m_editorSwitch, &m_editorLabel));
+        m_editorSwitch->setToolTip(screenplay
+            ? tr("Número de cada cena nas margens, como no roteiro de filmagem. A numeração segue a ordem do roteiro inteiro.")
+            : tr("Formato que editoras e revistas esperam receber (padrão Shunn): Courier 12, entrelinha dupla, "
+                 "margens de 1 polegada, página de rosto com contato e contagem de palavras, cabeçalho corrido "
+                 "e \"#\" como quebra de cena."));
+        connect(m_editorSwitch, &QCheckBox::toggled, this, [this]() { m_page = 0; refreshOptions(); schedulePreview(); });
+        m_editorHint = new QLabel(side);
+        m_editorHint->setObjectName(QStringLiteral("exportHint"));
+        m_editorHint->setWordWrap(true);
+        v->addWidget(m_editorHint);
+        m_authorBtn = new QPushButton(tr("Dados do autor…"), side);
+        m_authorBtn->setObjectName(QStringLiteral("exportLink"));
+        m_authorBtn->setCursor(Qt::PointingHandCursor);
+        connect(m_authorBtn, &QPushButton::clicked, this, &ExportPanel::editSubmissionData);
+        auto* ab = new QHBoxLayout;
+        ab->addWidget(m_authorBtn);
+        ab->addStretch(1);
+        v->addLayout(ab);
+    }
 
-    // Linha: formato de submissão (padrão Shunn)
-    auto* subRow = new QHBoxLayout;
-    subRow->setSpacing(8);
-    m_submissionCheck = new QCheckBox(tr("Manuscrito para submissão"), footer);
-    m_submissionCheck->setToolTip(tr(
-        "Formato que editoras e revistas esperam receber (padrão Shunn): "
-        "Courier 12, entrelinha dupla, margens de 1 polegada, página de rosto "
-        "com contato e contagem de palavras, cabeçalho corrido e \"#\" como "
-        "quebra de cena."));
-    m_submissionDataBtn = new QPushButton(tr("Dados do autor..."), footer);
-    m_submissionDataBtn->setObjectName(QStringLiteral("exportCancel"));
-    m_submissionDataBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_submissionDataBtn, &QPushButton::clicked, this, &ExportPanel::editSubmissionData);
-    m_submissionHint = new QLabel(footer);
-    m_submissionHint->setObjectName(QStringLiteral("exportFieldLabel"));
-    m_submissionHint->setWordWrap(true);
-    subRow->addWidget(m_submissionCheck);
-    m_sceneNumbersCheck = new QCheckBox(tr("Numerar as cenas"), footer);
-    m_sceneNumbersCheck->setToolTip(tr(
-        "Número de cada cena nas margens, como no roteiro de filmagem. "
-        "A numeração segue a ordem do roteiro inteiro."));
-    m_sceneNumbersCheck->setVisible(false);
-    subRow->addWidget(m_sceneNumbersCheck);
-    subRow->addWidget(m_submissionDataBtn);
-    subRow->addWidget(m_submissionHint, 1);
-    fl->addLayout(subRow);
+    sl->addStretch(1);
+    m_sideLayout = sl;
 
-    m_submission = Exporter::SubmissionInfo::load();
-    // Byline em branco cai no autor do projeto: quem já preencheu os dados do
-    // projeto não precisa redigitar.
-    if (m_submission.byline.trimmed().isEmpty() && m_model)
-        m_submission.byline = m_model->projectAuthor();
-    connect(m_submissionCheck, &QCheckBox::toggled, this,
-            [this]() { refreshSubmissionAvailability(); });
-
-    // Linha: botões
-    auto* btnRow = new QHBoxLayout;
-    // Bíblia do universo à esquerda, separada dos botões da exportação comum:
-    // não depende da árvore de seleção acima.
-    m_bibleBtn = new QPushButton(tr("Bíblia do universo..."), footer);
-    m_bibleBtn->setObjectName(QStringLiteral("exportCancel"));
+    // ── O pé: o que vai sair e o Exportar ──
+    auto* end = new QWidget(side);
+    end->setObjectName(QStringLiteral("exportEnd"));
+    auto* ev = new QVBoxLayout(end);
+    ev->setContentsMargins(20, 14, 20, 16);
+    ev->setSpacing(10);
+    m_summary = new QLabel(end);
+    m_summary->setObjectName(QStringLiteral("exportSummary"));
+    m_summary->setWordWrap(true);
+    m_summary->setTextFormat(Qt::RichText);
+    ev->addWidget(m_summary);
+    auto* btns = new QHBoxLayout;
+    btns->setSpacing(8);
+    auto* cancel = new QPushButton(tr("Cancelar"), end);
+    cancel->setObjectName(QStringLiteral("exportCancel"));
+    cancel->setCursor(Qt::PointingHandCursor);
+    m_exportBtn = new QPushButton(tr("Exportar"), end);
+    m_exportBtn->setObjectName(QStringLiteral("exportConfirm"));
+    m_exportBtn->setCursor(Qt::PointingHandCursor);
+    m_exportBtn->setDefault(true);
+    connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
+    connect(m_exportBtn, &QPushButton::clicked, this, &ExportPanel::onExportClicked);
+    btns->addWidget(cancel);
+    btns->addWidget(m_exportBtn, 1);
+    ev->addLayout(btns);
+    m_bibleBtn = new QPushButton(tr("Exportar a bíblia do universo…"), end);
+    m_bibleBtn->setObjectName(QStringLiteral("exportLink"));
     m_bibleBtn->setCursor(Qt::PointingHandCursor);
-    m_bibleBtn->setToolTip(tr(
-        "Um documento só com gavetas, fichas, vínculos, glossário, territórios, "
-        "sistemas do mundo e locais do mapa — para quem precisa consultar o "
-        "universo sem abrir o app."));
     connect(m_bibleBtn, &QPushButton::clicked, this, [this]() {
         // Fecha antes de emitir: quem ouve abre progresso e diálogo de salvar,
         // e empilhar isso por cima deste modal fica confuso.
@@ -251,101 +463,138 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
         accept();
         emit bibleRequested(fmt);
     });
-    btnRow->addWidget(m_bibleBtn);
-    btnRow->addStretch();
-    auto* cancel = new QPushButton(tr("Cancelar"), footer);
-    cancel->setObjectName(QStringLiteral("exportCancel"));
-    cancel->setCursor(Qt::PointingHandCursor);
-    m_previewBtn = new QPushButton(tr("Pré-visualizar"), footer);
-    m_previewBtn->setObjectName(QStringLiteral("exportPreview"));
-    m_previewBtn->setCursor(Qt::PointingHandCursor);
-    m_exportBtn = new QPushButton(tr("Exportar"), footer);
-    m_exportBtn->setObjectName(QStringLiteral("exportConfirm"));
-    m_exportBtn->setCursor(Qt::PointingHandCursor);
-    connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
-    connect(m_previewBtn, &QPushButton::clicked, this, [this]() {
-        const QString solo = soloManuscriptOfSelection();
-        if (!solo.isEmpty()) emit previewRequested(solo);
-    });
-    connect(m_exportBtn, &QPushButton::clicked, this, &ExportPanel::onExportClicked);
-    btnRow->addWidget(cancel);
-    btnRow->addWidget(m_previewBtn);
-    btnRow->addWidget(m_exportBtn);
-    fl->addLayout(btnRow);
+    auto* bb = new QHBoxLayout;
+    bb->addWidget(m_bibleBtn);
+    bb->addStretch(1);
+    ev->addLayout(bb);
+    sl->addWidget(end);
 
-    root->addWidget(footer);
+    m_submission = Exporter::SubmissionInfo::load();
+    // Byline em branco cai no autor do projeto: quem já preencheu os dados do
+    // projeto não precisa redigitar.
+    if (m_submission.byline.trimmed().isEmpty() && m_model)
+        m_submission.byline = m_model->projectAuthor();
+
+    m_previewTimer = new QTimer(this);
+    m_previewTimer->setSingleShot(true);
+    m_previewTimer->setInterval(120);
+    connect(m_previewTimer, &QTimer::timeout, this, &ExportPanel::rebuildPreview);
 
     buildTree();
     applyTheme();
+    selectFormat(m_format);
+    setSingleDocument(true);
     recomputeCount();
-    refreshSubmissionAvailability();
+}
+
+ExportPanel::~ExportPanel() = default;
+
+void ExportPanel::setPreviewSource(const QString& projectRoot, const Exporter::DocStyle& style) {
+    m_exporter = std::make_unique<Exporter>(m_model, projectRoot, style);
+    refreshSummary();   // as palavras (chapterWords) chegam junto com a fonte
+    schedulePreview();
 }
 
 Exporter::Format ExportPanel::currentFormat() const {
-    if (m_format == QStringLiteral("pdf"))  return Exporter::Format::Pdf;
-    if (m_format == QStringLiteral("epub")) return Exporter::Format::Epub;
-    if (m_format == QStringLiteral("docx")) return Exporter::Format::Docx;
-    if (m_format == QStringLiteral("fountain")) return Exporter::Format::Fountain;
+    if (m_format == QLatin1String("pdf"))  return Exporter::Format::Pdf;
+    if (m_format == QLatin1String("epub")) return Exporter::Format::Epub;
+    if (m_format == QLatin1String("docx")) return Exporter::Format::Docx;
+    if (m_format == QLatin1String("fountain")) return Exporter::Format::Fountain;
     return Exporter::Format::Odt;
 }
 
-void ExportPanel::refreshSubmissionAvailability() {
-    const bool paged = (m_format != QStringLiteral("epub"));
-    const bool fountain = (m_format == QStringLiteral("fountain"));
-    // A bíblia sai só em formato de página (o writer de EPUB é construído em
-    // torno de capítulos do manuscrito). Mesma regra de disponibilidade.
+void ExportPanel::selectFormat(const QString& f) {
+    const bool screenplay = m_model && m_model->isScreenplay();
+    const QStringList valid = screenplay
+        ? QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("fountain"), QStringLiteral("odt"), QStringLiteral("epub") }
+        : QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("epub"), QStringLiteral("odt") };
+    m_format = valid.contains(f) ? f : QStringLiteral("pdf");
+    QSettings().setValue(QStringLiteral("ui/exportFormat"), m_format);
+    for (QPushButton* b : std::as_const(m_formatBtns)) {
+        const QString bf = b->property("fmt").toString();
+        if (bf == QLatin1String("more")) {
+            const bool inMore = (m_format == QLatin1String("odt") || m_format == QLatin1String("epub"));
+            b->setChecked(inMore);
+            b->setText((inMore ? m_format.toUpper() : tr("Mais")) + QStringLiteral(" ▾"));
+        } else {
+            b->setChecked(bf == m_format);
+        }
+    }
+    m_page = 0;
+    refreshOptions();
+    recomputeCount();
+}
+
+void ExportPanel::setSingleDocument(bool single) {
+    m_single = single;
+    if (m_singleBtn) m_singleBtn->setChecked(single);
+    if (m_separateBtn) m_separateBtn->setChecked(!single);
+    m_page = 0;
+    refreshOptions();
+    refreshSummary();
+    schedulePreview();
+}
+
+void ExportPanel::refreshOptions() {
+    const bool screenplay = m_model && m_model->isScreenplay();
+    const bool paged = (m_format != QLatin1String("epub"));
+    const bool fountain = (m_format == QLatin1String("fountain"));
+
+    // EPUB sai sempre num arquivo só; Fountain não leva marcador.
+    if (m_singleBtn) m_singleBtn->setEnabled(paged);
+    if (m_separateBtn) m_separateBtn->setEnabled(paged);
+    if (m_markersSwitch) m_markersSwitch->setEnabled(!fountain);
     if (m_bibleBtn) {
         m_bibleBtn->setEnabled(paged && !fountain);
-        m_bibleBtn->setToolTip(paged
-            ? tr("Um documento só com gavetas, fichas, vínculos, glossário, territórios, "
-                 "sistemas do mundo e locais do mapa — para quem precisa consultar o "
-                 "universo sem abrir o app.")
+        m_bibleBtn->setToolTip(paged && !fountain
+            ? tr("Um documento só com gavetas, fichas, vínculos, glossário, territórios, sistemas do mundo "
+                 "e locais do mapa, pra quem precisa consultar o universo sem abrir o app.")
             : tr("A bíblia do universo sai em PDF, DOCX ou ODT."));
     }
-    if (!m_submissionCheck) return;
-    // Roteiro sai sempre no formato de roteiro; o Shunn é de prosa. Os dados do
-    // autor continuam valendo: são o contato da página de rosto.
-    if (m_model && m_model->isScreenplay()) {
-        m_submissionCheck->setChecked(false);
-        m_submissionCheck->setVisible(false);
-        if (m_sceneNumbersCheck) m_sceneNumbersCheck->setVisible(paged);
-        if (m_submissionDataBtn) m_submissionDataBtn->setVisible(paged);
-        if (m_submissionHint)
-            m_submissionHint->setText(fountain
-                ? tr("Fountain é o roteiro em texto puro, que abre em outros programas "
-                     "de roteiro. Leva só o manuscrito; as gavetas ficam de fora.")
-                : paged
-                ? tr("Roteiro sai no formato da indústria: Courier 12, página Carta, "
-                     "página de rosto e número de página. O contato da página de "
-                     "rosto vem dos dados do autor.")
-                : QString());
+
+    if (screenplay) {
+        const bool on = paged && !fountain;
+        m_editorGroup->setVisible(true);
+        m_editorSwitch->setEnabled(on);
+        if (!on) { const QSignalBlocker b(m_editorSwitch); m_editorSwitch->setChecked(false); }
+        m_authorBtn->setVisible(paged);
+        m_editorHint->setText(fountain
+            ? tr("Fountain é o roteiro em texto puro, que abre em outros programas de roteiro. Leva só o "
+                 "manuscrito; as gavetas ficam de fora.")
+            : paged
+            ? tr("Roteiro sai no formato da indústria: Courier 12, página Carta, página de rosto e número de "
+                 "página. O contato da página de rosto vem dos dados do autor.")
+            : QString());
+        m_editorHint->setVisible(!m_editorHint->text().isEmpty());
         return;
     }
-    const bool single = !m_separateRadio || !m_separateRadio->isChecked();
-    const bool usable = paged && single;
 
-    m_submissionCheck->setEnabled(usable);
-    if (!usable) m_submissionCheck->setChecked(false);
-    const bool on = m_submissionCheck->isChecked();
-    if (m_submissionDataBtn) m_submissionDataBtn->setVisible(on);
-
+    const bool usable = paged && m_single;
+    m_editorSwitch->setEnabled(usable);
+    if (!usable) { const QSignalBlocker b(m_editorSwitch); m_editorSwitch->setChecked(false); }
+    const bool on = m_editorSwitch->isChecked();
+    m_authorBtn->setVisible(on);
     QString hint;
+    bool warn = false;
     if (!paged)
-        hint = tr("Não se aplica ao EPUB: o texto reflui, não tem página fixa.");
-    else if (!single)
-        hint = tr("Exige \"Documento único\" — o formato numera as páginas do "
-                  "manuscrito inteiro.");
-    else if (on && m_format == QStringLiteral("odt"))
-        hint = tr("Em ODT o cabeçalho corrido não sai; use DOCX ou PDF para "
-                  "enviar de verdade.");
+        hint = tr("Não vale no EPUB: o texto reflui, não tem página fixa.");
+    else if (!m_single)
+        hint = tr("Pede um arquivo só: as páginas são numeradas do manuscrito inteiro.");
+    else if (on && m_format == QLatin1String("odt"))
+        { hint = tr("Em ODT o cabeçalho corrido não sai; pra mandar de verdade, use DOCX ou PDF."); warn = true; }
     else if (on && m_submission.legalName.trimmed().isEmpty())
-        hint = tr("Falta preencher os dados do autor.");
-    if (m_submissionHint) m_submissionHint->setText(hint);
+        { hint = tr("Falta preencher os dados do autor."); warn = true; }
+    else
+        hint = tr("Courier, entrelinha dupla e página de rosto com seu contato.");
+    m_editorHint->setText(hint);
+    m_editorHint->setProperty("warn", warn);
+    m_editorHint->style()->unpolish(m_editorHint);
+    m_editorHint->style()->polish(m_editorHint);
 }
 
 void ExportPanel::editSubmissionData() {
     QDialog dlg(this);
-    dlg.setWindowTitle(tr("Dados para submissão"));
+    dlg.setWindowTitle(tr("Dados do autor"));
     auto* form = new QFormLayout(&dlg);
 
     auto* legal = new QLineEdit(m_submission.legalName, &dlg);
@@ -380,7 +629,8 @@ void ExportPanel::editSubmissionData() {
     // Grava na hora: é dado do AUTOR, não do projeto — quem preenche uma vez
     // não deveria digitar de novo no livro seguinte.
     m_submission.save();
-    refreshSubmissionAvailability();
+    refreshOptions();
+    schedulePreview();
 }
 
 void ExportPanel::buildTree() {
@@ -396,32 +646,28 @@ void ExportPanel::buildTree() {
         it->setFlags(Qt::ItemIsEnabled);
         QFont f = it->font(0);
         f.setBold(true);
-        f.setPointSizeF(f.pointSizeF() - 1.0);
+        f.setPointSizeF(f.pointSizeF() - 1.5);
         it->setFont(0, f);
         it->setForeground(0, QColor(Theme::textMuted()));
     };
 
-    // ── Manuscritos ──
+    // Já vem marcado o primeiro manuscrito inteiro: a folha abre mostrando o
+    // livro, e quem quer outra coisa desmarca.
+    bool preselected = false;
+
     auto* msHeader = new QTreeWidgetItem(m_tree);
     msHeader->setText(0, tr("MANUSCRITOS"));
     styleHeader(msHeader);
-
     for (const Manuscript& ms : m_model->manuscripts()) {
-        QList<const Chapter*> chaps;
-        for (const Chapter& ch : m_model->chapters()) {
-            const QString msId = ch.manuscriptId.isEmpty() ? ms.id : ch.manuscriptId;
-            if (msId == ms.id) chaps.append(&ch);
-        }
+        const QList<const Chapter*> chaps = m_model->orderedChaptersForManuscript(ms.id);
         if (chaps.isEmpty()) continue;
-        std::sort(chaps.begin(), chaps.end(),
-                  [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
-
+        const bool pick = !preselected;
+        preselected = true;
         auto* msItem = new QTreeWidgetItem(msHeader);
         msItem->setText(0, ms.title.isEmpty() ? tr("Manuscrito") : ms.title);
         msItem->setData(0, KindRole, KindGroup);
         msItem->setFlags(groupFlags);
-        msItem->setCheckState(0, Qt::Unchecked);
-
+        msItem->setCheckState(0, pick ? Qt::Checked : Qt::Unchecked);
         for (int ci = 0; ci < chaps.size(); ++ci) {
             const Chapter* ch = chaps.at(ci);
             auto* c = new QTreeWidgetItem(msItem);
@@ -429,9 +675,10 @@ void ExportPanel::buildTree() {
             c->setText(0, QStringLiteral("%1  %2").arg(num,
                 ch->title.isEmpty() ? m_model->chapterDisplayLabel(*ch) : ch->title));
             c->setData(0, IdRole, ch->id);
+            c->setData(0, MsRole, ms.id);
             c->setData(0, KindRole, KindChapter);
             c->setFlags(leafFlags);
-            c->setCheckState(0, Qt::Unchecked);
+            c->setCheckState(0, pick ? Qt::Checked : Qt::Unchecked);
             ++m_totalLeaves;
         }
         msItem->setExpanded(true);
@@ -439,12 +686,9 @@ void ExportPanel::buildTree() {
     if (msHeader->childCount() == 0) delete msHeader;
     else msHeader->setExpanded(true);
 
-    // ── Gavetas ──
     auto* gvHeader = new QTreeWidgetItem(m_tree);
     gvHeader->setText(0, tr("GAVETAS"));
     styleHeader(gvHeader);
-
-    // Adiciona itens/pastas de uma pasta; retorna nº de folhas adicionadas abaixo.
     std::function<int(QTreeWidgetItem*, const Drawer&, const QString&)> addFolder =
         [&](QTreeWidgetItem* node, const Drawer& d, const QString& folderId) -> int {
             int leaves = 0;
@@ -468,11 +712,10 @@ void ExportPanel::buildTree() {
                 sub->setCheckState(0, Qt::Unchecked);
                 const int childLeaves = addFolder(sub, d, f.id);
                 if (childLeaves == 0) { delete sub; }
-                else { sub->setExpanded(true); leaves += childLeaves; }
+                else { sub->setExpanded(false); leaves += childLeaves; }
             }
             return leaves;
         };
-
     for (const Drawer& d : m_model->drawers()) {
         auto* dItem = new QTreeWidgetItem(gvHeader);
         dItem->setText(0, d.title);
@@ -481,10 +724,11 @@ void ExportPanel::buildTree() {
         dItem->setCheckState(0, Qt::Unchecked);
         const int leaves = addFolder(dItem, d, QString());
         if (leaves == 0) delete dItem;
-        else dItem->setExpanded(true);
+        else dItem->setExpanded(false);
     }
     if (gvHeader->childCount() == 0) delete gvHeader;
     else gvHeader->setExpanded(true);
+    m_tree->setRootIsDecorated(true);
 
     m_building = false;
 }
@@ -502,71 +746,146 @@ void ExportPanel::setAllChecked(bool checked) {
     recomputeCount();
 }
 
+int ExportPanel::selectedWords(QString* firstMs, int* firstMsWords) const {
+    int total = 0, first = 0;
+    QString firstId;
+    QTreeWidgetItemIterator it(m_tree);
+    while (*it) {
+        if ((*it)->data(0, KindRole).toInt() == KindChapter && (*it)->checkState(0) == Qt::Checked) {
+            const int w = chapterWords ? chapterWords((*it)->data(0, IdRole).toString()) : 0;
+            total += w;
+            const QString ms = (*it)->data(0, MsRole).toString();
+            if (firstId.isEmpty()) firstId = ms;
+            if (ms == firstId) first += w;
+        }
+        ++it;
+    }
+    if (firstMs) *firstMs = firstId;
+    if (firstMsWords) *firstMsWords = first;
+    return total;
+}
+
 void ExportPanel::recomputeCount() {
     int selected = 0;
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {
         const int kind = (*it)->data(0, KindRole).toInt();
-        if ((kind == KindChapter || kind == KindItem) && (*it)->checkState(0) == Qt::Checked)
-            ++selected;
+        if ((kind == KindChapter || kind == KindItem) && (*it)->checkState(0) == Qt::Checked) ++selected;
         ++it;
     }
-    if (m_countLabel)
-        m_countLabel->setText(QStringLiteral("%1 / %2").arg(selected).arg(m_totalLeaves));
-    if (m_exportBtn) {
-        m_exportBtn->setEnabled(selected > 0);
-        m_exportBtn->setText(selected > 0
-            ? tr("Exportar (%1)").arg(selected)
-            : tr("Exportar"));
-    }
-    if (m_previewBtn) {
-        const bool solo = !soloManuscriptOfSelection().isEmpty();
-        m_previewBtn->setEnabled(solo);
-        m_previewBtn->setToolTip(solo ? QString()
-            : tr("Selecione capítulos de um único manuscrito para pré-visualizar"));
-    }
+    if (m_countLabel) m_countLabel->setText(QStringLiteral("%1 / %2").arg(selected).arg(m_totalLeaves));
+    m_page = 0;
+    refreshPickLabel();
+    refreshSummary();
+    schedulePreview();
 }
 
-QString ExportPanel::soloManuscriptOfSelection() const {
-    QString found;
+void ExportPanel::setListOpen(bool open) {
+    m_listOpen = open;
+    if (m_listBox) m_listBox->setVisible(open);
+    // Aberta, o grupo "O que vai" leva o espaço livre da coluna; fechada, o
+    // vão volta pra baixo das opções.
+    if (m_sideLayout && m_whatGroup) {
+        m_sideLayout->setStretchFactor(m_whatGroup, open ? 1 : 0);
+        const int spacer = m_sideLayout->count() - 2;   // o vão antes do pé
+        if (spacer >= 0) m_sideLayout->setStretch(spacer, open ? 0 : 1);
+    }
+    if (m_pickCaret) m_pickCaret->setText(open ? QStringLiteral("▴") : QStringLiteral("▾"));
+}
+
+void ExportPanel::refreshPickLabel() {
+    if (!m_pickText) return;
+    const Exporter::Selection sel = currentSelection();
+    const bool fountain = (m_format == QLatin1String("fountain"));
+    const int items = fountain ? 0 : sel.itemIds.size();
+    const int chs = sel.chapterIds.size();
+    QString text;
+    // O manuscrito inteiro e nada mais: diz o nome.
+    if (chs > 0 && items == 0) {
+        QSet<QString> ms;
+        for (const QString& id : sel.chapterIds) if (const Chapter* c = m_model->findChapter(id)) ms.insert(c->manuscriptId);
+        if (ms.size() == 1) {
+            const QString msId = *ms.begin();
+            if (m_model->orderedChaptersForManuscript(msId).size() == chs) {
+                const QString t = m_model->manuscriptEffectiveTitle(msId);
+                // Sem concordância com o título ("A Motorista inteiro" soava errado).
+                text = tr("%1 (manuscrito)").arg(t.isEmpty() ? tr("Manuscrito") : t);
+            }
+        }
+    }
+    if (text.isEmpty()) {
+        QStringList parts;
+        if (chs) parts << (chs == 1 ? tr("1 capítulo") : tr("%1 capítulos").arg(chs));
+        if (items) parts << (items == 1 ? tr("1 de gaveta") : tr("%1 de gaveta").arg(items));
+        text = parts.isEmpty() ? tr("Nada escolhido") : parts.join(QStringLiteral(" + "));
+    }
+    m_pickText->setText(text);
+}
+
+void ExportPanel::refreshSummary() {
+    if (!m_summary) return;
+    const Exporter::Selection sel = currentSelection();
+    const bool fountain = (m_format == QLatin1String("fountain"));
+    const bool epub = (m_format == QLatin1String("epub"));
+    const int items = fountain ? 0 : sel.itemIds.size();
+    QSet<QString> ms;
+    QString firstMs;
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {
         if ((*it)->data(0, KindRole).toInt() == KindChapter && (*it)->checkState(0) == Qt::Checked) {
-            const Chapter* ch = m_model->findChapter((*it)->data(0, IdRole).toString());
-            if (!ch) { ++it; continue; }
-            QString msId = ch->manuscriptId;
-            if (msId.isEmpty()) {
-                // Projeto de manuscrito único legado: só existe um manuscrito
-                // possível pra herdar (não há ambiguidade real nesse caso).
-                const auto& all = m_model->manuscripts();
-                if (all.size() == 1) msId = all.first().id;
-            }
-            if (msId.isEmpty()) { ++it; continue; }
-            if (found.isEmpty()) found = msId;
-            else if (found != msId) return QString();
+            const QString id = (*it)->data(0, MsRole).toString();
+            if (firstMs.isEmpty()) firstMs = id;
+            ms.insert(id);
         }
         ++it;
     }
-    return found;
+    const int chs = sel.chapterIds.size();
+    const int files = epub ? ((chs || items) ? 1 : 0) : (m_single ? ms.size() : chs) + items;
+    if (m_exportBtn) m_exportBtn->setEnabled(files > 0);
+    if (files == 0) { m_summary->setText(tr("Nada escolhido ainda.")); return; }
+
+    const QString ext = fountain ? QStringLiteral("fountain") : m_format;
+    QString line1;
+    if (files == 1) {
+        QString name;
+        if (chs) {
+            name = m_model->manuscriptEffectiveTitle(firstMs);
+            if (name.isEmpty()) name = tr("Manuscrito");
+        } else {
+            for (const Drawer& d : m_model->drawers())
+                for (const DrawerItem& di : d.items)
+                    if (name.isEmpty() && sel.itemIds.contains(di.id)) name = di.title;
+            if (name.isEmpty()) name = tr("Documento");
+        }
+        line1 = tr("Sai %1").arg(QStringLiteral("<b>%1.%2</b>").arg(name.toHtmlEscaped(), ext));
+    } else {
+        line1 = tr("Saem %1 num .zip").arg(QStringLiteral("<b>%1</b>")
+            .arg(tr("%1 arquivos %2").arg(files).arg(fountain ? QStringLiteral("Fountain") : m_format.toUpper())));
+    }
+    QStringList parts;
+    const int words = selectedWords();
+    if (chs) {
+        QString c = chs == 1 ? tr("1 capítulo") : tr("%1 capítulos").arg(chs);
+        if (words > 0) c += QStringLiteral(" · ") + tr("%1 palavras").arg(QLocale().toString(words));
+        parts << c;
+    }
+    if (items) parts << (items == 1 ? tr("1 de gaveta") : tr("%1 de gaveta").arg(items));
+    QString line2 = parts.join(QStringLiteral(" + "));
+    if (!fountain && m_markersSwitch && !m_markersSwitch->isChecked()) line2 += QStringLiteral(" · ") + tr("sem marcadores");
+    m_summary->setText(line1 + QStringLiteral("<br>") + line2.toHtmlEscaped());
 }
 
-void ExportPanel::onExportClicked() {
+Exporter::Selection ExportPanel::currentSelection() const {
     Exporter::Selection sel;
-    sel.format = (m_format == QStringLiteral("pdf")) ? Exporter::Format::Pdf
-               : (m_format == QStringLiteral("epub")) ? Exporter::Format::Epub
-               : (m_format == QStringLiteral("docx")) ? Exporter::Format::Docx
-               : (m_format == QStringLiteral("fountain")) ? Exporter::Format::Fountain
-               : Exporter::Format::Odt;
-    sel.manuscriptMode = (m_singleRadio && m_singleRadio->isChecked())
-        ? Exporter::ManuscriptMode::SingleDocument
-        : Exporter::ManuscriptMode::SeparateChapters;
-    sel.includeMarkers = !m_markersRemoveRadio || !m_markersRemoveRadio->isChecked();
-    sel.submissionFormat = m_submissionCheck && m_submissionCheck->isChecked()
-                           && m_submissionCheck->isEnabled();
+    sel.format = currentFormat();
+    sel.manuscriptMode = m_single ? Exporter::ManuscriptMode::SingleDocument
+                                  : Exporter::ManuscriptMode::SeparateChapters;
+    sel.includeMarkers = !m_markersSwitch || m_markersSwitch->isChecked();
+    const bool screenplay = m_model && m_model->isScreenplay();
+    const bool switchOn = m_editorSwitch && m_editorSwitch->isChecked() && m_editorSwitch->isEnabled();
+    sel.submissionFormat = !screenplay && switchOn;
+    sel.sceneNumbers = screenplay && switchOn;
     sel.submission = m_submission;
-    sel.sceneNumbers = m_sceneNumbersCheck && m_sceneNumbersCheck->isVisible()
-                       && m_sceneNumbersCheck->isChecked();
-
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {
         if ((*it)->checkState(0) == Qt::Checked) {
@@ -577,10 +896,60 @@ void ExportPanel::onExportClicked() {
         }
         ++it;
     }
+    return sel;
+}
 
+void ExportPanel::onExportClicked() {
+    const Exporter::Selection sel = currentSelection();
     if (sel.chapterIds.isEmpty() && sel.itemIds.isEmpty()) return;
     emit exportRequested(sel);
     accept();
+}
+
+// ============================================================ Prévia
+
+void ExportPanel::schedulePreview() {
+    if (m_previewTimer) m_previewTimer->start();
+}
+
+void ExportPanel::rebuildPreview() {
+    if (!m_exporter) { m_preview = Exporter::PagePreview(); m_view->setPage(nullptr, 0); refreshNav(); return; }
+    int firstWords = 0;
+    selectedWords(nullptr, &firstWords);
+    m_preview = m_exporter->buildPagePreview(currentSelection(), firstWords);
+    m_page = qBound(0, m_page, qMax(0, m_preview.pages - 1));
+    m_view->setPage(&m_preview, m_page);
+    refreshNav();
+}
+
+void ExportPanel::stepPage(int delta) {
+    if (m_preview.isEmpty()) return;
+    m_page = qBound(0, m_page + delta, m_preview.pages - 1);
+    m_view->setPage(&m_preview, m_page);
+    refreshNav();
+}
+
+void ExportPanel::refreshNav() {
+    const bool has = !m_preview.isEmpty();
+    m_prevBtn->setVisible(has);
+    m_nextBtn->setVisible(has);
+    m_navLabel->setVisible(has);
+    if (!has) return;
+    m_prevBtn->setEnabled(m_page > 0);
+    m_nextBtn->setEnabled(m_page < m_preview.pages - 1);
+    using K = Exporter::PagePreview;
+    QString t;
+    if (m_preview.kind == K::Reader)
+        t = tr("Tela %1 · o texto se ajusta ao Kindle ou ao celular").arg(m_page + 1);
+    else if (m_preview.kind == K::PlainText)
+        t = tr("Texto puro, abre em outros programas de roteiro");
+    else if (m_preview.titlePage && m_page == 0)
+        t = tr("Página de rosto");
+    else if (m_preview.estimatedTotal > m_preview.pages)
+        t = tr("Página %1 de ~%2").arg(m_page + 1).arg(QLocale().toString(m_preview.estimatedTotal));
+    else
+        t = tr("Página %1 de %2").arg(m_page + 1).arg(m_preview.estimatedTotal);
+    m_navLabel->setText(t);
 }
 
 void ExportPanel::applyTheme() {
@@ -594,63 +963,72 @@ void ExportPanel::applyTheme() {
     const QString hover     = Theme::hoverOverlay();
     const QString hoverStr  = Theme::hoverStrong();
     const QString accent    = Theme::accentDefault();
+    const QString well      = wellColor().name();
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         #exportPanel { background-color: %1; }
+        #exportPanel #exportWell { background: %11; }
+        #exportPanel #exportSide { background: %1; border-left: 1px solid %7; }
         #exportPanel QLabel { color: %4; font-size: 13px; }
-        #exportPanel QLabel#exportTitle { color: %6; font-size: 16px; font-weight: bold; }
-        #exportPanel QLabel#exportNote { color: %5; font-size: 11px; }
-        #exportPanel QLabel#exportCount { color: %5; font-size: 12px; }
-        #exportPanel QLabel#exportDot { color: %5; }
-        #exportPanel QLabel#exportFieldLabel { color: %5; font-size: 11px; }
-        #exportPanel #exportSelBar { border-top: 1px solid %2; border-bottom: 1px solid %2; }
-        #exportPanel #exportFooter { border-top: 1px solid %2; }
+        #exportPanel QLabel#exportTitle { color: %6; font-family: 'Lora','Crimson Text',serif; font-size: 16px; font-weight: 600; }
+        #exportPanel QLabel#exportCaps { color: %5; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+        #exportPanel QLabel#exportHint { color: %5; font-size: 11px; }
+        #exportPanel QLabel#exportHint[warn="true"] { color: #d9a441; }
+        #exportPanel QLabel#exportRowLabel { color: %4; font-size: 12px; }
+        #exportPanel QLabel#exportNavLabel { color: %5; font-size: 12px; }
+        #exportPanel QLabel#exportSummary { color: %5; font-size: 12px; }
+        #exportPanel QLabel#exportPickText { color: %6; font-size: 12px; }
+        #exportPanel QLabel#exportPickCaret { color: %5; font-size: 10px; }
+        #exportPanel #exportGroup[first="false"] { border-top: 1px solid %7; }
+        #exportPanel #exportEnd { border-top: 1px solid %7; }
+        #exportPanel #exportTabs { background: %3; border-radius: @radius-control; }
+        #exportPanel QPushButton#exportTab {
+            background: transparent; color: %5; border: none; border-radius: @radius-item;
+            padding: 6px 0; font-size: 11px; font-weight: bold;
+        }
+        #exportPanel QPushButton#exportTab:hover { color: %6; }
+        #exportPanel QPushButton#exportTab:checked { background: %1; color: %6; }
+        #exportPanel QPushButton#exportTab:disabled { color: %7; }
+        #exportPanel QPushButton#exportPick {
+            background: %3; border: 1px solid %2; border-radius: @radius-control; text-align: left;
+        }
+        #exportPanel QPushButton#exportPick:hover { border-color: %5; }
         #exportPanel QPushButton#exportClose {
-            background: transparent; color: %5; border: none; font-size: 16px; border-radius: @radius-control;
+            background: transparent; color: %5; border: none; font-size: 15px; border-radius: @radius-control;
         }
         #exportPanel QPushButton#exportClose:hover { background: %8; color: %6; }
         #exportPanel QPushButton#exportLink {
-            background: transparent; color: %5; border: none; font-size: 12px; padding: 0;
+            background: transparent; color: %5; border: none; font-size: 12px; padding: 0; text-align: left;
         }
         #exportPanel QPushButton#exportLink:hover { color: %6; }
-        #exportPanel QPushButton#exportFormat {
-            background: transparent; color: %5; border: 1px solid %2; border-radius: @radius-control;
-            padding: 3px 10px; font-size: 11px; font-weight: bold;
-        }
-        #exportPanel QPushButton#exportFormat:checked {
-            background: %10; color: #ffffff; border-color: %10;
-        }
-        #exportPanel QPushButton#exportFormat:disabled { color: %7; border-color: %2; }
+        #exportPanel QPushButton#exportLink:disabled { color: %7; }
         #exportPanel QPushButton#exportCancel {
-            background: %8; color: %4; border: none; padding: 7px 16px; border-radius: @radius-control; font-size: 12px;
+            background: transparent; color: %4; border: none; padding: 8px 14px; border-radius: @radius-control; font-size: 12px;
         }
-        #exportPanel QPushButton#exportCancel:hover { background: %9; color: %6; }
+        #exportPanel QPushButton#exportCancel:hover { background: %8; color: %6; }
         #exportPanel QPushButton#exportConfirm {
-            background: %10; color: #ffffff; border: none; padding: 7px 18px; border-radius: @radius-control;
+            background: %10; color: #ffffff; border: none; padding: 8px 18px; border-radius: @radius-control;
             font-size: 12px; font-weight: bold;
         }
-        #exportPanel QPushButton#exportConfirm:hover { background: %10; }
         #exportPanel QPushButton#exportConfirm:disabled { background: %8; color: %7; }
-        #exportPanel QRadioButton { color: %4; font-size: 12px; spacing: 6px; }
-        #exportPanel QRadioButton::indicator {
-            width: 13px; height: 13px; border-radius: 7px; border: 1px solid %7; background: %3;
+        #exportPanel QToolButton#exportNavBtn {
+            background: transparent; color: %6; border: 1px solid %2; border-radius: 14px; font-size: 15px;
         }
-        #exportPanel QRadioButton::indicator:checked { background: %10; border-color: %10; }
+        #exportPanel QToolButton#exportNavBtn:hover { background: %8; }
+        #exportPanel QToolButton#exportNavBtn:disabled { color: %7; border-color: %7; }
         #exportPanel QTreeWidget#exportTree {
-            background: %1; border: none; outline: none; color: %4; font-size: 13px;
-            padding: 8px 10px;
+            background: transparent; border: none; outline: none; color: %4; font-size: 12px;
         }
-        #exportPanel QTreeWidget#exportTree::item { padding: 3px 0; }
+        #exportPanel QTreeWidget#exportTree::item { padding: 2px 0; }
+        #exportPanel QTreeWidget#exportTree::item:hover { background: %8; }
+        #exportPanel QTreeWidget#exportTree::item:selected { background: transparent; color: %4; }
         #exportPanel QTreeWidget#exportTree::indicator {
-            width: 14px; height: 14px; border-radius: 3px; border: 1px solid %7; background: %3;
+            width: 13px; height: 13px; border-radius: 7px; border: 1px solid %5; background: transparent;
         }
         #exportPanel QTreeWidget#exportTree::indicator:checked { background: %10; border-color: %10; }
-        #exportPanel QTreeWidget#exportTree::indicator:indeterminate {
-            background: %9; border-color: %10;
-        }
-        #exportPanel QScrollBar:vertical { background: transparent; width: 10px; margin: 0; }
-        #exportPanel QScrollBar::handle:vertical { background: %2; border-radius: 5px; min-height: 30px; }
-        #exportPanel QScrollBar::handle:vertical:hover { background: %9; }
+        #exportPanel QTreeWidget#exportTree::indicator:indeterminate { background: %9; border-color: %10; }
+        #exportPanel QScrollBar:vertical { background: transparent; width: 8px; margin: 0; }
+        #exportPanel QScrollBar::handle:vertical { background: %2; border-radius: 4px; min-height: 30px; }
         #exportPanel QScrollBar::add-line:vertical, #exportPanel QScrollBar::sub-line:vertical { height: 0; }
         #exportPanel QScrollBar::add-page:vertical, #exportPanel QScrollBar::sub-page:vertical { background: transparent; }
     )"))
@@ -662,6 +1040,7 @@ void ExportPanel::applyTheme() {
              txtBright, // 6
              subtleBd,  // 7
              hover,     // 8
-             hoverStr,  // 9
-             accent));  // 10
+             hoverStr)  // 9
+        .arg(accent,    // 10
+             well));    // 11
 }

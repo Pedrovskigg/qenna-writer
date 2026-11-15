@@ -1,7 +1,12 @@
 #pragma once
 
+#include <QImage>
+#include <QList>
+#include <QRectF>
 #include <QSet>
+#include <QSizeF>
 #include <QString>
+#include <memory>
 #include <QVector>
 #include <QStringList>
 
@@ -116,6 +121,31 @@ public:
     // padrão, medido na mesma paginação: é dele que saem os oitavos.
     static QVector<qreal> screenplaySceneLengths(const QStringList& chapterHtmls);
 
+    // ── Prévia do painel de exportação (15/11/2026) ──
+    // As primeiras páginas montadas do jeito que a exportação monta (mesmo
+    // estilo, mesmas quebras, mesmo formato de editora ou de roteiro), pra
+    // desenhar na tela. Só os primeiros capítulos (o bastante pra folhear);
+    // o total do arquivo é estimado pelas palavras.
+    struct PagePreview {
+        enum Kind { Paged, Submission, Screenplay, Reader, PlainText };
+        Kind kind = Paged;
+        std::shared_ptr<QTextDocument> doc;
+        QSizeF pagePx;          // a página inteira, na régua de 96 dpi
+        QRectF contentPx;       // onde o texto fica dentro dela
+        QString runningHeader;  // formato de editora: "Lobato / TRAVESSIA"
+        bool titlePage = false; // a página 1 é a de rosto (editora, roteiro)
+        int pages = 0;          // páginas montadas
+        int estimatedTotal = 0; // do arquivo inteiro (aproximado)
+        struct SceneMark { int page; qreal y; int number; };
+        QList<SceneMark> sceneMarks;   // roteiro: número da cena nas margens
+        bool isEmpty() const { return !doc || pages <= 0; }
+    };
+    // totalWords: palavras de tudo que foi escolhido (estima o total de
+    // páginas); 0 = mostra só as montadas.
+    PagePreview buildPagePreview(const Selection& sel, int totalWords = 0) const;
+    // Desenha a página `index` na largura pedida (px lógicos), papel incluso.
+    static QImage renderPreviewPage(const PagePreview& p, int index, int widthPx, qreal dpr);
+
     QTextDocument* buildPreviewDocument(const QString& manuscriptId,
                                          bool includeMarkers,
                                          const QColor& textColor,
@@ -140,6 +170,10 @@ private:
                           const QString& docTitle = QString()) const;
     QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
                               const QString& docTitle = QString()) const;
+    // O documento dos capítulos em sequência (título + corpo, quebra de página
+    // entre eles), já com o estilo de papel. exportChapters e a prévia usam.
+    void buildChaptersDocument(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                               bool includeMarkers) const;
 
     // ── Bíblia do universo ──
     QByteArray buildBible(const BibleSources& src, Format fmt) const;

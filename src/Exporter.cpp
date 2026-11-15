@@ -683,6 +683,12 @@ QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format
 QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
                                     const QString& docTitle) const {
     QTextDocument doc;
+    buildChaptersDocument(doc, chapters, includeMarkers);
+    return writeDoc(doc, fmt, docTitle);
+}
+
+void Exporter::buildChaptersDocument(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                                     bool includeMarkers) const {
     QTextCursor cur(&doc);
     bool first = true;
     for (const Chapter* ch : chapters) {
@@ -710,7 +716,6 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
     applyParagraphStyle(doc, kExportBodyPt);
     forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
-    return writeDoc(doc, fmt, docTitle);
 }
 
 // ─────────────────────────── Bíblia do universo ───────────────────────────
@@ -2375,4 +2380,237 @@ QTextDocument* Exporter::buildPreviewDocument(const QString& manuscriptId,
     doc->setDocumentMargin(28);
 
     return doc;
+}
+
+// ─────────────────────────── Prévia do painel ───────────────────────────
+// O painel de exportação mostra as páginas como vão sair. Monta o começo do
+// arquivo com as mesmas funções da exportação e desenha página por página,
+// do mesmo jeito que o PDF é desenhado.
+
+namespace {
+// A4 a 96 dpi com 1 polegada em volta: a mesma página do writeDoc.
+constexpr double kPrevA4W = 793.7, kPrevA4H = 1122.5, kPrevMargin = 96.0;
+// Tela de e-reader em pé, em px lógicos.
+constexpr double kPrevReaderW = 360.0, kPrevReaderH = 560.0, kPrevReaderPad = 26.0;
+// O bastante pra folhear umas páginas sem montar o livro inteiro.
+constexpr int kPrevWords = 9000;
+}
+
+Exporter::PagePreview Exporter::buildPagePreview(const Selection& sel, int totalWords) const {
+    PagePreview p;
+    if (!m_model) return p;
+
+    // Capítulos do primeiro manuscrito com algo escolhido, na ordem do livro.
+    QList<const Chapter*> chs;
+    QString msId;
+    for (const Manuscript& ms : m_model->manuscripts()) {
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id))
+            if (sel.chapterIds.contains(ch->id)) chs.append(ch);
+        if (!chs.isEmpty()) { msId = ms.id; break; }
+    }
+    const DrawerItem* firstItem = nullptr;
+    if (chs.isEmpty() && sel.format != Format::Fountain) {
+        for (const Drawer& d : m_model->drawers()) {
+            for (const DrawerItem& it : d.items)
+                if (sel.itemIds.contains(it.id)) { firstItem = &it; break; }
+            if (firstItem) break;
+        }
+    }
+    if (chs.isEmpty() && !firstItem) return p;
+
+    const bool screenplay = m_model->isScreenplay();
+    const bool single = (sel.manuscriptMode == ManuscriptMode::SingleDocument);
+    // Capítulo separado: a prévia é o primeiro arquivo, só aquele capítulo.
+    const bool oneChapterFile = !single && sel.format != Format::Epub;
+    QList<const Chapter*> head;
+    QStringList headHtml;
+    int headWords = 0;
+    for (const Chapter* ch : chs) {
+        if (!head.isEmpty() && (headWords >= kPrevWords || oneChapterFile)) break;
+        const QString html = chapterHtmlPrimary(*ch);
+        head.append(ch);
+        headHtml.append(html);
+        headWords += WordCounter::countWordsInHtml(html);
+    }
+    const QString msTitle = msId.isEmpty() ? QString() : m_model->manuscriptEffectiveTitle(msId);
+    auto doc = std::make_shared<QTextDocument>();
+    p.doc = doc;
+
+    // Páginas estimadas do arquivo inteiro, pela proporção de palavras (a
+    // página de rosto não escala).
+    auto finish = [&]() {
+        p.pages = doc->pageCount();
+        const int fixedPages = p.titlePage ? 1 : 0;
+        if (!oneChapterFile && totalWords > headWords && headWords > 0 && p.pages > fixedPages)
+            p.estimatedTotal = fixedPages + qMax(p.pages - fixedPages,
+                qRound((p.pages - fixedPages) * double(totalWords) / headWords));
+        else
+            p.estimatedTotal = p.pages;
+    };
+
+    // ── EPUB: a tela de um e-reader, com o tamanho do editor ──
+    if (sel.format == Format::Epub) {
+        p.kind = PagePreview::Reader;
+        const QColor ink(0x2b, 0x29, 0x26), paper(0xf4, 0xef, 0xe3);
+        doc->setDefaultStyleSheet(previewCss(ink, paper));
+        QTextCursor cur(doc.get());
+        if (!head.isEmpty()) {
+            for (int i = 0; i < head.size(); ++i) {
+                const QString t = head.at(i)->title.trimmed().isEmpty()
+                    ? m_model->chapterDisplayLabel(*head.at(i)) : head.at(i)->title;
+                cur.insertHtml(QStringLiteral("<h1 class=\"chapter-title\">%1</h1>").arg(t.toHtmlEscaped()));
+                cur.insertBlock();
+                cur.insertHtml(headHtml.at(i));
+                cur.insertBlock();
+            }
+        } else {
+            cur.insertHtml(itemHtml(*firstItem));
+        }
+        // A cor de tinta do editor vem junto no HTML (texto claro de tema
+        // escuro): no papel do e-reader, tinta escura.
+        forceTextColor(*doc, ink);
+        if (!sel.includeMarkers) stripMarkers(*doc);
+        doc->setDocumentMargin(0);
+        p.pagePx = QSizeF(kPrevReaderW, kPrevReaderH);
+        p.contentPx = QRectF(kPrevReaderPad, kPrevReaderPad,
+                             kPrevReaderW - 2 * kPrevReaderPad, kPrevReaderH - 2 * kPrevReaderPad);
+        doc->setPageSize(p.contentPx.size());
+        finish();
+        return p;
+    }
+
+    // ── Roteiro em Fountain: o texto puro ──
+    if (sel.format == Format::Fountain) {
+        p.kind = PagePreview::PlainText;
+        QList<Fountain::ChapterSource> src;
+        for (int i = 0; i < head.size(); ++i) src.append({ head.at(i)->title, headHtml.at(i) });
+        const QString byline = sel.submission.byline.trimmed().isEmpty()
+            ? m_model->projectAuthor().trimmed() : sel.submission.byline.trimmed();
+        const QString text = Fountain::write(src, single ? msTitle : QString(), single ? byline : QString(),
+                                             QString(), sel.sceneNumbers);
+        QFont mono(QStringLiteral("Courier New"));
+        mono.setPointSizeF(12.0);
+        doc->setDefaultFont(mono);
+        doc->setDocumentMargin(0);
+        doc->setPlainText(text);
+        p.pagePx = QSizeF(kScrPageWPx, kScrPageHPx);
+        p.contentPx = QRectF(kScrRightPx, kScrTopPx, kScrPageWPx - 2 * kScrRightPx, kScrContentH);
+        doc->setPageSize(p.contentPx.size());
+        finish();
+        return p;
+    }
+
+    // ── Roteiro: o formato da indústria ──
+    if (screenplay) {
+        p.kind = PagePreview::Screenplay;
+        p.titlePage = single;
+        buildScreenplayDocument(*doc, head, msTitle, sel.submission, single, sel.includeMarkers);
+        doc->setPageSize(QSizeF(kScrContentW, kScrContentH));
+        p.pagePx = QSizeF(kScrPageWPx, kScrPageHPx);
+        p.contentPx = QRectF(kScrLeftPx, kScrTopPx, kScrContentW, kScrContentH);
+        if (sel.sceneNumbers) {
+            QAbstractTextDocumentLayout* lay = doc->documentLayout();
+            int n = 1;
+            for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+                if (b.userState() != ScrBody + int(ScreenplayElement::Scene)) continue;
+                if (!ScreenplayFormat::isSceneHeading(b.text())) continue;
+                const QRectF r = lay->blockBoundingRect(b);
+                const QTextLayout* tl = b.layout();
+                const qreal top = r.top() + (tl && tl->lineCount() ? tl->lineAt(0).y() : 0);
+                const int page = int((top + ScreenplayFormat::kPageLinePx / 2) / kScrContentH);
+                p.sceneMarks.append({ page, top - page * kScrContentH, n++ });
+            }
+        }
+        finish();
+        return p;
+    }
+
+    // ── Formato de editora (Shunn) ──
+    if (!head.isEmpty() && submissionApplies(sel)) {
+        p.kind = PagePreview::Submission;
+        p.titlePage = true;
+        const int words = totalWords > 0 ? totalWords : headWords;
+        const int rounded = words >= 10000 ? (words + 500) / 1000 * 1000
+                          : words >= 1000  ? (words + 50) / 100 * 100
+                                           : words;
+        QFont base(QStringLiteral("Courier New"));
+        base.setPointSizeF(kSubFontPt);
+        doc->setDefaultFont(base);
+        doc->setDocumentMargin(0);
+        QTextCursor cur(doc.get());
+        insertSubmissionTitlePage(cur, msTitle, sel.submission, rounded);
+        buildSubmissionBody(*doc, head, sel.includeMarkers);
+        const QString shortTitle = sel.submission.titleShort.trimmed().isEmpty()
+            ? msTitle.trimmed() : sel.submission.titleShort.trimmed();
+        const QString surname = surnameFor(sel.submission);
+        p.runningHeader = surname.isEmpty() ? shortTitle
+                        : shortTitle.isEmpty() ? surname
+                        : QStringLiteral("%1 / %2").arg(surname, shortTitle);
+        p.pagePx = QSizeF(kSubPageWPx, kSubPageHPx);
+        p.contentPx = QRectF(kSubMarginPx, kSubMarginPx, kSubPageWPx - 2 * kSubMarginPx, kSubPageHPx - 2 * kSubMarginPx);
+        doc->setPageSize(p.contentPx.size());
+        finish();
+        return p;
+    }
+
+    // ── PDF, DOCX e ODT: a página A4 do estilo de leitura ──
+    p.kind = PagePreview::Paged;
+    if (!head.isEmpty() && single) {
+        buildChaptersDocument(*doc, head, sel.includeMarkers);
+    } else {
+        doc->setHtml(!head.isEmpty() ? headHtml.first() : itemHtml(*firstItem));
+        applyParagraphStyle(*doc, kExportBodyPt);
+        forceTextColor(*doc, Qt::black);
+        if (!sel.includeMarkers) stripMarkers(*doc);
+    }
+    p.pagePx = QSizeF(kPrevA4W, kPrevA4H);
+    p.contentPx = QRectF(kPrevMargin, kPrevMargin, kPrevA4W - 2 * kPrevMargin, kPrevA4H - 2 * kPrevMargin);
+    doc->setPageSize(p.contentPx.size());
+    finish();
+    return p;
+}
+
+QImage Exporter::renderPreviewPage(const PagePreview& p, int index, int widthPx, qreal dpr) {
+    if (p.isEmpty() || widthPx <= 0 || p.pagePx.width() <= 0) return QImage();
+    index = qBound(0, index, p.pages - 1);
+    const qreal s = widthPx / p.pagePx.width();
+    const QSize px(qCeil(p.pagePx.width() * s * dpr), qCeil(p.pagePx.height() * s * dpr));
+    QImage img(px, QImage::Format_ARGB32_Premultiplied);
+    img.setDevicePixelRatio(dpr);
+    img.fill(p.kind == PagePreview::Reader ? QColor(0xf4, 0xef, 0xe3)
+             : p.kind == PagePreview::PlainText ? QColor(0xfb, 0xfa, 0xf6) : QColor(Qt::white));
+    QPainter g(&img);
+    g.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+    g.scale(s, s);
+
+    QFont mono(QStringLiteral("Courier New"));
+    mono.setPixelSize(16);
+    g.setPen(Qt::black);
+    if (p.kind == PagePreview::Submission && index > 0 && !p.runningHeader.isEmpty()) {
+        g.setFont(mono);
+        g.drawText(QRectF(p.contentPx.left(), kSubHeaderTopPx, p.contentPx.width(), 24),
+                   Qt::AlignRight | Qt::AlignVCenter, QStringLiteral("%1 / %2").arg(p.runningHeader).arg(index + 1));
+    }
+    if (p.kind == PagePreview::Screenplay) {
+        g.setFont(mono);
+        const int number = p.titlePage ? index : index + 1;   // a página de rosto não conta
+        if (number >= 2)
+            g.drawText(QRectF(kScrLeftPx, kScrNumberTop, kScrContentW, 24),
+                       Qt::AlignRight | Qt::AlignVCenter, QStringLiteral("%1.").arg(number));
+        for (const auto& m : p.sceneMarks) {
+            if (m.page != index) continue;
+            const QString t = QString::number(m.number);
+            const qreal y = kScrTopPx + m.y;
+            g.drawText(QRectF(kScrLeftPx - kScrNumberHang - 60, y, 60, 16), Qt::AlignRight | Qt::AlignVCenter, t);
+            g.drawText(QRectF(kScrLeftPx + kScrContentW + 18, y, 60, 16), Qt::AlignLeft | Qt::AlignVCenter, t);
+        }
+    }
+    const qreal ch = p.contentPx.height();
+    g.save();
+    g.translate(p.contentPx.topLeft());
+    g.setClipRect(QRectF(QPointF(0, 0), p.contentPx.size()));
+    g.translate(0, -double(index) * ch);
+    p.doc->drawContents(&g, QRectF(0, double(index) * ch, p.contentPx.width(), ch));
+    g.restore();
+    return img;
 }
