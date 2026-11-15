@@ -152,7 +152,10 @@ void placeCaret(QToolButton* b)
         l->move(b->width() - l->width() - sc(5), (b->height() - l->height()) / 2);
 }
 
-// Arquivo: lista na cor do destaque à esquerda, explicação à direita.
+// Arquivo: um menu só, compacto, na cor do painel (14/11/2026, pedido do Pe:
+// o de duas colunas, com a lista no bloco da cor de destaque, era grande
+// demais e as duas cores não colavam). A explicação de cada item virou dica
+// no mouse; o atalho fica discreto na ponta da linha.
 class Backstage : public QFrame
 {
 public:
@@ -162,86 +165,64 @@ public:
     {
         setObjectName(QStringLiteral("ribbonBackstage"));
         setAttribute(Qt::WA_DeleteOnClose);
-        const QColor acc = Theme::toColor(Theme::accentDefault());
-        const QColor ink = inkOn(acc);
         setStyleSheet(Theme::qss(QStringLiteral(R"(
             QFrame#ribbonBackstage { background: %1; border: 1px solid %2; border-radius: @radius-panel; }
-            QFrame#backCol { background: %3; border: none; border-top-left-radius: @radius-panel; border-bottom-left-radius: @radius-panel; }
-            QToolButton#backItem { background: transparent; border: none; border-radius: @radius-control; color: %4;
-                                   text-align: left; padding: 7px 10px; font-size: 13px; }
-            QToolButton#backItem:hover { background: rgba(255,255,255,0.16); }
-            QFrame#backRule { background: rgba(255,255,255,0.25); border: none; }
-            QLabel#backTitle { color: %5; font-family: Lora; font-size: 17px; font-weight: 600; }
-            QLabel#backDesc { color: %6; font-size: 13px; }
-            QLabel#backKeys { color: %7; font-size: 11px; font-weight: 600; }
-        )")).arg(Theme::panelBackground(), Theme::panelBorder(), acc.name(), ink.name(),
-                Theme::textBright(), Theme::textPrimary(), Theme::textMuted()));
+            QToolButton#backItem { background: transparent; border: none; border-radius: @radius-control; color: %3;
+                                   text-align: left; padding: 6px 10px; font-size: 13px; }
+            QToolButton#backItem:hover { background: %4; color: %5; }
+            QFrame#backRule { background: %7; border: none; }
+            QLabel#backKeys { color: %6; font-size: 11px; background: transparent; }
+        )")).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
+                Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted(), Theme::subtleBorder()));
 
-        auto* h = new QHBoxLayout(this);
-        h->setContentsMargins(0, 0, 0, 0);
-        h->setSpacing(0);
-        auto* col = new QFrame(this);
-        col->setObjectName(QStringLiteral("backCol"));
-        col->setFixedWidth(sc(200));
-        auto* v = new QVBoxLayout(col);
-        v->setContentsMargins(6, 8, 6, 8);
+        auto* v = new QVBoxLayout(this);
+        v->setContentsMargins(5, 5, 5, 5);
         v->setSpacing(1);
-        auto* det = new QWidget(this);
-        auto* dv = new QVBoxLayout(det);
-        dv->setContentsMargins(20, 18, 20, 16);
-        dv->setSpacing(6);
-        m_title = new QLabel(TopToolbar::tr("Arquivo"), det);
-        m_title->setObjectName(QStringLiteral("backTitle"));
-        m_desc = new QLabel(det);
-        m_desc->setObjectName(QStringLiteral("backDesc"));
-        m_desc->setWordWrap(true);
-        m_keys = new QLabel(det);
-        m_keys->setObjectName(QStringLiteral("backKeys"));
-        dv->addWidget(m_title);
-        dv->addWidget(m_desc);
-        dv->addStretch(1);
-        dv->addWidget(m_keys);
-        det->setFixedWidth(sc(300));
-
-        m_defaultDesc = TopToolbar::tr("Tudo que é do projeto inteiro, e não do texto: abrir, salvar, exportar, voltar pro menu.");
-        showInfo(TopToolbar::tr("Arquivo"), m_defaultDesc, QString());
-
-        const int ipx = sc(18);
+        const int ipx = sc(16);
+        const QColor icoN = Theme::toColor(Theme::iconColor());
+        const QColor icoH = Theme::toColor(Theme::textBright());
         for (const Item& it : items) {
-            if (!it.target) { auto* r = new QFrame(col); r->setObjectName(QStringLiteral("backRule")); r->setFixedHeight(1); v->addSpacing(4); v->addWidget(r); v->addSpacing(4); continue; }
-            auto* b = new QToolButton(col);
+            if (!it.target) {
+                auto* r = new QFrame(this);
+                r->setObjectName(QStringLiteral("backRule"));
+                r->setFixedHeight(1);
+                v->addSpacing(3);
+                v->addWidget(r);
+                v->addSpacing(3);
+                continue;
+            }
+            auto* b = new QToolButton(this);
             b->setObjectName(QStringLiteral("backItem"));
+            b->setAutoRaise(true);
             b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
             b->setText(it.label);
+            b->setToolTip(it.desc);
             b->setCursor(Qt::PointingHandCursor);
             b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            if (!it.icon.isEmpty()) b->setIcon(tinted(it.icon, ink, ipx));
-            else b->setIcon(glyphIcon(it.glyph, ink, ipx));
+            QIcon ic;
+            const QIcon n = it.icon.isEmpty() ? glyphIcon(it.glyph, icoN, ipx) : tinted(it.icon, icoN, ipx);
+            const QIcon hv = it.icon.isEmpty() ? glyphIcon(it.glyph, icoH, ipx) : tinted(it.icon, icoH, ipx);
+            ic.addPixmap(n.pixmap(ipx, ipx), QIcon::Normal);
+            ic.addPixmap(hv.pixmap(ipx, ipx), QIcon::Active);
+            b->setIcon(ic);
             b->setIconSize(QSize(ipx, ipx));
-            const Item copy = it;
-            b->installEventFilter(this);
-            b->setProperty("backIndex", m_items.size());
-            m_items.append(copy);
-            QObject::connect(b, &QToolButton::clicked, this, [this, copy]() {
+            if (!it.keys.isEmpty()) {
+                auto* row = new QHBoxLayout(b);
+                row->setContentsMargins(0, 0, 10, 0);
+                row->addStretch(1);
+                auto* k = new QLabel(it.keys, b);
+                k->setObjectName(QStringLiteral("backKeys"));
+                k->setAttribute(Qt::WA_TransparentForMouseEvents);
+                row->addWidget(k);
+            }
+            QToolButton* t = it.target;
+            QObject::connect(b, &QToolButton::clicked, this, [this, t]() {
                 close();
-                QToolButton* t = copy.target;
                 QTimer::singleShot(0, t, [t]() { t->click(); });
             });
             v->addWidget(b);
         }
-        v->addStretch(1);
-        h->addWidget(col);
-        h->addWidget(det, 1);
-    }
-
-protected:
-    bool eventFilter(QObject* o, QEvent* e) override
-    {
-        if (e->type() == QEvent::Enter) {
-            const int i = o->property("backIndex").toInt();
-            if (i >= 0 && i < m_items.size()) showInfo(m_items[i].label, m_items[i].desc, m_items[i].keys);
-        }
-        return QFrame::eventFilter(o, e);
+        setFixedWidth(sc(196));
     }
 
 private:
@@ -261,17 +242,6 @@ private:
         p.drawText(QRect(0, 0, px, px), Qt::AlignCenter, g);
         return QIcon(pm);
     }
-    void showInfo(const QString& t, const QString& d, const QString& k)
-    {
-        m_title->setText(t);
-        m_desc->setText(d);
-        m_keys->setText(k);
-    }
-    QList<Item> m_items;
-    QLabel* m_title = nullptr;
-    QLabel* m_desc = nullptr;
-    QLabel* m_keys = nullptr;
-    QString m_defaultDesc;
 };
 
 // O Rolo: os nomes das seções num cilindro, como um cadeado de segredo. O do
