@@ -28256,49 +28256,49 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
 <context>
     <name>RightBar</name>
     <message>
-        <location filename="../src/RightBar.cpp" line="115"/>
-        <location filename="../src/RightBar.cpp" line="423"/>
+        <location filename="../src/RightBar.cpp" line="116"/>
+        <location filename="../src/RightBar.cpp" line="424"/>
         <source>Criador de Mundos</source>
         <translation>Créateur de Mondes</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="116"/>
+        <location filename="../src/RightBar.cpp" line="117"/>
         <source>Painel de Referência (F6)</source>
         <translation>Panneau de Référence (F6)</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="119"/>
+        <location filename="../src/RightBar.cpp" line="120"/>
         <source>Pensário (F4)</source>
         <translation>Pensarium (F4)</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="120"/>
+        <location filename="../src/RightBar.cpp" line="121"/>
         <source>Lembretes (F7)</source>
         <translation>Rappels (F7)</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="122"/>
-        <location filename="../src/RightBar.cpp" line="427"/>
+        <location filename="../src/RightBar.cpp" line="123"/>
+        <location filename="../src/RightBar.cpp" line="428"/>
         <source>Estatísticas</source>
         <translation>Statistiques</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="126"/>
+        <location filename="../src/RightBar.cpp" line="127"/>
         <source>%1 — chat com a assistente de IA (F9)</source>
         <translation>%1 — discussion avec l&apos;assistante IA (F9)</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="424"/>
+        <location filename="../src/RightBar.cpp" line="425"/>
         <source>Referência</source>
         <translation>Référence</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="425"/>
+        <location filename="../src/RightBar.cpp" line="426"/>
         <source>Pensário</source>
         <translation>Pensarium</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="426"/>
+        <location filename="../src/RightBar.cpp" line="427"/>
         <source>Lembretes</source>
         <translation>Rappels</translation>
     </message>
@@ -34944,13 +34944,13 @@ Voulez-vous le suivre avec une piste dans la chronologie&#xa0;?</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="220"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1260"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1279"/>
         <source>Novo projeto</source>
         <translation>Nouveau projet</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="225"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1261"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1280"/>
         <source>Abrir projeto</source>
         <translation>Ouvrir un projet</translation>
     </message>
@@ -34966,7 +34966,7 @@ Voulez-vous le suivre avec une piste dans la chronologie&#xa0;?</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="250"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1265"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1284"/>
         <source>Ajuda</source>
         <translation>Aide</translation>
     </message>
@@ -34992,7 +34992,7 @@ Voulez-vous le suivre avec une piste dans la chronologie&#xa0;?</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="281"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1018"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1014"/>
         <source>Estatísticas</source>
         <translation>Statistiques</translation>
     </message>
@@ -35044,51 +35044,51 @@ Mode éditeur épuré avec des barres escamotables. Comme dans la toute premièr
         <translation>Ajouter une image</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="392"/>
+        <location filename="../src/TopToolbar.cpp" line="402"/>
         <source>Lembretes (F7)</source>
         <translation>Rappels (F7)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="397"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1031"/>
+        <location filename="../src/TopToolbar.cpp" line="407"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1027"/>
         <source>Som imersivo</source>
         <translation>Son immersif</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="403"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1034"/>
+        <location filename="../src/TopToolbar.cpp" line="413"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1030"/>
         <source>Temas</source>
         <translation>Thèmes</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="408"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1266"/>
+        <location filename="../src/TopToolbar.cpp" line="418"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1285"/>
         <source>Configurações</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="414"/>
+        <location filename="../src/TopToolbar.cpp" line="424"/>
         <source>Tela cheia (F11)</source>
         <translation>Plein écran (F11)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="419"/>
+        <location filename="../src/TopToolbar.cpp" line="429"/>
         <source>Painel de Referência (F6)</source>
         <translation>Panneau de Référence (F6)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="424"/>
+        <location filename="../src/TopToolbar.cpp" line="434"/>
         <source>Pensário (F4)</source>
         <translation>Pensarium (F4)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="429"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1021"/>
+        <location filename="../src/TopToolbar.cpp" line="439"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1017"/>
         <source>Construtor</source>
         <translation>Constructeur</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="434"/>
+        <location filename="../src/TopToolbar.cpp" line="444"/>
         <source>%1 — chat com a assistente de IA (F9)</source>
         <translation>%1 — discussion avec l&apos;assistante IA (F9)</translation>
     </message>
@@ -35097,142 +35097,142 @@ Mode éditeur épuré avec des barres escamotables. Comme dans la toute premièr
         <translation type="vanished">Plus d&apos;options</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="905"/>
+        <location filename="../src/TopToolbar.cpp" line="923"/>
         <source>Tamanho da fonte</source>
         <translation>Taille de police</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="909"/>
+        <location filename="../src/TopToolbar.cpp" line="927"/>
         <source>Espaçamento</source>
         <translation>Espacement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1132"/>
+        <location filename="../src/TopToolbar.cpp" line="1150"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="717"/>
         <source>Esquerda</source>
         <translation>Gauche</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1133"/>
+        <location filename="../src/TopToolbar.cpp" line="1151"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="718"/>
         <source>Centro</source>
         <translation>Centre</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1134"/>
+        <location filename="../src/TopToolbar.cpp" line="1152"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="719"/>
         <source>Direita</source>
         <translation>Droite</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1135"/>
+        <location filename="../src/TopToolbar.cpp" line="1153"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="720"/>
         <source>Justificado</source>
         <translation>Justifié</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1178"/>
+        <location filename="../src/TopToolbar.cpp" line="1196"/>
         <source>Aplicar em:</source>
         <translation>Appliquer à&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1184"/>
+        <location filename="../src/TopToolbar.cpp" line="1202"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="749"/>
         <source>Esse documento</source>
         <translation>Ce document</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1185"/>
+        <location filename="../src/TopToolbar.cpp" line="1203"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="750"/>
         <source>Todos os documentos</source>
         <translation>Tous les documents</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1186"/>
+        <location filename="../src/TopToolbar.cpp" line="1204"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="751"/>
         <source>Somente manuscrito</source>
         <translation>Manuscrit uniquement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1187"/>
+        <location filename="../src/TopToolbar.cpp" line="1205"/>
         <location filename="../src/TopToolbarRibbon.cpp" line="752"/>
         <source>Somente gavetas</source>
         <translation>Tiroirs uniquement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1683"/>
+        <location filename="../src/TopToolbar.cpp" line="1701"/>
         <source>Digite o tamanho (10–48, aceita 0,5)</source>
         <translation>Saisissez la taille (10–48, accepte 0,5)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1715"/>
+        <location filename="../src/TopToolbar.cpp" line="1733"/>
         <source> pt</source>
         <translation> pt</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1759"/>
+        <location filename="../src/TopToolbar.cpp" line="1777"/>
         <source>Tamanho da fonte (%1)</source>
         <translation>Taille de police (%1)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1771"/>
+        <location filename="../src/TopToolbar.cpp" line="1789"/>
         <source>Espaçamento (%1)</source>
         <translation>Espacement (%1)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1790"/>
+        <location filename="../src/TopToolbar.cpp" line="1808"/>
         <source>Entre linhas</source>
         <translation>Interligne</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1794"/>
+        <location filename="../src/TopToolbar.cpp" line="1812"/>
         <source>Simples (1.0)</source>
         <translation>Simple (1.0)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1795"/>
+        <location filename="../src/TopToolbar.cpp" line="1813"/>
         <source>Justo (1.15)</source>
         <translation>Serré (1.15)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1796"/>
+        <location filename="../src/TopToolbar.cpp" line="1814"/>
         <source>Compacto (1.3)</source>
         <translation>Compact (1.3)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1797"/>
+        <location filename="../src/TopToolbar.cpp" line="1815"/>
         <source>Confortável (1.5)</source>
         <translation>Confortable (1.5)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1798"/>
+        <location filename="../src/TopToolbar.cpp" line="1816"/>
         <source>Padrão (1.7)</source>
         <translation>Par défaut (1.7)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1799"/>
+        <location filename="../src/TopToolbar.cpp" line="1817"/>
         <source>Amplo (1.9)</source>
         <translation>Large (1.9)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1800"/>
+        <location filename="../src/TopToolbar.cpp" line="1818"/>
         <source>Espaçoso (2.2)</source>
         <translation>Aéré (2.2)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1821"/>
+        <location filename="../src/TopToolbar.cpp" line="1839"/>
         <source>Antes do parágrafo</source>
         <translation>Avant le paragraphe</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1863"/>
+        <location filename="../src/TopToolbar.cpp" line="1881"/>
         <source>Depois do parágrafo</source>
         <translation>Après le paragraphe</translation>
     </message>
     <message>
         <location filename="../src/TopToolbarRibbon.cpp" line="596"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1120"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1123"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1116"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1119"/>
         <source>Arquivo</source>
         <translation>Fichier</translation>
     </message>
@@ -35242,21 +35242,25 @@ Mode éditeur épuré avec des barres escamotables. Comme dans la toute premièr
     </message>
     <message>
         <location filename="../src/TopToolbarRibbon.cpp" line="604"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1156"/>
         <source>Editor</source>
         <translation>Éditeur</translation>
     </message>
     <message>
         <location filename="../src/TopToolbarRibbon.cpp" line="604"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1156"/>
         <source>Revisão</source>
         <translation>Révision</translation>
     </message>
     <message>
         <location filename="../src/TopToolbarRibbon.cpp" line="604"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1156"/>
         <source>Mundo</source>
         <translation>Monde</translation>
     </message>
     <message>
         <location filename="../src/TopToolbarRibbon.cpp" line="604"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1156"/>
         <source>Ambiente</source>
         <translation>Ambiance</translation>
     </message>
@@ -35356,247 +35360,247 @@ Mode éditeur épuré avec des barres escamotables. Comme dans la toute premièr
         <translation>Appliquer l&apos;alignement à</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="765"/>
+        <location filename="../src/TopToolbar.cpp" line="396"/>
         <source>Página e margens</source>
         <translation>Page et marges</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="985"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="981"/>
         <source>Fonte</source>
         <translation>Police</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="990"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="986"/>
         <source>Parágrafo</source>
         <translation>Paragraphe</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="996"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1010"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="992"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1006"/>
         <source>Página</source>
         <translation>Page</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="997"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="993"/>
         <source>Inserir</source>
         <translation>Insérer</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="997"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1011"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="993"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1007"/>
         <source>Imagem</source>
         <translation>Image</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="998"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="994"/>
         <source>Edição</source>
         <translation>Édition</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="998"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1012"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="994"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1008"/>
         <source>Buscar</source>
         <translation>Rechercher</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1015"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1011"/>
         <source>Revisar</source>
         <translation>Réviser</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1015"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1011"/>
         <source>Repetições</source>
         <translation>Répétitions</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1016"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1012"/>
         <source>Ouvir</source>
         <translation>Écouter</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1016"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1017"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1012"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1013"/>
         <source>Ler em voz alta</source>
         <translation>Lire à voix haute</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1018"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1014"/>
         <source>Contagem</source>
         <translation>Comptage</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1021"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1017"/>
         <source>Criar</source>
         <translation>Créer</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1022"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1018"/>
         <source>Anotar</source>
         <translation>Noter</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1022"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1018"/>
         <source>Pensário</source>
         <translation>Pensário</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1023"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1019"/>
         <source>Consultar</source>
         <translation>Consulter</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1023"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1019"/>
         <source>Referência</source>
         <translation>Référence</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1024"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1020"/>
         <source>Conversar</source>
         <translation>Discuter</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1027"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1023"/>
         <source>Modos</source>
         <translation>Modes</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1028"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1024"/>
         <source>Editor focado</source>
         <translation>Éditeur concentré</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1029"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1025"/>
         <source>Modo foco</source>
         <translation>Mode focus</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1030"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1026"/>
         <source>Sons e avisos</source>
         <translation>Sons et rappels</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1032"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1028"/>
         <source>Lembretes</source>
         <translation>Rappels</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1033"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1029"/>
         <source>Janela</source>
         <translation>Fenêtre</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1035"/>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1348"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1031"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1367"/>
         <source>Tela cheia</source>
         <translation>Plein écran</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1259"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1278"/>
         <source>Início</source>
         <translation>Accueil</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1259"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1278"/>
         <source>Volta pro Menu Principal, com a estante dos seus projetos.</source>
         <translation>Retour au Menu principal, avec l&apos;étagère de vos projets.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1260"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1279"/>
         <source>Começa um projeto do zero.</source>
         <translation>Commence un projet de zéro.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1261"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1280"/>
         <source>Abre uma pasta de projeto do Qenna.</source>
         <translation>Ouvre un dossier de projet Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1262"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1281"/>
         <source>Salvar</source>
         <translation>Enregistrer</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1262"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1281"/>
         <source>Grava o projeto agora.</source>
         <translation>Enregistre le projet maintenant.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1263"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1282"/>
         <source>Exportar</source>
         <translation>Exporter</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1263"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1282"/>
         <source>ODT, PDF, EPUB e DOCX. Roteiro também sai em Fountain.</source>
         <translation>ODT, PDF, EPUB et DOCX. Le scénario sort aussi en Fountain.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1265"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1284"/>
         <source>O guia das funções do app.</source>
         <translation>Le guide des fonctions de l&apos;app.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1266"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1285"/>
         <source>Editor, interface, backup e o resto das preferências.</source>
         <translation>Éditeur, interface, sauvegarde et le reste des préférences.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1299"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1318"/>
         <source>PÁGINA</source>
         <translation>PAGE</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1312"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1331"/>
         <source>Modo de página</source>
         <translation>Mode page</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1340"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1359"/>
         <source>Largura</source>
         <translation>Largeur</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1341"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1360"/>
         <source>Comprimento</source>
         <translation>Longueur</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1342"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1361"/>
         <source>Margem lateral</source>
         <translation>Marge latérale</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1343"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1362"/>
         <source>Margem topo/base</source>
         <translation>Marge haut/bas</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1345"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1364"/>
         <source>%1 px</source>
         <translation>%1 px</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1367"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1386"/>
         <source>Folhas separadas, como no Word: a folha tem a margem dela, então comprimento e margem topo/base não se aplicam.</source>
         <translation>Feuilles séparées, comme dans Word : la feuille a sa propre marge, donc la longueur et la marge haut/bas ne s&apos;appliquent pas.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1368"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1387"/>
         <source>No comprimento máximo, a folha preenche a janela e acompanha o tamanho dela.</source>
         <translation>À la longueur maximale, la feuille remplit la fenêtre et suit sa taille.</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1381"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1400"/>
         <source>Quebra de cena</source>
         <translation>Saut de scène</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1385"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1404"/>
         <source>Nó da Timeline</source>
         <translation>Nœud de la Timeline</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbarRibbon.cpp" line="1385"/>
+        <location filename="../src/TopToolbarRibbon.cpp" line="1404"/>
         <source>Nome da cena</source>
         <translation>Nom de la scène</translation>
     </message>

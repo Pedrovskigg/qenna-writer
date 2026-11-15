@@ -386,6 +386,16 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     imageButton->setToolTip(tr("Adicionar imagem"));
     connect(imageButton, &QToolButton::clicked, this, &TopToolbar::addImageRequested);
 
+    // ---------------- Grupo B (continuação): Página e margens ----------------
+    // Era só das barras em abas; com a RightBar levando as ferramentas do
+    // projeto, sobrou espaço e ele veio pra todas (pedido do Pe, 15/11/2026).
+    m_pageButton = makeIconButton(this);
+    m_pageButton->setObjectName(QStringLiteral("ttbInline"));
+    bindIcon(m_pageButton, QStringLiteral("page-setup.svg"));
+    m_pageButton->setProperty("ribbonIcon", QStringLiteral("page-setup.svg"));
+    m_pageButton->setToolTip(tr("Página e margens"));
+    connect(m_pageButton, &QToolButton::clicked, this, &TopToolbar::showPagePopup);
+
     // ---------------- Grupo E: Mídia ----------------
     reminderButton->setObjectName(QStringLiteral("ttbMedia"));
     bindIcon(reminderButton, QStringLiteral("reminder.svg"));
@@ -482,7 +492,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
         exportButton, helpButton, boldButton, italicButton, underlineButton,
         strikethroughButton, statisticsButton, readAloudButton, repetitionsButton,
         readModeButton, focusButton,
-        searchButton, alignButton, imageButton, reminderButton,
+        searchButton, alignButton, imageButton, m_pageButton, reminderButton,
         immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
         refMenuButton, pensarioButton, construtorButton, miraButton,
         indentButton,
@@ -541,6 +551,7 @@ void TopToolbar::buildGroups()
         { QStringLiteral("underline"),      underlineButton },
         { QStringLiteral("strikethrough"),  strikethroughButton },
         { QStringLiteral("image"),          imageButton },
+        { QStringLiteral("pageSetup"),      m_pageButton },
         { QStringLiteral("readMode"),       readModeButton },
         { QStringLiteral("focus"),          focusButton },
         { QStringLiteral("search"),         searchButton },
@@ -569,7 +580,8 @@ QHash<QString, QStringList> TopToolbar::defaultButtonLayout() const
                                        QStringLiteral("lineHeight"), QStringLiteral("indent"),
                                        QStringLiteral("align"), QStringLiteral("bold"),
                                        QStringLiteral("italic"), QStringLiteral("underline"),
-                                       QStringLiteral("strikethrough"), QStringLiteral("image") } },
+                                       QStringLiteral("strikethrough"), QStringLiteral("image"),
+                                       QStringLiteral("pageSetup") } },
         { QStringLiteral("tools"),   { QStringLiteral("readMode"), QStringLiteral("focus"),
                                        QStringLiteral("search"), QStringLiteral("readAloud"),
                                        QStringLiteral("repetitions") } },
@@ -776,15 +788,21 @@ void TopToolbar::applyUiScale()
         fontButton->setFixedSize(btnSize, btnSize);
         fontButton->setIconSize(QSize(icoPx, icoPx));
     }
-    if (sizeButton) {
-        sizeButton->setIconSize(QSize(icoPx, icoPx));
-        if (isVertical()) sizeButton->setFixedSize(btnSize, btnSize);
-        else sizeButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
-    }
-    if (lineHeightButton) {
-        lineHeightButton->setIconSize(QSize(icoPx, icoPx));
-        if (isVertical()) lineHeightButton->setFixedSize(btnSize, btnSize);
-        else lineHeightButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
+    // Tamanho e entrelinha: em pé são quadrados; deitados mostram o valor ao
+    // lado do ícone, então só a altura é fixa e a largura segue o texto. (Fixar
+    // 26 px de largura aqui só "funcionava" no cold start, porque o min-width
+    // do QSS entrava depois e vencia; voltando da faixa pra clássica a ordem se
+    // invertia e o "16"/"1.1" sumia.)
+    for (QToolButton* b : { sizeButton, lineHeightButton }) {
+        if (!b) continue;
+        b->setIconSize(QSize(icoPx, icoPx));
+        if (isVertical()) {
+            b->setFixedSize(btnSize, btnSize);
+        } else {
+            b->setMinimumWidth(0);
+            b->setMaximumWidth(QWIDGETSIZE_MAX);
+            b->setFixedHeight(btnSize);
+        }
     }
     const int sepLen = qMax(12, qRound(22 * s));
     for (QFrame *sep : std::as_const(m_separators)) {

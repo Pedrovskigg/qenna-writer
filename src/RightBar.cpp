@@ -83,7 +83,8 @@ QString badgeQss()
 
 bool RightBar::enabledInSettings()
 {
-    return QSettings().value(QStringLiteral("ui/rightBarEnabled"), false).toBool();
+    // Padrão do app desde 15/11/2026 (pedido do Pe).
+    return QSettings().value(QStringLiteral("ui/rightBarEnabled"), true).toBool();
 }
 
 void RightBar::setEnabledInSettings(bool on)

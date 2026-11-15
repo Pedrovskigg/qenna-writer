@@ -761,11 +761,7 @@ void TopToolbar::buildRibbonChrome()
     }
     m_ribbonScope->setMenu(scopeMenu);
 
-    m_pageButton = new QToolButton(m_ribbonParking);
-    m_pageButton->setToolTip(tr("Página e margens"));
-    m_pageButton->setCursor(Qt::PointingHandCursor);
-    m_pageButton->setProperty("ribbonIcon", QStringLiteral("page-setup.svg"));
-    connect(m_pageButton, &QToolButton::clicked, this, &TopToolbar::showPagePopup);
+    // O botão Página nasce com a barra (TopToolbar.cpp): a clássica também tem.
 
     m_outerLayout->addWidget(m_ribbon);
     m_ribbon->hide();
@@ -1066,7 +1062,7 @@ void TopToolbar::rebuildRibbonPages()
     if (auto* reel = static_cast<RibbonReel*>(m_ribbonReel)) {
         reel->setVisible(reelMode);
         reel->setFixedSize(sc(74), sc(kReelBodyH));
-        if (reelMode) { reel->setIndex(qBound(0, m_ribbonTab, 3), false); reel->update(); }
+        if (reelMode) { reel->setIndex(qMax(0, ribbonVisibleTabs().indexOf(m_ribbonTab)), false); reel->update(); }
     }
 
     // Setinhas de "abre menu".
@@ -1155,6 +1151,16 @@ void TopToolbar::rebuildRibbonPages()
     const bool worldEmpty = m_rightBarButtons.contains(construtorButton);
     if (m_ribbonTabs.size() > 2) m_ribbonTabs.at(2)->setVisible(!worldEmpty);
     if (worldEmpty && m_ribbonTab == 2) m_ribbonTab = 0;
+    // A Giratória só tem as faces das abas que existem (sem página vazia no giro).
+    if (auto* reel = static_cast<RibbonReel*>(m_ribbonReel)) {
+        const QStringList all = { tr("Editor"), tr("Revisão"), tr("Mundo"), tr("Ambiente") };
+        QStringList names;
+        for (int tb : ribbonVisibleTabs()) names << all.at(tb);
+        if (reel->names != names) {
+            reel->names = names;
+            reel->setIndex(qMax(0, ribbonVisibleTabs().indexOf(qBound(0, m_ribbonTab, 3))), false);
+        }
+    }
     setRibbonTab(qBound(0, m_ribbonTab, 3));
     setFixedHeight(ribbonHeight(true));
     m_ribbonCarousel->updateGeometry();
@@ -1163,6 +1169,12 @@ void TopToolbar::rebuildRibbonPages()
     positionModeBadges();
     updateGeometry();
     QCoreApplication::postEvent(this, new QEvent(QEvent::LayoutRequest));
+}
+
+QList<int> TopToolbar::ribbonVisibleTabs() const
+{
+    if (m_rightBarButtons.contains(construtorButton)) return { 0, 1, 3 };
+    return { 0, 1, 2, 3 };
 }
 
 bool TopToolbar::wheelRibbonSection(int angleDeltaY)
@@ -1185,9 +1197,11 @@ void TopToolbar::stepRibbonSection(int delta)
     flip->hide();
     const QRect area(m_ribbonCarousel->mapTo(this, QPoint(0, 0)), m_ribbonCarousel->size());
     const QPixmap from = grab(area);
+    const QList<int> tabs = ribbonVisibleTabs();
+    const int n = int(tabs.size());
     const int k = reel->index() + delta;
     reel->setIndex(k, true);
-    setRibbonTab(((k % 4) + 4) % 4);
+    setRibbonTab(tabs.at(((k % n) + n) % n));
     if (QWidget* pg = m_ribbonStack->currentWidget()) if (pg->layout()) pg->layout()->activate();
     const QPixmap to = grab(area);
     flip->setGeometry(m_ribbonCarousel->geometry());
@@ -1201,9 +1215,14 @@ void TopToolbar::setRibbonTab(int idx)
     m_ribbonStack->setCurrentIndex(idx);
     if (m_ribbonReelMode && m_ribbonReel) {
         auto* reel = static_cast<RibbonReel*>(m_ribbonReel);
-        int d = ((idx - reel->index()) % 4 + 4) % 4;
-        if (d == 3) d = -1;
-        if (d != 0) reel->setIndex(reel->index() + d, false);
+        const QList<int> tabs = ribbonVisibleTabs();
+        const int n = int(tabs.size());
+        const int pos = int(tabs.indexOf(idx));
+        if (pos >= 0) {
+            int d = ((pos - reel->index()) % n + n) % n;
+            if (d > n / 2) d -= n;   // o caminho mais curto
+            if (d != 0) reel->setIndex(reel->index() + d, false);
+        }
     }
     const bool showMark = (m_barStyle != BarStyle::RibbonTabs) || m_ribbonPeek;
     // Só abas, recolhida: nenhuma aba fica marcada.
@@ -1400,9 +1419,17 @@ void TopToolbar::showPagePopup()
 
     pop->adjustSize();
     QPoint at = m_pageButton->mapToGlobal(QPoint(0, m_pageButton->height() + 4));
+    if (isVertical()) {
+        // Barra na lateral: o painel abre ao lado do botão, pra dentro da janela.
+        const QPoint b = m_pageButton->mapToGlobal(QPoint(0, 0));
+        at = (m_barSide == Qt::RightEdge) ? QPoint(b.x() - pop->width() - 6, b.y())
+                                          : QPoint(b.x() + m_pageButton->width() + 6, b.y());
+    }
     if (QWidget* win = window()) {
-        const int right = win->mapToGlobal(QPoint(win->width(), 0)).x() - 8;
+        const QRect wr(win->mapToGlobal(QPoint(0, 0)), win->size());
+        const int right = wr.right() - 8;
         if (at.x() + pop->width() > right) at.setX(right - pop->width());
+        if (at.y() + pop->height() > wr.bottom() - 8) at.setY(qMax(wr.top() + 8, wr.bottom() - 8 - pop->height()));
     }
     pop->move(at);
     pop->show();

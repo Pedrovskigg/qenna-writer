@@ -350,6 +350,9 @@ private:
     QWidget* m_ribbonFlip = nullptr;
     qint64 m_lastReelWheel = 0;
     void stepRibbonSection(int delta);
+    // Abas que existem agora (com a RightBar ligada, a Mundo some): a Giratória
+    // gira só por elas.
+    QList<int> ribbonVisibleTabs() const;
     bool wheelRibbonSection(int angleDeltaY);
     int m_ribbonInsetL = 0;
     int m_ribbonInsetR = 0;
