@@ -562,11 +562,12 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
     gl->addWidget(gcap);
     auto* sr = new QHBoxLayout();
     sr->setSpacing(4);
-    const QStringList sv = { QStringLiteral("1"), QStringLiteral("0.7"), QStringLiteral("0.5") };
-    const QStringList sl = { Panel::tr("Normal"), Panel::tr("Menor"), Panel::tr("Mínima") };
+    // 15/11/2026: a Mínima (0,35) entrou embaixo da antiga Mínima, que virou Pequena (pedido do Pe: sprites ainda menores)
+    const QStringList sv = { QStringLiteral("1"), QStringLiteral("0.7"), QStringLiteral("0.5"), QStringLiteral("0.35") };
+    const QStringList sl = { Panel::tr("Normal"), Panel::tr("Menor"), Panel::tr("Pequena"), Panel::tr("Mínima") };
     const QStringList st = { Panel::tr("Tudo que é construído ou plantado no tamanho de sempre"), Panel::tr("Construções e árvores menores: o mesmo continente parece um mundo maior"),
-                             Panel::tr("Ainda menores: o continente vira um império") };
-    for (int i = 0; i < 3; i++) {
+                             Panel::tr("Ainda menores: o continente vira um império"), Panel::tr("As menores de todas: cada vila vira um pontinho num mapa de império inteiro") };
+    for (int i = 0; i < 4; i++) {
         auto* b = new QToolButton(m_gear);
         b->setObjectName(QStringLiteral("cartoSeg"));
         b->setText(sl[i]); b->setToolTip(st[i]);
