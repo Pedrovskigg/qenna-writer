@@ -50,6 +50,10 @@ public:
     // A mesa pinta a sombra da folha também fora dos Animados (no Mac, ver
     // MainWindow::applyPageShadow).
     void setPaintsSheetShadow(bool on);
+    // Modo de página: a folha não é um retângulo só. As folhas visíveis (nas
+    // coordenadas deste widget) ganham cada uma a sua sombra, recortada na
+    // área do editor. Vazio = fora do modo de página.
+    void setSheetPages(const QList<QRect>& pages, const QRect& clip);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -80,6 +84,8 @@ private:
     QTimer* m_timer = nullptr;
     QElapsedTimer m_clock;
     QRect m_sheet;
+    QList<QRect> m_pages;
+    QRect m_pagesClip;
     bool m_paintShadow = false;
     QImage m_shadow;
     QImage m_low;          // a mesa em resolução menor (qualidade abaixo de 100%)

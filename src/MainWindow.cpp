@@ -1487,6 +1487,10 @@ void MainWindow::setupEditor()
         if (regions.isEmpty()) return;
         PageBg::paint(p, editor->size(), editor->viewport()->y() - editor->verticalScrollBar()->value(), regions, clip);
     });
+    // Modo de página: as folhas andam com a rolagem, e a sombra delas (pintada
+    // pela mesa nos Animados e no Mac) anda junto.
+    connect(editor->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { syncDeskPages(); });
+    connect(editor->verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() { syncDeskPages(); });
     connect(editor->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() {
         const QList<PageBg::Region> regions = pageBackgroundRegions();
         if (regions.isEmpty()) return;
@@ -3195,6 +3199,74 @@ void MainWindow::setupEditor()
 
     // GlobalSearchPanel (Ctrl+Shift+F) — busca no projeto inteiro.
     globalSearchPanel = new GlobalSearchPanel(projectModel, docCache, projectRoot, container);
+    // Busca por tag (#guerra): tudo que tem tag no projeto, e como abrir cada um.
+    globalSearchPanel->tagEntries = [this]() {
+        QVector<GlobalSearchPanel::TagEntry> out;
+        if (projectModel)
+            for (const Drawer& d : projectModel->drawers())
+                for (const DrawerItem& it : d.items) {
+                    if (it.tags.isEmpty()) continue;
+                    const QString itemId = it.id;
+                    out.append({ it.title.isEmpty() ? tr("Documento") : it.title, d.title, it.tags, [this, itemId]() {
+                        EditorHost::ViewMode vm;
+                        vm.type = EditorHost::DrawerDoc;
+                        vm.itemId = itemId;
+                        if (editorHost) editorHost->setViewMode(vm);
+                    } });
+                }
+        const QString criador = tr("Criador de Mundos");
+        auto openPlace = [this](const QString& placeId, const QString& nodeId) {
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->openNode(placeId, nodeId);
+            w->show(); w->raise(); w->activateWindow();
+        };
+        auto openSystem = [this](const QString& systemId, const QString& nodeId) {
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->openConstrutorNode(systemId, nodeId);
+            w->show(); w->raise(); w->activateWindow();
+        };
+        if (territorioStore)
+            for (const auto& tr0 : territorioStore->territorios()) {
+                const QString pid = tr0.id;
+                if (!tr0.tags.isEmpty())
+                    out.append({ tr0.name, tr("Lugar · %1").arg(criador), tr0.tags, [openPlace, pid]() { openPlace(pid, QString()); } });
+                std::function<void(const QList<TerritorioStore::Node>&)> walk = [&](const QList<TerritorioStore::Node>& nodes) {
+                    for (const auto& n : nodes) {
+                        if (!n.tags.isEmpty()) {
+                            const QString nid = n.id;
+                            out.append({ n.name, QStringLiteral("%1 · %2").arg(tr0.name, criador), n.tags, [openPlace, pid, nid]() { openPlace(pid, nid); } });
+                        }
+                        walk(n.children);
+                    }
+                };
+                walk(tr0.nodes);
+            }
+        if (construtorStore)
+            for (const auto& s : construtorStore->systems()) {
+                const QString sid = s.id;
+                if (!s.tags.isEmpty())
+                    out.append({ s.name, tr("Sistema · %1").arg(criador), s.tags, [openSystem, sid]() { openSystem(sid, QString()); } });
+                std::function<void(const QList<ConstrutorStore::Node>&)> walk = [&](const QList<ConstrutorStore::Node>& nodes) {
+                    for (const auto& n : nodes) {
+                        if (!n.tags.isEmpty()) {
+                            const QString nid = n.id;
+                            out.append({ n.name, QStringLiteral("%1 · %2").arg(s.name, criador), n.tags, [openSystem, sid, nid]() { openSystem(sid, nid); } });
+                        }
+                        walk(n.children);
+                    }
+                };
+                walk(s.nodes);
+            }
+        if (memoriesStore)
+            for (const auto& m : memoriesStore->memories()) {
+                if (m.tags.isEmpty()) continue;
+                QString title = m.name.trimmed();
+                if (title.isEmpty()) title = m.text.simplified().left(60);
+                const MemoriesStore::Memory mem = m;
+                out.append({ title, tr("Memória · Pensário"), m.tags, [this, mem]() { openMemoryInEditor(mem); } });
+            }
+        return out;
+    };
     connect(globalSearchPanel, &GlobalSearchPanel::openRequested, this,
             [this](EditorHost::ViewMode vm, QString query) {
         // Fichas são DrawerDoc — o handler de viewModeChanged mostra o painel.
@@ -9582,6 +9654,7 @@ void MainWindow::positionPageGlow()
     // nos vãos entre as folhas, então ela não pode pular a área da coluna.
     if (backgroundWidget)
         backgroundWidget->setSheetRect(sheet.isEmpty() || pageModeEnabled() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()));
+    syncDeskPages();
 
     const QColor c = parseColor(Theme::pageShadowColor());
     if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
@@ -9597,6 +9670,28 @@ void MainWindow::positionPageGlow()
                           Theme::pageShadowOffset(), Theme::panelRadius());
     m_pageGlow->show();
     m_pageGlow->raise();
+}
+
+void MainWindow::syncDeskPages()
+{
+    if (!backgroundWidget) return;
+    if (!pageModeEnabled() || !editor || !editor->isVisible() || !editorScroll) {
+        backgroundWidget->setSheetPages({}, QRect());
+        return;
+    }
+    // Faixa onde as folhas aparecem: na altura, o editor recortado pelo que a
+    // rolagem de fora mostra (folha escondida não faz sombra); na largura, livre,
+    // senão a sombra das laterais (que passa da folha) seria cortada.
+    QWidget* vp = editorScroll->viewport();
+    const QRect editorInWin(editor->mapTo(this, QPoint(0, 0)), editor->size());
+    const QRect vpInWin(vp->mapTo(this, QPoint(0, 0)), vp->size());
+    const QRect band = editorInWin.intersected(vpInWin);
+    const QRect clip(0, band.top(), width(), band.height());
+    QList<QRect> pages;
+    const QRect area = QRect(QPoint(0, 0), editor->size());
+    for (const QRect& r : editor->paperRects(area))
+        pages << r.translated(editorInWin.topLeft());
+    backgroundWidget->setSheetPages(pages, clip);
 }
 
 // No Mac a sombra da folha é pintada pela mesa (BackgroundWidget), como nos

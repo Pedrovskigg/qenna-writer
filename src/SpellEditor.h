@@ -168,10 +168,13 @@ private:
     bool m_uppercasing = false;
     QMargins m_pageMargins;
     bool m_pageMode = false;
+    bool m_fixingMargin = false;
     bool m_adjustingRange = false;
     QColor m_paperColor = Qt::white;
     void paintPaper(QPainter& p, const QRect& area);
     void extendScrollToLastPage();
+    // Troca a margem da folha sem deixar o Ctrl+Z tirá-la (ver o .cpp).
+    void setMarginOutsideHistory(qreal margin);
     OverlayPainter m_overlay;
     std::function<void()> m_beforePaint;
     std::function<void(QPainter&, const QRect&)> m_underlay;

@@ -444,6 +444,9 @@ private:
     void deactivateNavZone();
     void positionExternalScrollBar();
     void positionPageGlow();
+    // Modo de página: manda pra mesa onde estão as folhas visíveis (a sombra de
+    // cada uma, nos temas Animados e no Mac, é pintada por ela).
+    void syncDeskPages();
     void positionAutoNavHint();
 
     bool findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const;

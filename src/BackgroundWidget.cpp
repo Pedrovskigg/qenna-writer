@@ -234,6 +234,19 @@ void BackgroundWidget::setSheetRect(const QRect& r)
     }
 }
 
+void BackgroundWidget::setSheetPages(const QList<QRect>& pages, const QRect& clip)
+{
+    if (pages == m_pages && clip == m_pagesClip) return;
+    // A sombra passa um pouco da folha: repinta o que ela cobria e o que vai cobrir.
+    const int r = qMax(2, Theme::pageShadowRadius()) * 2 + qAbs(Theme::pageShadowOffset());
+    QRegion dirty;
+    for (const QRect& pg : std::as_const(m_pages)) dirty += pg.adjusted(-r, -r, r, r).intersected(m_pagesClip);
+    m_pages = pages;
+    m_pagesClip = clip;
+    for (const QRect& pg : std::as_const(m_pages)) dirty += pg.adjusted(-r, -r, r, r).intersected(m_pagesClip);
+    if ((m_anim || m_paintShadow) && !dirty.isEmpty()) update(dirty);
+}
+
 void BackgroundWidget::setPaintsSheetShadow(bool on)
 {
     if (on == m_paintShadow) return;
@@ -352,22 +365,33 @@ QRegion BackgroundWidget::animRegion() const
 // tamanho de folha e só carimbada a cada quadro.
 void BackgroundWidget::paintSheetShadow(QPainter& p)
 {
-    if (m_sheet.isEmpty() || !Theme::pageShadowEnabled()) return;
+    const bool paged = m_sheet.isEmpty() && !m_pages.isEmpty();
+    if ((m_sheet.isEmpty() && !paged) || !Theme::pageShadowEnabled()) return;
     const QColor col = Theme::toColor(Theme::pageShadowColor());
     if (col.alpha() == 0) return;
     const int r = qMax(2, Theme::pageShadowRadius());
     const int off = Theme::pageShadowOffset();
-    const QString key = QStringLiteral("%1x%2|%3|%4").arg(m_sheet.width()).arg(m_sheet.height()).arg(col.name(QColor::HexArgb)).arg(r);
+    // No modo de página as folhas têm todas o mesmo tamanho: uma imagem só serve pra todas.
+    const QSize sz = paged ? m_pages.first().size() : m_sheet.size();
+    const QString key = QStringLiteral("%1x%2|%3|%4").arg(sz.width()).arg(sz.height()).arg(col.name(QColor::HexArgb)).arg(r);
     if (key != m_shadowKey) {
-        QImage img(m_sheet.width() + 4 * r, m_sheet.height() + 4 * r, QImage::Format_ARGB32_Premultiplied);
+        QImage img(sz.width() + 4 * r, sz.height() + 4 * r, QImage::Format_ARGB32_Premultiplied);
         img.fill(Qt::transparent);
         {
             QPainter x(&img);
-            x.fillRect(QRect(2 * r, 2 * r, m_sheet.width(), m_sheet.height()), col);
+            x.fillRect(QRect(2 * r, 2 * r, sz.width(), sz.height()), col);
         }
         PanelGlass::boxBlur(img, qMax(1, r / 3));
         m_shadow = img;
         m_shadowKey = key;
     }
-    p.drawImage(m_sheet.topLeft() + QPoint(-2 * r, -2 * r + off), m_shadow);
+    if (!paged) {
+        p.drawImage(m_sheet.topLeft() + QPoint(-2 * r, -2 * r + off), m_shadow);
+        return;
+    }
+    p.save();
+    p.setClipRect(m_pagesClip);
+    for (const QRect& pg : std::as_const(m_pages))
+        p.drawImage(pg.topLeft() + QPoint(-2 * r, -2 * r + off), m_shadow);
+    p.restore();
 }

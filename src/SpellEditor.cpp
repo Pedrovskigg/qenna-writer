@@ -111,6 +111,11 @@ namespace {
 constexpr int kMaxSuggestions = 6;
 }
 
+namespace {
+// A margem que o layout usa de verdade (a do quadro raiz).
+qreal liveMargin(const QTextDocument* d) { return d->rootFrame()->frameFormat().topMargin(); }
+}
+
 SpellEditor::SpellEditor(QWidget* parent)
     : QTextEdit(parent)
 {
@@ -169,11 +174,38 @@ void SpellEditor::applyPageLayout()
     QTextDocument* doc = document();
     // 4 px é a margem padrão do Qt (a que o editor sempre usou).
     const qreal margin = m_pageMode ? kPageMargin : 4.0;
-    if (!qFuzzyCompare(doc->documentMargin(), margin)) doc->setDocumentMargin(margin);
+    if (!qFuzzyCompare(liveMargin(doc), margin)) setMarginOutsideHistory(margin);
     const qreal h = m_pageMode ? pagePitch() : -1.0;
     if (!qFuzzyCompare(doc->pageSize().height(), h))
         doc->setPageSize(QSizeF(doc->pageSize().width(), h));
     extendScrollToLastPage();
+}
+
+// A margem da folha mora no documento (documentMargin) e o Qt põe a troca no
+// histórico do Ctrl+Z: desfazer logo depois de ligar o modo de página tirava a
+// margem da folha. O Qt não deixa pausar o histórico sem apagá-lo, e juntar a
+// troca ao passo anterior prende o Ctrl+Z (testado em 15/11/2026). Então trocar
+// o modo zera o histórico do capítulo aberto, como abrir outro capítulo já faz.
+// O texto não muda; só o "desfazer" anterior à troca deixa de existir.
+void SpellEditor::setMarginOutsideHistory(qreal margin)
+{
+    QTextDocument* doc = document();
+    const bool wasModified = doc->isModified();
+    m_fixingMargin = true;
+    // documentMargin() é um número guardado à parte que o desfazer não atualiza;
+    // a margem que vale é a do quadro raiz. Acerta os dois.
+    auto apply = [doc, margin]() {
+        doc->setDocumentMargin(margin);
+        if (!qFuzzyCompare(liveMargin(doc), margin)) {
+            QTextFrameFormat f = doc->rootFrame()->frameFormat();
+            f.setMargin(margin);
+            doc->rootFrame()->setFrameFormat(f);
+        }
+    };
+    apply();
+    doc->clearUndoRedoStacks();
+    doc->setModified(wasModified);   // margem de vista não é edição do texto
+    m_fixingMargin = false;
 }
 
 void SpellEditor::extendScrollToLastPage()

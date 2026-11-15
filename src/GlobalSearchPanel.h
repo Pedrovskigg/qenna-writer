@@ -9,6 +9,8 @@
 #include <QVector>
 #include <QWidget>
 
+#include <functional>
+
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -24,6 +26,9 @@ class ProjectModel;
 // Painel flutuante de busca global no projeto (Ctrl+Shift+F). Mostra resultados
 // agrupados em "Direto" (match no título) e "Citado em..." (match no conteúdo).
 // Filtros: Todos / Capítulos / Cenas / Gavetas.
+// Começando com "#", busca por tag livre (15/11/2026): o projeto inteiro, não só
+// o mapa (documentos de gaveta, lugares e sistemas do Criador de Mundos e as
+// seções deles, memórias do Pensário).
 class GlobalSearchPanel : public QWidget {
     Q_OBJECT
 public:
@@ -32,7 +37,18 @@ public:
         RScene,
         RManuscript,
         RDrawerItem,
+        RTagName,     // uma tag do projeto (clicar refina a busca nela)
+        RTagged,      // algo que tem a tag (abre no lugar dele)
     };
+
+    // Algo com tag, montado pela MainWindow (que conhece todos os armazéns).
+    struct TagEntry {
+        QString title;
+        QString meta;          // "Personagens", "Lugar · Criador de Mundos"...
+        QStringList tags;
+        std::function<void()> open;
+    };
+    std::function<QVector<TagEntry>()> tagEntries;
 
     struct Result {
         ResultType type;
@@ -47,6 +63,11 @@ public:
         QString drawerKey;
         QString drawerTitle;
         QString itemId;
+        // Tags
+        QString tagName;
+        int tagCount = 0;
+        int entryIndex = -1;
+        QString meta;
     };
 
     GlobalSearchPanel(ProjectModel* model, DocCache* cache,
@@ -71,6 +92,7 @@ private slots:
     void onFilterClicked();
     void onResultActivated(QListWidgetItem* item);
     void runSearch();
+    void runTagSearch(const QString& needle);
 
 private:
     void rebuildFilterRow();
@@ -97,6 +119,8 @@ private:
     QString m_filter = QStringLiteral("all");
     QString m_query;
     QVector<Result> m_results;
+    QVector<TagEntry> m_tagEntries;
+    bool m_tagMode = false;
 
     QTimer* m_debounce = nullptr;
 };

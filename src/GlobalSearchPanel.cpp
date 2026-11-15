@@ -3,6 +3,7 @@
 #include "DocCache.h"
 #include "IconUtils.h"
 #include "ProjectModel.h"
+#include "ProjectTags.h"
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
 #include "Theme.h"
@@ -101,7 +102,8 @@ GlobalSearchPanel::GlobalSearchPanel(ProjectModel* model, DocCache* cache,
     m_resultList->setMaximumHeight(kPanelMaxHeight - 130);
     outer->addWidget(m_resultList, 1);
 
-    m_emptyLabel = new QLabel(tr("Digite para buscar capítulos, cenas e itens."), this);
+    m_emptyLabel = new QLabel(tr("Digite para buscar capítulos, cenas e itens.") + QLatin1Char('\n')
+                              + tr("Comece com # pra buscar por tag."), this);
     m_emptyLabel->setObjectName(QStringLiteral("gsEmpty"));
     m_emptyLabel->setAlignment(Qt::AlignCenter);
     m_emptyLabel->setWordWrap(true);
@@ -218,6 +220,7 @@ void GlobalSearchPanel::keyPressEvent(QKeyEvent* event)
 void GlobalSearchPanel::onQueryChanged(const QString& q)
 {
     m_query = q.trimmed();
+    m_tagMode = m_query.startsWith(QLatin1Char('#'));
     m_debounce->start();
     if (m_query.isEmpty()) {
         m_results.clear();
@@ -250,6 +253,20 @@ void GlobalSearchPanel::onResultActivated(QListWidgetItem* item)
     if (!ok || idx < 0 || idx >= m_results.size()) return;
     const Result& r = m_results.at(idx);
 
+    if (r.type == RTagName) {
+        m_input->setText(QStringLiteral("#") + r.tagName);   // refina: mostra o que tem essa tag
+        m_input->setFocus();
+        return;
+    }
+    if (r.type == RTagged) {
+        if (r.entryIndex >= 0 && r.entryIndex < m_tagEntries.size()) {
+            const auto open = m_tagEntries.at(r.entryIndex).open;
+            closePanel();
+            if (open) open();
+        }
+        return;
+    }
+
     EditorHost::ViewMode vm;
     switch (r.type) {
     case RManuscript:
@@ -271,14 +288,70 @@ void GlobalSearchPanel::onResultActivated(QListWidgetItem* item)
         vm.type = EditorHost::DrawerDoc;
         vm.itemId = r.itemId;
         break;
+    case RTagName:
+    case RTagged:
+        return;
     }
     emit openRequested(vm, m_query);
     closePanel();
 }
 
+void GlobalSearchPanel::runTagSearch(const QString& needle)
+{
+    m_tagEntries = tagEntries ? tagEntries() : QVector<TagEntry>();
+    // tags do projeto com a contagem, das mais usadas pras menos
+    QList<QStringList> lists;
+    for (const TagEntry& e : std::as_const(m_tagEntries)) lists.append(e.tags);
+    const QStringList ranked = ProjectTags::rank(lists);
+    auto countOf = [&](const QString& tag) {
+        int n = 0;
+        for (const TagEntry& e : std::as_const(m_tagEntries)) if (ProjectTags::has(e.tags, tag)) ++n;
+        return n;
+    };
+    QStringList matched;
+    for (const QString& tg : ranked)
+        if (needle.isEmpty() || tg.toLower().contains(needle)) matched << tg;
+    const bool exact = !needle.isEmpty() && matched.size() >= 1
+                       && std::any_of(matched.cbegin(), matched.cend(), [&](const QString& tg) { return tg.toLower() == needle; });
+    // Digitou a tag inteira: só ela. Senão, as tags que combinam (pra refinar) e o que tem alguma delas.
+    if (exact) {
+        QStringList only;
+        for (const QString& tg : matched) if (tg.toLower() == needle) only << tg;
+        matched = only;
+    } else {
+        for (const QString& tg : matched) {
+            Result r;
+            r.type = RTagName;
+            r.tagName = tg;
+            r.tagCount = countOf(tg);
+            r.matchType = QStringLiteral("tag");
+            m_results.append(r);
+        }
+    }
+    if (needle.isEmpty()) return;   // "#" sozinho: só a lista das tags
+    for (int i = 0; i < m_tagEntries.size(); ++i) {
+        const TagEntry& e = m_tagEntries.at(i);
+        bool hit = false;
+        for (const QString& tg : matched) if (ProjectTags::has(e.tags, tg)) { hit = true; break; }
+        if (!hit) continue;
+        Result r;
+        r.type = RTagged;
+        r.title = e.title;
+        r.meta = e.meta;
+        r.entryIndex = i;
+        r.matchType = QStringLiteral("title");
+        m_results.append(r);
+    }
+}
+
 void GlobalSearchPanel::runSearch()
 {
     m_results.clear();
+    if (m_tagMode) {
+        runTagSearch(ProjectTags::normalize(m_query).toLower());
+        rebuildResultList();
+        return;
+    }
     const QString needle = m_query.toLower();
     if (needle.isEmpty() || !m_model) {
         rebuildResultList();
@@ -419,6 +492,8 @@ QString GlobalSearchPanel::typeMeta(const Result& r) const
     case RScene:
         return withBook(tr("%1 • Cena").arg(r.chapterTitle.isEmpty() ? tr("Capítulo") : r.chapterTitle));
     case RDrawerItem: return r.drawerTitle.isEmpty() ? tr("Documento") : r.drawerTitle;
+    case RTagName: return tr("%n item(ns)", nullptr, r.tagCount);
+    case RTagged: return r.meta;
     }
     return QString();
 }
@@ -427,10 +502,11 @@ void GlobalSearchPanel::rebuildResultList()
 {
     m_resultList->clear();
 
-    m_filterRow->setVisible(!m_query.isEmpty());
+    m_filterRow->setVisible(!m_query.isEmpty() && !m_tagMode);
 
     if (m_query.isEmpty()) {
-        m_emptyLabel->setText(tr("Digite para buscar capítulos, cenas e itens."));
+        m_emptyLabel->setText(tr("Digite para buscar capítulos, cenas e itens.") + QLatin1Char('\n')
+                              + tr("Comece com # pra buscar por tag."));
         m_emptyLabel->setVisible(true);
         m_resultList->setVisible(false);
         return;
@@ -444,7 +520,7 @@ void GlobalSearchPanel::rebuildResultList()
         else citedIdx.append(i);
     }
 
-    if (directIdx.isEmpty() && citedIdx.isEmpty()) {
+    if (directIdx.isEmpty() && citedIdx.isEmpty() && !m_tagMode) {
         m_emptyLabel->setText(tr("Nada encontrado."));
         m_emptyLabel->setVisible(true);
         m_resultList->setVisible(false);
@@ -471,6 +547,33 @@ void GlobalSearchPanel::rebuildResultList()
         it->setForeground(QColor(Theme::textMuted()));
         it->setTextAlignment(Qt::AlignLeft);
     };
+
+    if (m_tagMode) {
+        QVector<int> tagIdx, itemIdx;
+        for (int i = 0; i < m_results.size(); ++i)
+            (m_results.at(i).type == RTagName ? tagIdx : itemIdx).append(i);
+        if (tagIdx.isEmpty() && itemIdx.isEmpty()) {
+            m_resultList->setVisible(false);
+            m_emptyLabel->setText(m_query.size() <= 1 ? tr("O projeto ainda não tem tags. Elas entram nas folhas de criação, no cabeçalho dos documentos e no Criador de Mundos.")
+                                                      : tr("Nenhuma tag com esse nome."));
+            m_emptyLabel->setVisible(true);
+            return;
+        }
+        if (!tagIdx.isEmpty()) {
+            addHeader(tr("Tags"));
+            for (int i : tagIdx) {
+                const Result& r = m_results.at(i);
+                auto* it = new QListWidgetItem(m_resultList);
+                it->setData(Qt::UserRole, i);
+                it->setText(QStringLiteral("#%1\n%2").arg(r.tagName, typeMeta(r)));
+            }
+        }
+        if (!itemIdx.isEmpty()) {
+            if (!tagIdx.isEmpty()) addHeader(tr("Com essas tags"));
+            for (int i : itemIdx) addEntry(i);
+        }
+        return;
+    }
 
     for (int i : directIdx) addEntry(i);
     if (!citedIdx.isEmpty()) {

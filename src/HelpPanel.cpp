@@ -189,10 +189,10 @@ constexpr int kEditorFocusModesThumbWidth   = 160; // nativo 76 — recorte min�
 constexpr int kEditorFocusOnThumbWidth      = 320; // nativo 230
 constexpr int kEditorPageConfigThumbWidth   = 480; // nativo 410
 constexpr int kCounterThumbWidth       = 360; // nativo 269
-constexpr int kCounterPanelThumbWidth  = 340; // nativo 260 (recorte alto, 260x865)
-constexpr int kCalendarThumbWidth      = 520; // nativo 474
+constexpr int kCounterPanelThumbWidth  = 340; // nativo 264 (recorte alto, 264x509)
+constexpr int kCalendarThumbWidth      = 340; // nativo 264 (aba Mês)
 constexpr int kStatisticsThumbWidth    = 420; // nativo 337
-constexpr int kOffDaysThumbWidth       = 340; // nativo 255
+constexpr int kOffDaysThumbWidth       = 340; // nativo 264 (página das folgas)
 constexpr int kRefMenuOpenThumbWidth   = 500; // nativo 498, recorte alto
 constexpr int kRefMenuSearchThumbWidth = 500; // nativo 460
 constexpr int kRefMenuEditThumbWidth   = 480; // nativo 454, recorte alto
@@ -1143,11 +1143,11 @@ QString HelpPanel::dailyGoalCounterContent() const
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
         .arg(tr("De onde contar."),
-             tr("No modo completo, você escolhe o que os cartões contam: só os capítulos do "
-                "manuscrito, só o documento que está aberto no editor agora, só as gavetas, ou "
-                "tudo junto. Clique com o botão direito nos cartões pra escolher quais "
-                "métricas aparecem ali (Palavras, Caracteres, Palavras hoje, Páginas, entre "
-                "outras)."));
+             tr("Clique com o botão direito no contador. Em \"Contar em\" você escolhe o que "
+                "ele conta: só os capítulos do manuscrito, só o documento que está aberto no "
+                "editor agora, só as gavetas, ou tudo junto. No mesmo menu você escolhe quais "
+                "métricas aparecem nele (Palavras, Caracteres, Palavras hoje, Páginas, entre "
+                "outras), o estilo e o tamanho."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Meta diária."),
