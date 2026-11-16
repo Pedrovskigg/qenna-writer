@@ -16,6 +16,7 @@
 #include <QEvent>
 #include <QFile>
 #include <QGuiApplication>
+#include <QInputMethodEvent>
 #include <QKeyEvent>
 #include <QMimeData>
 #include <QRegularExpression>
@@ -56,6 +57,13 @@ EditorHost::EditorHost(QTextEdit* editor, DocCache* cache, ProjectModel* model, 
         m_editor->installEventFilter(this);
         // rolar com a mão (roda, barra, teclas) cancela a rolagem guardada que ainda ia ser aplicada
         connect(m_editor->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, [this]() { m_spotPending = false; });
+        // Manuscrito completo: a costura e o capítulo do cursor (EditorHostBook.cpp)
+        connect(m_editor->document(), &QTextDocument::contentsChange, this, &EditorHost::onBookContentsChange);
+        connect(m_editor, &QTextEdit::cursorPositionChanged, this, &EditorHost::updateFocusChapter);
+    }
+    if (m_model) {
+        connect(m_model, &ProjectModel::chaptersChanged, this, &EditorHost::onModelChaptersChanged);
+        connect(m_model, &ProjectModel::manuscriptsChanged, this, &EditorHost::onModelChaptersChanged);
     }
     // fechar o app: o documento aberto guarda onde parou (abre ali na próxima vez)
     connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() { rememberSpot(); });
@@ -65,8 +73,12 @@ bool EditorHost::eventFilter(QObject* watched, QEvent* event) {
     if (watched == m_editor && event->type() == QEvent::MouseButtonPress) {
         CrashLogger::log("EditorHost: clique no editor");
     }
+    if (watched == m_editor && isBook() && event->type() == QEvent::InputMethod) {
+        if (bookGuardInputMethod(static_cast<QInputMethodEvent*>(event))) return true;
+    }
     if (watched == m_editor && event->type() == QEvent::KeyPress) {
         auto* key = static_cast<QKeyEvent*>(event);
+        if (isBook() && bookGuardKey(key)) return true;
         if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {
             if (tryConvertHrShortcut()) return true;
         }
@@ -81,7 +93,7 @@ bool EditorHost::tryPasteClean() {
     if (!m_editor) return false;
     // Sanitização de <hr> só necessária nos modos de capítulo/cena: nesses modos,
     // <hr> é delimitador de cena e um <hr> colado do Word criaria cenas fantasmas.
-    if (m_viewMode.type != ChapterDoc && m_viewMode.type != SceneDoc) return false;
+    if (m_viewMode.type != ChapterDoc && m_viewMode.type != SceneDoc && m_viewMode.type != BookDoc) return false;
 
     const QMimeData* mimeData = QGuiApplication::clipboard()->mimeData();
     if (!mimeData || !mimeData->hasHtml()) return false;
@@ -129,7 +141,7 @@ bool EditorHost::tryConvertHrShortcut() {
     // para detectar cenas sem o delay adicional de 1,5s. Isso evita que o usuário
     // tente criar a mesma cena múltiplas vezes por falta de feedback.
     syncEditorToCache();
-    emit hrInserted(m_viewMode.chapterId);
+    emit hrInserted(isBook() ? m_focusChapterId : m_viewMode.chapterId);
     return true;
 }
 
@@ -150,6 +162,8 @@ QString EditorHost::keyFor(const ViewMode& vm) {
         return DocCache::itemKey(vm.itemId);
     case ManuscriptDoc:
         return QStringLiteral("ms:%1").arg(vm.manuscriptId);
+    case BookDoc:
+        return QStringLiteral("book:%1").arg(vm.manuscriptId);
     }
     return QString();
 }
@@ -291,6 +305,8 @@ bool EditorHost::isOpenable(const ViewMode& vm) const {
     }
     case DrawerDoc: return m_model->findDrawerItem(vm.itemId) != nullptr;
     case ManuscriptDoc: return m_model->findManuscript(vm.manuscriptId) != nullptr;
+    case BookDoc: return m_model->findManuscript(vm.manuscriptId) != nullptr
+                      && !m_model->orderedChaptersForManuscript(vm.manuscriptId).isEmpty();
     case Disabled: break;
     }
     return false;
@@ -466,6 +482,7 @@ bool EditorHost::deleteVariationForCurrentScene(const QString& variationId) {
 
 void EditorHost::setViewMode(const ViewMode& vm) {
     if (m_viewMode == vm) return;
+    if (vm.type == BookDoc && !isOpenable(vm)) return;   // livro que não existe mais (ou sem capítulos)
 
     {
         char buf[160];
@@ -486,6 +503,17 @@ void EditorHost::setViewMode(const ViewMode& vm) {
     }
 
     m_viewMode = vm;
+    // o livro que sai (ou entra) zera a costura antes de alguém perguntar por ela
+    m_seams.clear();
+    m_bookDirty.clear();
+    m_bookChapterIds.clear();
+    m_focusChapterId.clear();
+    m_breakTableRev = -1;
+    if (m_viewMode.type == BookDoc && m_model) {
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(m_viewMode.manuscriptId))
+            m_bookChapterIds << ch->id;
+        if (!m_bookChapterIds.isEmpty()) m_focusChapterId = m_bookChapterIds.first();
+    }
     emit viewModeChanged();
 
     if (m_viewMode.type == Disabled) {
@@ -496,7 +524,10 @@ void EditorHost::setViewMode(const ViewMode& vm) {
 
     const QString key = activeKey();
     QString chapterOrItemHtml;
-    if (m_cache && !key.isEmpty()) {
+    if (m_viewMode.type == BookDoc) {
+        // o livro não mora no cache: é montado dos capítulos (que moram)
+        chapterOrItemHtml = buildBookHtml();
+    } else if (m_cache && !key.isEmpty()) {
         if (m_cache->has(key)) {
             chapterOrItemHtml = m_cache->get(key);
         } else {
@@ -562,6 +593,7 @@ QString EditorHost::hydrateFromModel(const ViewMode& vm) const {
 
 void EditorHost::reloadFromCache() {
     if (!m_editor || !m_cache || m_viewMode.type == Disabled) return;
+    if (isBook()) { m_flushTimer->stop(); rebuildBook(true); return; }
     const QString key = activeKey();
     if (key.isEmpty() || !m_cache->has(key)) return;
     m_flushTimer->stop();
@@ -581,6 +613,7 @@ void EditorHost::syncEditorToCache() {
         if (it && it->isSheet) return;
     }
     if (m_flushTimer->isActive()) m_flushTimer->stop();
+    if (isBook()) { flushBook(); return; }
 
     const QString key = activeKey();
     if (key.isEmpty()) return;
@@ -623,6 +656,7 @@ void EditorHost::replaceContent(const QString& html) {
     } else {
         m_editor->setHtml(html);
         normalizeRefAnchors();
+        if (m_viewMode.type == BookDoc) stampBookSeams();
     }
     // O setHtml chama ensureCursorVisible no meio da carga; no modo de página
     // (margem do documento de 76 px) isso deixava o capítulo aberto já rolado

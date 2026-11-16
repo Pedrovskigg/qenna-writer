@@ -173,6 +173,11 @@ private:
     QColor m_paperColor = Qt::white;
     void paintPaper(QPainter& p, const QRect& area);
     void extendScrollToLastPage();
+    // O Qt às vezes perde o aviso da altura final de um documento grande (fica
+    // pendente e uma mudança pequena logo depois o cancela): a rolagem parava
+    // antes do fim, com texto embaixo, até a próxima edição. Confere e reenvia.
+    void syncScrollRangeToDocument();
+    class QTimer* m_scrollRangeCheck = nullptr;
     // Troca a margem da folha sem deixar o Ctrl+Z tirá-la (ver o .cpp).
     void setMarginOutsideHistory(qreal margin);
     OverlayPainter m_overlay;

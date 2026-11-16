@@ -50,6 +50,8 @@ public:
     // Aplica markers do map ao documento (após contentLoaded). Repinta cor e
     // reinjeta a property GUID em char fragments cujos blocos batam com a entry.
     void applyToDocument(const QString& docKey, QTextDocument* doc);
+    // Livro inteiro: o capítulo começa no bloco blockOffset, posição posOffset.
+    void applyToDocument(const QString& docKey, QTextDocument* doc, int blockOffset, int posOffset);
 
     // Varre o doc e atualiza entries[docKey] preservando metadata (cor/comentário)
     // por GUID. Chamado antes de salvar.

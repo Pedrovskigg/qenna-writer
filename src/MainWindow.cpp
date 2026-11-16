@@ -107,6 +107,7 @@
 #include "CharacterDetector.h"
 #include "DialogueDetector.h"
 #include "DocCache.h"
+#include "BookSeams.h"
 #include "DrawerCreateDialog.h"
 #include "DrawerQuickPopup.h"
 #include "WindowChrome.h"
@@ -275,6 +276,101 @@ bool adverbioItalianoOuFrances(const SpellChecker* sc, const QString& w, const Q
 // Documentos com mais de este número de caracteres têm rehighlight do spell
 // diferido por 400ms para não bloquear a UI ao abrir o doc.
 constexpr int kLargeDocCharThreshold = 30'000;
+
+// Livro inteiro: os marcadores são guardados por capítulo. Estes dois acham o
+// capítulo certo; fora do livro valem o documento aberto.
+QString markerKeyFor(MarkerStore* store, EditorHost* host, const QString& id, int fallbackPos)
+{
+    if (!store || !host) return QString();
+    if (!host->isBook()) return host->activeKey();
+    for (const QString& k : host->bookKeys())
+        if (store->hasMarker(k, id)) return k;
+    return fallbackPos >= 0 ? host->keyAt(fallbackPos) : host->scopeKey();
+}
+
+// Formatação só onde ainda falta. Reaplicar fonte, cor e entrelinha no
+// documento inteiro a cada carga custava segundos no livro inteiro (um milhão
+// de caracteres, quase tudo já certo de cada capítulo). O resultado é o mesmo
+// do merge no documento todo, num passo só (o layout refaz uma vez).
+bool formatLacks(const QTextFormat& have, const QTextFormat& want)
+{
+    const QMap<int, QVariant> props = want.properties();
+    for (auto it = props.cbegin(); it != props.cend(); ++it)
+        if (have.property(it.key()) != it.value()) return true;
+    return false;
+}
+
+void mergeCharFormatsWhereNeeded(QTextDocument* doc, const std::function<QTextCharFormat(const QTextCharFormat&)>& want)
+{
+    if (!doc) return;
+    struct Run { int from; int to; QTextCharFormat fmt; };
+    QVector<Run> runs;
+    QList<QPair<QTextBlock, QTextCharFormat>> blockFmts;
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        // o formato do bloco vazio (o que a digitação herda num parágrafo novo)
+        const QTextCharFormat bw = want(b.charFormat());
+        if (formatLacks(b.charFormat(), bw)) blockFmts.append({ b, bw });
+        for (auto it = b.begin(); !it.atEnd(); ++it) {
+            const QTextFragment f = it.fragment();
+            if (!f.isValid() || f.length() == 0) continue;
+            const QTextCharFormat w = want(f.charFormat());
+            if (!formatLacks(f.charFormat(), w)) continue;
+            const int from = f.position(), to = from + f.length();
+            if (!runs.isEmpty() && runs.last().to == from && runs.last().fmt == w) runs.last().to = to;
+            else runs.append(Run{ from, to, w });
+        }
+    }
+    if (runs.isEmpty() && blockFmts.isEmpty()) return;
+    QTextCursor c(doc);
+    c.beginEditBlock();
+    for (const Run& r : std::as_const(runs)) {
+        c.setPosition(r.from);
+        c.setPosition(r.to, QTextCursor::KeepAnchor);
+        c.mergeCharFormat(r.fmt);
+    }
+    for (const auto& bf : std::as_const(blockFmts)) {
+        QTextCursor bc(bf.first);
+        bc.mergeBlockCharFormat(bf.second);
+    }
+    c.endEditBlock();
+}
+
+void mergeBlockFormatWhereNeeded(QTextDocument* doc, const QTextBlockFormat& want)
+{
+    if (!doc) return;
+    // A quebra de cena e a abertura de capítulo têm margem, recuo e alinhamento
+    // próprios (SceneBreaks/BookSeams): aplicar os do parágrafo e devolver os
+    // delas refazia o layout do livro inteiro duas vezes a cada carga.
+    QTextBlockFormat special = want;
+    for (int prop : { int(QTextFormat::BlockTopMargin), int(QTextFormat::BlockBottomMargin),
+                      int(QTextFormat::TextIndent), int(QTextFormat::BlockAlignment) })
+        special.clearProperty(prop);
+    QList<QPair<QTextBlock, bool>> need;
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        const bool own = b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth) || BookSeams::isSeam(b);
+        if (formatLacks(b.blockFormat(), own ? special : want)) need.append({ b, own });
+    }
+    if (need.isEmpty()) return;
+    QTextCursor c(doc);
+    c.beginEditBlock();
+    for (const auto& n : std::as_const(need)) {
+        QTextCursor bc(n.first);
+        bc.mergeBlockFormat(n.second ? special : want);
+    }
+    c.endEditBlock();
+}
+
+void applyMarkersToEditor(MarkerStore* store, EditorHost* host, QTextEdit* ed)
+{
+    if (!store || !host || !ed) return;
+    if (host->isBook()) {
+        for (const EditorHost::BookPart& part : host->bookParts())
+            store->applyToDocument(part.key, ed->document(), part.firstBlock, part.firstPos);
+        return;
+    }
+    const QString key = host->activeKey();
+    if (!key.isEmpty()) store->applyToDocument(key, ed->document());
+}
 
 // Lado da tela onde a TopToolbar mora — configuração global (QSettings),
 // lida uma vez na construção da janela. Trocar de lado é decisão de
@@ -1050,26 +1146,39 @@ void MainWindow::setupEditor()
     // Persiste o último doc aberto por projeto — restaurado no próximo load.
     // Ignora Disabled (estado transitório durante troca de projeto).
     connect(editorHost, &EditorHost::viewModeChanged, this, &MainWindow::updateDocCachePinnedKeys);
-    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+    auto syncTimelineLocation = [this]() {
         if (!timelinePanel) return;
-        const auto vm = editorHost->viewMode();
+        const auto vm = editorHost->scopeViewMode();   // no livro inteiro: o capítulo do cursor
         const bool chapterish = vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc;
         timelinePanel->setEditorLocation(chapterish ? vm.manuscriptId : QString(),
                                          chapterish ? vm.chapterId : QString(),
                                          vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
-    });
+    };
+    connect(editorHost, &EditorHost::viewModeChanged, this, syncTimelineLocation);
+    connect(editorHost, &EditorHost::scopeChanged, this, syncTimelineLocation);
     connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
         if (projectRoot.isEmpty()) return;
         if (editorHost->viewMode().type == EditorHost::Disabled) return;
         rememberLastDocFor(projectRoot);
     });
     // Gaveta de Manuscritos: marca o capítulo/cena aberto.
-    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+    auto syncDrawerLocation = [this]() {
         if (!manuscriptPanel) return;
-        const auto vm = editorHost->viewMode();
+        const auto vm = editorHost->scopeViewMode();
         const bool chapterish = vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc;
+        manuscriptPanel->setBookManuscript(editorHost->isBook() ? editorHost->viewMode().manuscriptId : QString());
         manuscriptPanel->setCurrentLocation(chapterish ? vm.chapterId : QString(),
                                             vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
+    };
+    connect(editorHost, &EditorHost::viewModeChanged, this, syncDrawerLocation);
+    connect(editorHost, &EditorHost::scopeChanged, this, syncDrawerLocation);
+    // o RefMenu não edita um capítulo que o editor passou a mostrar
+    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+        if (refMenuPanel) refMenuPanel->editorShowsChanged();
+    });
+    // a abertura de capítulo barrou (ou desfez) uma edição: avisa
+    connect(editorHost, &EditorHost::bookEditBlocked, this, [this](const QString& msg) {
+        showEditorToast(msg, 3200);
     });
     // "Onde parei": cada flush de texto digitado marca o lugar.
     connect(editorHost, &EditorHost::contentFlushed, this, [this](const QString&) { recordResumePoint(); });
@@ -1104,10 +1213,34 @@ void MainWindow::setupEditor()
     });
     editor->setSpellChecker(spellChecker);
     spellHighlighter = new SpellHighlighter(editor->document(), spellChecker, this);
+    // Livro inteiro: o corretor marca só o capítulo do cursor (o resto do livro
+    // fica limpo e leve); trocar de capítulo leva os sublinhados junto.
+    spellHighlighter->setBlockGate([this](const QTextBlock& b) {
+        return !editorHost || !editorHost->isBook() || editorHost->inScope(b);
+    });
+    connect(editorHost, &EditorHost::scopeChanged, this, [this](const QString& previousChapterId) {
+        if (!spellHighlighter || !editorHost || !editor) return;
+        for (const EditorHost::BookPart& part : editorHost->bookParts()) {
+            if (part.chapterId != previousChapterId && part.chapterId != editorHost->focusChapterId()) continue;
+            for (QTextBlock b = editor->document()->findBlock(part.firstPos);
+                 b.isValid() && b.position() <= part.endPos; b = b.next())
+                spellHighlighter->rehighlightBlock(b);
+        }
+    });
     // Durante o load de um doc novo, o highlight roda numa thread única e pode
     // engasgar — para docs grandes, difere o rehighlight pra depois da UI renderizar.
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
         if (!spellHighlighter || !editor) return;
+        if (editorHost && editorHost->isBook()) {
+            // rehighlight() refaria o layout do livro inteiro: só o capítulo do cursor
+            QTimer::singleShot(0, this, [this]() {
+                if (!spellHighlighter || !editorHost || !editorHost->isBook()) return;
+                const int from = editorHost->scopeStart(), to = editorHost->scopeEnd();
+                for (QTextBlock b = editor->document()->findBlock(from); b.isValid() && b.position() <= to; b = b.next())
+                    spellHighlighter->rehighlightBlock(b);
+            });
+            return;
+        }
         const int charCount = editor->document()->characterCount();
         if (charCount > kLargeDocCharThreshold) {
             QTimer::singleShot(400, this, [this]() {
@@ -1230,7 +1363,8 @@ void MainWindow::setupEditor()
     // Atualiza o título do doc na TopToolbar conforme troca viewMode ou metadata muda.
     auto refreshDocTitle = [this]() {
         if (!toolbar || !editorHost || !projectModel) return;
-        const auto vm = editorHost->viewMode();
+        // livro inteiro: a faixa mostra o capítulo onde o cursor está
+        const auto vm = editorHost->scopeViewMode();
         QString title;
         QString subtitle;
         QString avatar;
@@ -1246,10 +1380,18 @@ void MainWindow::setupEditor()
             if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
                 title = ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title;
                 if (!ch->scenes.isEmpty() && editor) {
-                    const QTextCursor top = editor->cursorForPosition(QPoint(2, 2));
-                    const int si = qBound(0,
-                        SceneUtils::sceneIndexForBlock(editor->document(), top.blockNumber()),
-                        ch->scenes.size() - 1);
+                    int local = 0;
+                    if (editorHost->isBook()) {
+                        // a cena do cursor, contada dentro do capítulo
+                        const int cb = editor->textCursor().blockNumber();
+                        for (QTextBlock b = editor->document()->findBlock(editorHost->scopeStart());
+                             b.isValid() && b.blockNumber() < cb; b = b.next())
+                            if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) ++local;
+                    } else {
+                        const QTextCursor top = editor->cursorForPosition(QPoint(2, 2));
+                        local = SceneUtils::sceneIndexForBlock(editor->document(), top.blockNumber());
+                    }
+                    const int si = qBound(0, local, int(ch->scenes.size()) - 1);
                     const Scene& sc = ch->scenes.at(si);
                     subtitle = sc.title.isEmpty() ? tr("Cena %1").arg(si + 1) : sc.title;
                 }
@@ -1340,6 +1482,16 @@ void MainWindow::setupEditor()
         }
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
+    connect(editorHost, &EditorHost::scopeChanged, this, refreshDocTitle);
+    {
+        // livro inteiro: a cena do subtítulo segue o cursor (uma vez por volta do laço)
+        auto* pending = new bool(false);
+        connect(editor, &QTextEdit::cursorPositionChanged, this, [this, pending, refreshDocTitle]() {
+            if (*pending || !editorHost || !editorHost->isBook()) return;
+            *pending = true;
+            QTimer::singleShot(0, this, [pending, refreshDocTitle]() { *pending = false; refreshDocTitle(); });
+        });
+    }
     connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::groupsChanged, this, refreshDocTitle);
@@ -1410,6 +1562,9 @@ void MainWindow::setupEditor()
     connect(sceneDetectTimer, &QTimer::timeout, this, &MainWindow::detectScenesForPending);
     connect(editorHost, &EditorHost::contentFlushed, this, [this](const QString& key) {
         if (!key.startsWith(QStringLiteral("ch:"))) return;
+        // livro inteiro: uma gravação pode trazer vários capítulos; o que estava
+        // na fila é lido antes de dar lugar ao próximo
+        if (sceneDetectTimer->isActive() && !sceneDetectKey.isEmpty() && sceneDetectKey != key) detectScenesForPending();
         sceneDetectKey = key;
         sceneDetectTimer->start();
     });
@@ -1513,9 +1668,23 @@ void MainWindow::setupEditor()
     connect(editorHost, &EditorHost::contentLoaded, this, repaintPage);
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, repaintPage);
     editor->setOverlayPainter([this](QPainter& p, const QRect& clip) {
+        QList<QPair<QRect, QString>> hits;
         // Roteiro: o cabeçalho de cena já é a quebra — nada de traço por cima.
-        if (editor->isScreenplayMode()) return QList<QPair<QRect, QString>>();
-        return SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
+        if (!editor->isScreenplayMode())
+            hits = SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
+        // Livro inteiro: a abertura de cada capítulo
+        if (editorHost && editorHost->isBook()) {
+            hits += BookSeams::paint(editor, p, clip, [this](const QString& chId) {
+                BookSeams::Info in;
+                if (const Chapter* c = projectModel ? projectModel->findChapter(chId) : nullptr) {
+                    in.label = projectModel->chapterDisplayLabel(*c);
+                    in.title = c->title;
+                }
+                in.focus = editorHost->focusChapterId() == chId;
+                return in;
+            });
+        }
+        return hits;
     });
     // Roteiro: cada INT./EXT. vira cena do Qenna assim que a pessoa sai da linha.
     connect(editor, &SpellEditor::pasted, this, &MainWindow::formatPastedRange);
@@ -1528,7 +1697,7 @@ void MainWindow::setupEditor()
         // apareceria a cada cabeçalho).
         editorHost->syncEditorToCache();
         sceneDetectTimer->stop();
-        sceneDetectKey = editorHost->activeKey();
+        sceneDetectKey = editorHost->scopeKey();   // livro inteiro: o capítulo do cursor
         detectScenesForPending();
     });
     {
@@ -1542,12 +1711,14 @@ void MainWindow::setupEditor()
                 if (!editor) return;
                 if (editor->isScreenplayMode()) ScreenplayFormat::compactSceneBreaks(editor->document(), true);
                 else SceneBreaks::applySpacing(editor->document(), true);
+                if (editorHost && editorHost->isBook()) BookSeams::applySpacing(editor->document(), true);
             });
         });
         connect(SceneBreaks::notifier(), &SceneBreaks::Notifier::styleChanged, this, [this]() {
             if (!editor) return;
             if (editor->isScreenplayMode()) ScreenplayFormat::compactSceneBreaks(editor->document(), false);
             else SceneBreaks::applySpacing(editor->document(), false);
+            if (editorHost && editorHost->isBook()) BookSeams::applySpacing(editor->document(), false);
             editor->viewport()->update();
         });
     }
@@ -1576,7 +1747,7 @@ void MainWindow::setupEditor()
 
     connect(detectionTimer, &QTimer::timeout, this, [this]() {
         if (!detectionEnabled || !elementsStore || !editorHost || !editor) return;
-        const QString key = editorHost->activeKey();
+        const QString key = editorHost->scopeKey();   // no livro inteiro: o capítulo do cursor
         // Só capítulo e cena: na gaveta (a ficha da Klara, uma nota de lore)
         // o nome aparece por ser o assunto, não porque ela está na cena.
         if (!key.startsWith(QStringLiteral("ch:"))) return;
@@ -1586,7 +1757,7 @@ void MainWindow::setupEditor()
         detectionBatchTimer->stop();
         m_scanState = std::make_unique<DetectionScanState>();
         auto& s = *m_scanState;
-        s.plainText = editor->toPlainText();
+        s.plainText = editorHost->scopePlainText();
         s.lowerText = s.plainText.toLower();
         s.docKey    = key;
         s.elements  = elementsStore->elements();
@@ -1663,7 +1834,7 @@ void MainWindow::setupEditor()
                 elementsStore->addManyDocElements(scanDocKey, ids);
             }
             // O aviso no DocHeader: só se o capítulo do scan ainda é o aberto.
-            if (!res.announce.isEmpty() && docHeader && editorHost && editorHost->activeKey() == scanDocKey) {
+            if (!res.announce.isEmpty() && docHeader && editorHost && editorHost->scopeKey() == scanDocKey) {
                 const QStringList parts = scanDocKey.split(QLatin1Char(':'));
                 const QString msId = parts.size() >= 2 ? parts.at(1) : QString();
                 const QHash<QString, int> rank = dialogueStore
@@ -1724,6 +1895,11 @@ void MainWindow::setupEditor()
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
         if (detectionEnabled) detectionTimer->start();
     });
+    // livro inteiro: mudar de capítulo é como abrir outro capítulo
+    connect(editorHost, &EditorHost::scopeChanged, this, [this]() {
+        if (detectionEnabled) detectionTimer->start();
+        if (m_dialogueDetectionEnabled && dialogueDetectionTimer) dialogueDetectionTimer->start();
+    });
 
     // Diálogos: motor de atribuição roda no mesmo debounce da presença, mas
     // como timer irmão independente — DialogueDetector::scanScene já é uma
@@ -1745,12 +1921,14 @@ void MainWindow::setupEditor()
     // Independente do detectionEnabled: avisa o Pensário qual capítulo está
     // aberto, pra aba Diálogos poder filtrar por ele por padrão em vez de
     // "Todos" (caro em projeto grande) — ver PensarioPanel::setCurrentChapterId.
-    connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
+    auto syncPensarioChapter = [this]() {
         if (!pensarioPanel || !editorHost) return;
-        const EditorHost::ViewMode vm = editorHost->viewMode();
+        const EditorHost::ViewMode vm = editorHost->scopeViewMode();
         if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
             pensarioPanel->setCurrentChapterId(vm.chapterId);
-    });
+    };
+    connect(editorHost, &EditorHost::contentLoaded, this, syncPensarioChapter);
+    connect(editorHost, &EditorHost::scopeChanged, this, syncPensarioChapter);
     connect(dialogueStore, &DialogueStore::changed, this, [this]() {
         if (dialogueStore) dialogueStore->save();
     });
@@ -1772,7 +1950,7 @@ void MainWindow::setupEditor()
     connect(markerHoverPopup, &MarkerHoverPopup::deleteRequested,
             this, [this](const QString& id) {
         if (!markerStore || !editor || !editorHost) return;
-        const QString key = editorHost->activeKey();
+        const QString key = markerKeyFor(markerStore, editorHost, id, -1);
         markerStore->removeMarker(key, editor->document(), id);
         markerHoverId.clear();
     });
@@ -1785,16 +1963,17 @@ void MainWindow::setupEditor()
     // (applyEditorStyle conectado ANTES vai pintar tudo com baseTextColor; nosso
     // applyToDocument depois reinjeta cor+GUID nos ranges salvos).
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
-        if (!markerStore || !editor || !editorHost) return;
-        const QString key = editorHost->activeKey();
-        if (key.isEmpty()) return;
-        markerStore->applyToDocument(key, editor->document());
+        applyMarkersToEditor(markerStore, editorHost, editor);
     });
     // contentFlushed: captura posições atuais dos markers no doc. Roda DEPOIS
     // do cache.set, mas o doc do editor ainda contém os GUIDs vivos.
     connect(editorHost, &EditorHost::contentFlushed, this, [this](const QString& key) {
-        if (!markerStore || !editor) return;
+        if (!markerStore || !editor || (editorHost && editorHost->isBook())) return;
         markerStore->captureFromDocument(key, editor->document());
+    });
+    // livro inteiro: cada capítulo gravado chega sozinho, com as posições dele
+    connect(editorHost, &EditorHost::chapterDocFlushed, this, [this](const QString& key, QTextDocument* doc) {
+        if (markerStore && doc) markerStore->captureFromDocument(key, doc);
     });
     // Saveproject já flushou (no syncEditorToCache), então captura já rodou —
     // basta persistir o sidecar.
@@ -1805,9 +1984,7 @@ void MainWindow::setupEditor()
     // cor dos markers. Reaplica em seguida.
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, [this]() {
-        if (markerStore && editor && editorHost) {
-            markerStore->applyToDocument(editorHost->activeKey(), editor->document());
-        }
+        if (markerStore && editor && editorHost) applyMarkersToEditor(markerStore, editorHost, editor);
     });
 
     // Som imersivo: manager (varre assets/ambience-sounds, persiste em QSettings)
@@ -2439,7 +2616,7 @@ void MainWindow::setupEditor()
         QTimer::singleShot(0, this, [this]() {
             if (!projectModel || !editorHost || !editor) return;
             const auto vt = editorHost->viewMode().type;
-            const bool isMs = (vt == EditorHost::ChapterDoc || vt == EditorHost::SceneDoc);
+            const bool isMs = (vt == EditorHost::ChapterDoc || vt == EditorHost::SceneDoc || vt == EditorHost::BookDoc);
             const int defAlign = isMs
                 ? projectModel->defaultManuscriptAlignment()
                 : projectModel->defaultDrawerAlignment();
@@ -2600,7 +2777,13 @@ void MainWindow::setupEditor()
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
         projectModel->addChapter(c);
-        if (openAfter && editorHost) {
+        if (openAfter && editorHost && editorHost->isBook() && editorHost->viewMode().manuscriptId == msId) {
+            // livro inteiro: o capítulo novo entra no livro (remontado na fila) e o cursor vai pra ele
+            const QString newId = c.id;
+            QTimer::singleShot(0, this, [this, newId]() {
+                if (editorHost && editorHost->isBook()) editorHost->scrollToChapter(newId);
+            });
+        } else if (openAfter && editorHost) {
             // Enter na folha = criar e abrir: o capítulo novo já vai pro editor
             EditorHost::ViewMode vm;
             vm.type = EditorHost::ChapterDoc;
@@ -2637,6 +2820,17 @@ void MainWindow::setupEditor()
     auto navigateRelative = [this](int delta) {
         if (!projectModel || !editorHost) return;
         const auto vm = editorHost->viewMode();
+        if (vm.type == EditorHost::BookDoc) {
+            // livro inteiro: o capítulo vizinho já está aberto, é só rolar até ele
+            const auto parts = editorHost->bookParts();
+            for (int i = 0; i < parts.size(); ++i) {
+                if (parts.at(i).chapterId != editorHost->focusChapterId()) continue;
+                const int next = i + delta;
+                if (next >= 0 && next < parts.size()) editorHost->scrollToChapter(parts.at(next).chapterId);
+                break;
+            }
+            return;
+        }
         if (vm.type == EditorHost::ChapterDoc) {
             const QString msId = vm.manuscriptId;
             QList<Chapter> list;
@@ -2903,12 +3097,12 @@ void MainWindow::setupEditor()
     m_docPov->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
     m_docPov->options = [this]() {
         if (!editorHost) return QList<PovPicker::Option>();
-        const auto vm = editorHost->viewMode();
+        const auto vm = editorHost->scopeViewMode();
         return povOptionsFor(vm.manuscriptId, vm.chapterId);
     };
     m_docPov->picked = [this](const QString& elementId) {
         if (!editorHost) return;
-        const auto vm = editorHost->viewMode();
+        const auto vm = editorHost->scopeViewMode();
         if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
         projectModel->updateChapterPov(vm.chapterId, elementId);
     };
@@ -2929,7 +3123,7 @@ void MainWindow::setupEditor()
     // capítulo dela): a folha de Editar capítulo, com o "Quem narra".
     connect(docHeader, &DocHeaderBar::titleDoubleClicked, this, [this]() {
         if (!editorHost) return;
-        const auto vm = editorHost->viewMode();
+        const auto vm = editorHost->scopeViewMode();
         if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) editChapterDetails(vm.chapterId);
     });
     connect(docHeader, &DocHeaderBar::sheetMenuRequested, this, [this]() {
@@ -3344,7 +3538,14 @@ void MainWindow::setupEditor()
     connect(globalSearchPanel, &GlobalSearchPanel::openRequested, this,
             [this](EditorHost::ViewMode vm, QString query) {
         // Fichas são DrawerDoc — o handler de viewModeChanged mostra o painel.
-        if (editorHost) editorHost->setViewMode(vm);
+        // Livro inteiro aberto com o capítulo dentro: rola até ele em vez de sair do livro.
+        if (editorHost) {
+            const bool inBook = editorHost->isBook()
+                && (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
+                && editorHost->viewMode().manuscriptId == vm.manuscriptId
+                && editorHost->scrollToChapter(vm.chapterId, vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
+            if (!inBook) editorHost->setViewMode(vm);
+        }
         // Após carregar, dispara FindBar com a query pra mostrar onde está.
         if (!query.isEmpty() && findBar) {
             QTimer::singleShot(60, this, [this, query]() {
@@ -3484,6 +3685,7 @@ void MainWindow::setupEditor()
     });
     drawerListPanel->setHeaderTint(leftBar->barStyle() == LeftBar::BarStyle::Colors);
     connect(editorHost, &EditorHost::viewModeChanged, this, &MainWindow::refreshLeftBarScene);
+    connect(editorHost, &EditorHost::scopeChanged, this, &MainWindow::refreshLeftBarScene);
     connect(elementsStore, &ElementsStore::changed, this, &MainWindow::refreshLeftBarScene);
     connect(projectModel, &ProjectModel::drawersChanged, this, &MainWindow::refreshLeftBarScene);
     refreshLeftBarScene();
@@ -3672,7 +3874,30 @@ void MainWindow::setupEditor()
         // as Etiquetas da LeftBar). O cartão segue criado pra quem o usa em
         // outros lugares, mas o botão não dispara mais.
     }
+    // Manuscrito completo: a chave da gaveta (e o menu do livro)
+    connect(manuscriptPanel, &ManuscriptPanel::bookModeRequested, this, [this](const QString& manuscriptId, bool on) {
+        if (!editorHost) return;
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        // livro grande demora uns segundos pra montar: o aviso aparece antes,
+        // como no abrir projeto, pra não parecer app travado
+        LoadingToast* toast = nullptr;
+        if (on) {
+            toast = new LoadingToast(this, tr("Abrindo o livro inteiro…"));
+            toast->show();
+            toast->raise();
+            toast->repaint();
+            QApplication::processEvents();
+        }
+        if (on) editorHost->openBook(manuscriptId);
+        else editorHost->leaveBook();
+        if (toast) toast->deleteLater();
+        QApplication::restoreOverrideCursor();
+        if (editor) editor->setFocus();
+    });
     connect(manuscriptPanel, &ManuscriptPanel::chapterActivated, this, [this](const QString& manuscriptId, const QString& chapterId) {
+        // livro inteiro aberto: a gaveta vira o sumário, o clique rola até o capítulo
+        if (editorHost->isBook() && editorHost->viewMode().manuscriptId == manuscriptId
+            && editorHost->scrollToChapter(chapterId)) return;
         EditorHost::ViewMode vm;
         vm.type = EditorHost::ChapterDoc;
         vm.manuscriptId = manuscriptId;
@@ -3680,6 +3905,8 @@ void MainWindow::setupEditor()
         editorHost->setViewMode(vm);
     });
     connect(manuscriptPanel, &ManuscriptPanel::sceneActivated, this, [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex) {
+        if (editorHost->isBook() && editorHost->viewMode().manuscriptId == manuscriptId
+            && editorHost->scrollToChapter(chapterId, sceneIndex)) return;
         EditorHost::ViewMode vm;
         vm.type = EditorHost::SceneDoc;
         vm.manuscriptId = manuscriptId;
@@ -3749,7 +3976,13 @@ void MainWindow::setupEditor()
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
         projectModel->addChapter(c);
-        if (openAfter && editorHost) {
+        if (openAfter && editorHost && editorHost->isBook() && editorHost->viewMode().manuscriptId == msId) {
+            // livro inteiro: o capítulo novo entra no livro (remontado na fila) e o cursor vai pra ele
+            const QString newId = c.id;
+            QTimer::singleShot(0, this, [this, newId]() {
+                if (editorHost && editorHost->isBook()) editorHost->scrollToChapter(newId);
+            });
+        } else if (openAfter && editorHost) {
             // Enter na folha = criar e abrir: o capítulo novo já vai pro editor
             EditorHost::ViewMode vm;
             vm.type = EditorHost::ChapterDoc;
@@ -4553,6 +4786,8 @@ void MainWindow::updateDocCachePinnedKeys()
     if (editorHost) {
         const QString k = editorHost->activeKey();
         if (!k.isEmpty()) pinned.insert(k);
+        // livro inteiro: todos os capítulos dele ficam na memória enquanto ele estiver aberto
+        for (const QString& bk : editorHost->bookKeys()) pinned.insert(bk);
     }
     if (refMenuPanel) {
         const QString k = refMenuPanel->selectedCacheKey();
@@ -4579,6 +4814,43 @@ QList<PageBg::Region> MainWindow::pageBackgroundRegions() const
     }
     if (vm.type == EditorHost::SceneDoc)
         return whole(PageBg::resolve(projectModel->effectiveBackground(vm.chapterId, vm.sceneIndex)));
+    if (vm.type == EditorHost::BookDoc) {
+        // livro inteiro: o fundo de cada capítulo (e de cada cena dele) no seu trecho
+        auto bgFor = [this](const QString& chId, int k) {
+            const Chapter* c = projectModel->findChapter(chId);
+            const int scenes = c ? int(c->scenes.size()) : 0;
+            return PageBg::resolve(projectModel->effectiveBackground(chId, scenes > 1 ? k : -1));
+        };
+        bool any = false;
+        for (const Chapter* c : projectModel->orderedChaptersForManuscript(vm.manuscriptId)) {
+            any = any || bgFor(c->id, -1).isSet();
+            for (int i = 0; i < c->scenes.size() && !any; ++i) any = bgFor(c->id, i).isSet();
+            if (any) break;
+        }
+        if (!any) return out;
+        QTextDocument* doc = editor->document();
+        QAbstractTextDocumentLayout* lay = doc->documentLayout();
+        QString ch;
+        int y = 0, k = 0;
+        for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+            if (BookSeams::isSeam(b)) {
+                // a virada de capítulo corta no meio do respiro antes da abertura
+                const QRectF r = lay->blockBoundingRect(b);
+                const int cut = qRound(r.top() - b.blockFormat().topMargin() / 2.0);
+                if (!ch.isEmpty()) { out << PageBg::Region{ y, cut, bgFor(ch, k) }; y = cut; }
+                ch = BookSeams::seamChapter(b);
+                k = 0;
+                continue;
+            }
+            if (!b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) continue;
+            const int mid = qRound(lay->blockBoundingRect(b).center().y());
+            out << PageBg::Region{ y, mid, bgFor(ch, k) };
+            y = mid;
+            ++k;
+        }
+        if (!ch.isEmpty()) out << PageBg::Region{ y, kEnd, bgFor(ch, k) };
+        return out;
+    }
     // gavetas, notas e o resto: só o do tema
     if (vm.type != EditorHost::ChapterDoc) return whole(PageBg::themeBackground());
     const Chapter* c = projectModel->findChapter(vm.chapterId);
@@ -4608,10 +4880,18 @@ SceneBreaks::Info MainWindow::sceneBreakInfo(int breakIndex) const
     SceneBreaks::Info in;
     if (!editorHost || !projectModel) return in;
     const auto vm = editorHost->viewMode();
-    if (vm.type != EditorHost::ChapterDoc) return in; // <hr> em gaveta não é cena
-    const Chapter* c = projectModel->findChapter(vm.chapterId);
+    QString chapterId = vm.chapterId;
+    int local = breakIndex;
+    if (vm.type == EditorHost::BookDoc) {
+        // livro inteiro: a quebra k do livro é a quebra local de algum capítulo
+        local = editorHost->bookBreakLocal(breakIndex, &chapterId);
+        if (local < 0) return in;
+    } else if (vm.type != EditorHost::ChapterDoc) {
+        return in; // <hr> em gaveta não é cena
+    }
+    const Chapter* c = projectModel->findChapter(chapterId);
     in.scene = true;
-    const int si = breakIndex + 1;            // a quebra k abre a cena k+1
+    const int si = local + 1;                 // a quebra k abre a cena k+1
     in.number = si + 1;
     QString marker = c ? c->timeMarker.trimmed() : QString();
     if (c && si < c->scenes.size()) {
@@ -4639,7 +4919,8 @@ void MainWindow::formatPastedRange(int from, int to)
 {
     if (!editor || !editorHost || to <= from) return;
     const bool isManuscriptDoc = editorHost->viewMode().type == EditorHost::ChapterDoc ||
-                                 editorHost->viewMode().type == EditorHost::SceneDoc;
+                                 editorHost->viewMode().type == EditorHost::SceneDoc ||
+                                 editorHost->viewMode().type == EditorHost::BookDoc;
     if (isManuscriptDoc && projectModel && projectModel->isScreenplay()) return;   // roteiro: cada linha tem o seu elemento
     QTextBlockFormat bf;
     bf.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
@@ -4668,13 +4949,18 @@ void MainWindow::applyEditorStyle()
 
     const bool isManuscriptDoc = editorHost &&
         (editorHost->viewMode().type == EditorHost::ChapterDoc ||
-         editorHost->viewMode().type == EditorHost::SceneDoc);
+         editorHost->viewMode().type == EditorHost::SceneDoc ||
+         editorHost->viewMode().type == EditorHost::BookDoc);
     const bool msScreenplay = isManuscriptDoc && projectModel && projectModel->isScreenplay();
     if (editor) editor->setScreenplayMode(msScreenplay);
     const QString fontToUse = msScreenplay ? QStringLiteral("Courier New") : currentFontFamily;
     const qreal   sizeToUse = msScreenplay ? 12.0 : currentFontSize;
     QFont font = sizedFont(fontToUse, sizeToUse);
     editor->setFont(font);
+    // Trocar a fonte padrão manda o Qt refazer o layout do documento inteiro aos
+    // poucos (em segundo plano); as mudanças de formato logo abaixo saem baratas
+    // por causa disso. Não pular quando "já é a mesma" (no livro inteiro, pular
+    // deixou a carga duas vezes mais lenta — medido em 16/11/2026).
     editor->document()->setDefaultFont(font);
 
     // Alinhamento padrão do documento: novos parágrafos herdam esse valor naturalmente.
@@ -4729,8 +5015,10 @@ void MainWindow::applyEditorStyle()
         editor->viewport()->setPalette(vp);
     }
 
-    QTextCursor cursor(editor->document());
-    cursor.select(QTextCursor::Document);
+    // Tudo abaixo num passo só do documento: cada mudança grande refazia o
+    // layout na hora (no livro inteiro, centenas de ms cada); juntas, uma vez.
+    QTextCursor styleStep(editor->document());
+    styleStep.beginEditBlock();
     QTextBlockFormat blockFormat;
     blockFormat.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
     // Roteiro nunca usa recuo de primeira linha (convenção de prosa) — ignora
@@ -4750,12 +5038,14 @@ void MainWindow::applyEditorStyle()
         if (defAlign != 0)
             blockFormat.setAlignment(static_cast<Qt::Alignment>(defAlign));
     }
-    cursor.mergeBlockFormat(blockFormat);
+    mergeBlockFormatWhereNeeded(editor->document(), blockFormat);
     // O bloco da quebra de cena ganha espaço próprio e perde o recuo (senão o
     // desenho sai torto). Margem do <hr> não vai pro arquivo. No roteiro a
     // quebra é invisível: o cabeçalho de cena já separa.
     if (msScreenplay) ScreenplayFormat::compactSceneBreaks(editor->document(), false);
     else SceneBreaks::applySpacing(editor->document(), false);
+    // livro inteiro: a abertura de capítulo volta a ter o respiro dela
+    if (editorHost && editorHost->isBook()) BookSeams::applySpacing(editor->document(), false);
 
     // Aplica a cor de texto do tema em todo o documento (charFormat foreground
     // sobrepõe palette nos blocos já existentes; sem isso, texto fica preso na
@@ -4765,6 +5055,7 @@ void MainWindow::applyEditorStyle()
     // Força fonte/tamanho em todos os fragmentos — charFormats inline do HTML
     // (carregados do Mira 1) sobrepõem setDefaultFont e ignoram a escolha do usuário.
     applyEditorFont();
+    styleStep.endEditBlock();
 
     // Documento vazio de roteiro: já entra formatado como Cena, pronto pro
     // usuário digitar "INT. ..." sem precisar dar Tab antes. Com texto, cada
@@ -4787,8 +5078,8 @@ void MainWindow::applyEditorStyle()
             ScreenplayFormat::compactSceneBreaks(editor->document(), true);
             editorHost->syncEditorToCache();
             sceneDetectTimer->stop();
-            sceneDetectKey = editorHost->activeKey();
-            detectScenesForPending();
+            const QStringList keys = editorHost->isBook() ? editorHost->bookKeys() : QStringList{ editorHost->activeKey() };
+            for (const QString& k : keys) { sceneDetectKey = k; detectScenesForPending(); }
         });
         const QHash<QString, QString> cast = screenplayCastCues();
         QSet<QString> cues;
@@ -4821,38 +5112,22 @@ void MainWindow::applyTextColor()
     // Fast path: sem markers salvos para este doc, aplica foreground globalmente
     // num único mergeCharFormat em vez de iterar fragmento por fragmento.
     const QString activeKey = editorHost ? editorHost->activeKey() : QString();
-    const bool hasMarkers = markerStore && markerStore->hasMarkersForKey(activeKey);
-    if (!hasMarkers) {
-        QTextCursor c(doc);
-        c.select(QTextCursor::Document);
-        QTextCharFormat fmt;
-        fmt.setForeground(textColor);
-        c.mergeCharFormat(fmt);
-        doc->setModified(wasModified);
-        if (editor->viewport()) editor->viewport()->update();
-        return;
-    }
-
-    // Slow path: doc tem markers — itera por fragmento para preservar o foreground
-    // contrastante (preto/branco) sobre os highlights coloridos.
-    for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
-        for (auto it = block.begin(); !it.atEnd(); ++it) {
-            const QTextFragment frag = it.fragment();
-            if (!frag.isValid() || frag.length() == 0) continue;
-            const QTextCharFormat existing = frag.charFormat();
-            QColor fg = textColor;
+    bool hasMarkers = markerStore && markerStore->hasMarkersForKey(activeKey);
+    if (markerStore && editorHost && editorHost->isBook())
+        for (const QString& k : editorHost->bookKeys()) hasMarkers = hasMarkers || markerStore->hasMarkersForKey(k);
+    // Com marcadores, o trecho marcado ganha o preto/branco que contrasta com o
+    // destaque; sem eles, tudo na cor do tema. Só muda o que ainda não está.
+    mergeCharFormatsWhereNeeded(doc, [&](const QTextCharFormat& existing) {
+        QColor fg = textColor;
+        if (hasMarkers) {
             const QBrush bgBrush = existing.background();
-            if (bgBrush.style() != Qt::NoBrush && bgBrush.color().alpha() > 0) {
+            if (bgBrush.style() != Qt::NoBrush && bgBrush.color().alpha() > 0)
                 fg = MarkerStore::pickContrastingFg(bgBrush.color());
-            }
-            QTextCursor c(doc);
-            c.setPosition(frag.position());
-            c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
-            QTextCharFormat fmt;
-            fmt.setForeground(fg);
-            c.mergeCharFormat(fmt);
         }
-    }
+        QTextCharFormat fmt;
+        fmt.setForeground(fg);
+        return fmt;
+    });
     doc->setModified(wasModified);
 
     if (editor->viewport()) editor->viewport()->update();
@@ -4913,16 +5188,15 @@ void MainWindow::applyEditorFont()
     if (!editor || !editor->document()) return;
     const bool wasModified = editor->document()->isModified();
     QTextDocument* doc = editor->document();
-    QTextCursor c(doc);
-    c.select(QTextCursor::Document);
     QTextCharFormat fmt;
     const bool isMs = editorHost &&
         (editorHost->viewMode().type == EditorHost::ChapterDoc ||
-         editorHost->viewMode().type == EditorHost::SceneDoc);
+         editorHost->viewMode().type == EditorHost::SceneDoc ||
+         editorHost->viewMode().type == EditorHost::BookDoc);
     const bool scrpl = isMs && projectModel && projectModel->isScreenplay();
     fmt.setFontFamilies({scrpl ? QStringLiteral("Courier New") : currentFontFamily});
     fmt.setFontPointSize(scrpl ? 12.0 : currentFontSize);
-    c.mergeCharFormat(fmt);
+    mergeCharFormatsWhereNeeded(doc, [&fmt](const QTextCharFormat&) { return fmt; });
     doc->setModified(wasModified);
 }
 
@@ -6022,7 +6296,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
             QString id;
             QRect boundsGlobal;
             if (markerStore && markerAtViewportPos(me->pos(), id, boundsGlobal)) {
-                const MarkerStore::Entry e = markerStore->findById(editorHost->activeKey(), id);
+                const MarkerStore::Entry e = markerStore->findById(
+                    markerKeyFor(markerStore, editorHost, id, editor->cursorForPosition(me->pos()).position()), id);
                 if (!e.id.isEmpty() && !e.comment.trimmed().isEmpty()) {
                     if (markerHoverPopup && id != markerHoverId) {
                         markerHoverId = id;
@@ -6142,7 +6417,7 @@ void MainWindow::onPresenceClicked(const QString& elementId, const QRect& global
     if (!elementsStore || !editorHost || !docHeader) return;
     const Element* e = elementsStore->findElement(elementId);
     if (!e) return;
-    const QString docKey = editorHost->activeKey();
+    const QString docKey = editorHost->scopeKey();
     if (!docKey.startsWith(QStringLiteral("ch:"))) return;
     // a foto do popup: o mesmo quadradinho do aviso, um pouco maior
     const int side = qRound(36 * UiScale::scale());
@@ -6286,7 +6561,7 @@ void MainWindow::detectDialoguesInEditor()
 {
     if (!m_dialogueDetectionEnabled || !dialogueStore || !elementsStore || !editorHost
         || !editor || !projectModel) return;
-    const EditorHost::ViewMode vm = editorHost->viewMode();
+    const EditorHost::ViewMode vm = editorHost->scopeViewMode();   // no livro: o capítulo do cursor
     if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
 
     const Chapter* ch = projectModel->findChapter(vm.chapterId);
@@ -6305,8 +6580,15 @@ void MainWindow::detectDialoguesInEditor()
         runDialogueScan(*ch, { { editor->toHtml(), vm.sceneIndex, tr("%1 — %2").arg(chTitle, scTitle) } },
                         vm.sceneIndex);
     } else {
-        runDialogueScan(*ch, dialogueScenesFromChapterHtml(*ch, editor->toHtml()),
-                        DialogueStore::kWholeChapter);
+        QString html;
+        if (editorHost->isBook()) {
+            // o capítulo sozinho, recém-gravado do livro
+            editorHost->syncEditorToCache();
+            html = docCache->get(DocCache::chapterKey(vm.manuscriptId, vm.chapterId));
+        } else {
+            html = editor->toHtml();
+        }
+        runDialogueScan(*ch, dialogueScenesFromChapterHtml(*ch, html), DialogueStore::kWholeChapter);
     }
 }
 
@@ -6324,6 +6606,9 @@ void MainWindow::scanChapterDialogues(const QString& chapterId)
     QString liveSceneHtml;
     if (editorHost && editor) {
         const EditorHost::ViewMode vm = editorHost->viewMode();
+        // livro inteiro: grava o livro e o capítulo sai do cache, já atualizado
+        if (editorHost->isBook() && editorHost->showsKey(DocCache::chapterKey(ch->manuscriptId, chapterId)))
+            editorHost->syncEditorToCache();
         if (vm.type == EditorHost::ChapterDoc && vm.chapterId == chapterId) html = editor->toHtml();
         if (vm.type == EditorHost::SceneDoc && vm.chapterId == chapterId) {
             liveScene = vm.sceneIndex;
@@ -8246,15 +8531,27 @@ void MainWindow::loadResumeTrail()
 void MainWindow::recordResumePoint()
 {
     if (!editorHost || !manuscriptPanel || !projectModel || projectRoot.isEmpty()) return;
-    const EditorHost::ViewMode vm = editorHost->viewMode();
+    // livro inteiro: o lugar é o capítulo do cursor, com posição contada dentro dele
+    const bool book = editorHost->isBook();
+    const EditorHost::ViewMode vm = editorHost->scopeViewMode();
     if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
     QTextEdit* ed = editorHost->editor();
     if (!ed) return;
     const QTextCursor cur = ed->textCursor();
+    const int base = book ? editorHost->scopeStart() : 0;
+    const int span = book ? editorHost->scopeEnd() - base : ed->document()->characterCount() - 1;
     int scene = (vm.type == EditorHost::SceneDoc) ? vm.sceneIndex : -1;
     if (vm.type == EditorHost::ChapterDoc) {
         const Chapter* c = projectModel->findChapter(vm.chapterId);
-        if (c && c->scenes.size() > 1) scene = SceneUtils::sceneIndexForBlock(ed->document(), cur.blockNumber());
+        if (c && c->scenes.size() > 1) {
+            if (book) {
+                scene = 0;
+                for (QTextBlock b = ed->document()->findBlock(base); b.isValid() && b.blockNumber() < cur.blockNumber(); b = b.next())
+                    if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) ++scene;
+            } else {
+                scene = SceneUtils::sceneIndexForBlock(ed->document(), cur.blockNumber());
+            }
+        }
     }
     // A última frase antes do cursor (ou do último parágrafo com texto).
     QString txt = cur.block().text().left(cur.positionInBlock());
@@ -8275,8 +8572,8 @@ void MainWindow::recordResumePoint()
     // Leitor: até onde o cursor já chegou no capítulo (0…1). Numa cena solta,
     // conta as cenas de antes pelo tamanho delas.
     {
-        const int chars = std::max(1, ed->document()->characterCount() - 1);
-        const double inDoc = std::clamp(cur.position() / double(chars), 0.0, 1.0);
+        const int chars = std::max(1, span);
+        const double inDoc = std::clamp((cur.position() - base) / double(chars), 0.0, 1.0);
         double frac = inDoc;
         if (vm.type == EditorHost::SceneDoc && wordCounter) {
             const int total = wordCounter->countChapter(vm.chapterId);
@@ -8305,7 +8602,7 @@ void MainWindow::recordResumePoint()
     e.chapterId = vm.chapterId;
     e.sceneIndex = scene;
     e.sentence = sentence;
-    e.position = cur.position();
+    e.position = cur.position() - base;
     e.when = QDateTime::currentDateTime();
     trail.prepend(e);
     while (trail.size() > 3) trail.removeLast();
@@ -8392,6 +8689,22 @@ void MainWindow::resumeAt(const QString& manuscriptId, const QString& chapterId,
     if (!editorHost || !projectModel) return;
     const Chapter* c = projectModel->findChapter(chapterId);
     if (!c) return;
+    // livro inteiro aberto: continua dentro dele, no capítulo certo
+    if (editorHost->isBook() && editorHost->showsKey(DocCache::chapterKey(manuscriptId, chapterId))) {
+        QTextEdit* ed = editorHost->editor();
+        if (!ed) return;
+        editorHost->scrollToChapter(chapterId, sceneIndex >= 0 && c->scenes.size() > 1 ? sceneIndex : -1);
+        const QTextCursor from = ed->textCursor();
+        QTextCursor place = from;
+        const QTextCursor found = sentence.trimmed().isEmpty() ? QTextCursor()
+            : ed->document()->find(sentence.trimmed(), from);
+        if (!found.isNull() && editorHost->chapterAt(found.position()) == chapterId) place.setPosition(found.selectionEnd());
+        else if (position >= 0) place.setPosition(qBound(0, from.position() + position, ed->document()->characterCount() - 1));
+        ed->setTextCursor(place);
+        ed->ensureCursorVisible();
+        ed->setFocus();
+        return;
+    }
     EditorHost::ViewMode vm;
     vm.manuscriptId = manuscriptId;
     vm.chapterId = chapterId;
@@ -8434,6 +8747,8 @@ void MainWindow::restoreLastDocFor(const QString& root)
     vm.itemId       = s.value(QStringLiteral("itemId")).toString();
     s.endGroup();
     if (vm.type == EditorHost::Disabled) return;
+    // o livro inteiro volta aberto (se o livro ainda existir e tiver capítulos)
+    if (vm.type == EditorHost::BookDoc) { editorHost->openBook(vm.manuscriptId); return; }
     // EditorHost valida IDs e cai pra Disabled se não conseguir resolver — ok.
     // Se for uma ficha (DrawerDoc isSheet), o handler de viewModeChanged abre o
     // painel; showCharacterSheet adia sozinho se a janela ainda não está visível.
@@ -8701,6 +9016,17 @@ void MainWindow::refreshDocTabs()
                 const int px = qRound(20 * dpr);
                 t.icon = IconUtils::loadToolbarIcon(path, t.color, t.color, t.color, QSize(px, px)).pixmap(px, px);
             }
+        } else if (vm.type == EditorHost::BookDoc) {
+            // o livro inteiro: uma aba só, com o livrinho
+            const Manuscript* ms = projectModel->findManuscript(vm.manuscriptId);
+            if (!ms) continue;
+            t.kind = DocTabs::Tab::Doc;
+            t.title = ms->title.isEmpty() ? tr("Livro inteiro") : ms->title;
+            t.color = QColor(Theme::accentDefault());
+            const qreal dpr = devicePixelRatioF();
+            const int px = qRound(20 * dpr);
+            t.icon = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/manuscriptbook.svg"), t.color, t.color, t.color,
+                                                QSize(px, px)).pixmap(px, px);
         } else continue;
         tabs.append(t);
     }
@@ -9979,7 +10305,7 @@ void MainWindow::openMarkerPickerForSelection(bool withComment)
 void MainWindow::openMarkerPickerForEdit(const QString& markerId)
 {
     if (!markerStore || !editor || !editorHost || !markerPickPopup) return;
-    const MarkerStore::Entry e = markerStore->findById(editorHost->activeKey(), markerId);
+    const MarkerStore::Entry e = markerStore->findById(markerKeyFor(markerStore, editorHost, markerId, -1), markerId);
     if (e.id.isEmpty()) return;
 
     markerEditId = markerId;
@@ -10002,7 +10328,10 @@ void MainWindow::openMarkerPickerForEdit(const QString& markerId)
 void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comment)
 {
     if (!markerStore || !editor || !editorHost) return;
-    const QString key = editorHost->activeKey();
+    // livro inteiro: o marcador é do capítulo onde o trecho começa
+    const QString key = !markerEditId.isEmpty()
+        ? markerKeyFor(markerStore, editorHost, markerEditId, -1)
+        : (editorHost->isBook() && markerPendingStart >= 0 ? editorHost->keyAt(markerPendingStart) : editorHost->activeKey());
     if (key.isEmpty()) return;
 
     QString appliedId;
@@ -10069,7 +10398,9 @@ void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comme
 void MainWindow::removeMarkerFromPicker()
 {
     if (!markerStore || !editor || !editorHost) return;
-    const QString key = editorHost->activeKey();
+    const QString key = !markerEditId.isEmpty()
+        ? markerKeyFor(markerStore, editorHost, markerEditId, -1)
+        : (editorHost->isBook() && markerPendingStart >= 0 ? editorHost->keyAt(markerPendingStart) : editorHost->activeKey());
     if (key.isEmpty()) return;
 
     if (!markerEditId.isEmpty()) {
@@ -10299,7 +10630,7 @@ QString MainWindow::currentSceneCharacterNames() const
 {
     if (!elementsStore || !editorHost || !projectModel) return QString();
 
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     QString docKey;
     if (vm.type == EditorHost::SceneDoc) {
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
@@ -10334,7 +10665,7 @@ void MainWindow::refreshLeftBarScene()
         refreshDrawerSceneStrip();
         return;
     }
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     QString docKey, heading;
     if (vm.type == EditorHost::SceneDoc) {
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
@@ -10589,6 +10920,10 @@ void MainWindow::reloadEditorIfShowingChapter(const QString& chapterId)
     if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
         && vm.chapterId == chapterId) {
         editorHost->reloadFromCache();
+    } else if (editorHost->isBook() && projectModel) {
+        // livro inteiro: o capítulo mudou por fora, o livro é remontado
+        const Chapter* c = projectModel->findChapter(chapterId);
+        if (c && editorHost->showsKey(DocCache::chapterKey(c->manuscriptId, chapterId))) editorHost->reloadFromCache();
     }
 }
 
@@ -11009,7 +11344,7 @@ void MainWindow::createTimelineEventFromSelection()
     // Marcador do contexto: a cena onde está a seleção (se tiver marcador),
     // senão o capítulo. Para gavetas, fica sem marcador.
     QString marker;
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::SceneDoc) {
         if (const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex))
             marker = sc->timeMarker;
@@ -11033,7 +11368,8 @@ void MainWindow::createTimelineEventFromSelection()
         m_quickEvent.chapterId = vm.chapterId;
         m_quickEvent.sceneIndex = vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1;
         m_quickEvent.textPos = cur.selectionStart();
-        m_quickEvent.paragraph = editor->document()->findBlock(cur.selectionStart()).blockNumber() + 1;
+        m_quickEvent.paragraph = editor->document()->findBlock(cur.selectionStart()).blockNumber() + 1
+            - (editorHost->isBook() ? editor->document()->findBlock(editorHost->scopeStart()).blockNumber() : 0);
     }
     QString sceneLane;
     const auto lanes = panel->quickEventLanes(m_quickEvent.chapterId, m_quickEvent.sceneIndex, &sceneLane);
@@ -11092,7 +11428,7 @@ void MainWindow::addSelectionToMemory()
     MemoriesStore::Memory mem;
     mem.text = text;
     QString sourceLabel;
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::SceneDoc) {
         mem.sourceType = QStringLiteral("scene");
         mem.chapterId = vm.chapterId;
@@ -11157,7 +11493,7 @@ void MainWindow::addSelectionToConstrutorMention()
     ConstrutorStore::Mention men;
     men.text = text;
     QString sourceLabel;
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::SceneDoc) {
         men.sourceType = QStringLiteral("scene");
         men.chapterId = vm.chapterId;
@@ -11214,7 +11550,7 @@ void MainWindow::addSelectionToTerritorioMention()
     TerritorioStore::Mention men;
     men.text = text;
     QString sourceLabel;
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::SceneDoc) {
         men.sourceType = QStringLiteral("scene");
         men.chapterId = vm.chapterId;
@@ -11399,6 +11735,19 @@ void MainWindow::openDialogueInEditor(const DialogueStore::Dialogue& dlg)
 {
     if (!editorHost || !editor || dlg.chapterId.isEmpty()) return;
 
+    // livro inteiro aberto com o capítulo dentro: rola até ele e procura a fala ali
+    if (editorHost->isBook() && editorHost->viewMode().manuscriptId == dlg.manuscriptId
+        && editorHost->scrollToChapter(dlg.chapterId, dlg.sceneIndex >= 0 ? dlg.sceneIndex : -1)) {
+        QString q = dlg.text;
+        q.replace(QChar(0x2029), QChar('\n'));
+        const QStringList ls = q.split(QChar('\n'), Qt::SkipEmptyParts);
+        q = ls.isEmpty() ? q.trimmed() : ls.first().trimmed();
+        if (q.size() > 60) q = q.left(60);
+        if (!q.isEmpty() && editor->find(q)) editor->ensureCursorVisible();
+        editor->setFocus();
+        return;
+    }
+
     EditorHost::ViewMode vm;
     vm.manuscriptId = dlg.manuscriptId;
     vm.chapterId = dlg.chapterId;
@@ -11540,6 +11889,8 @@ void MainWindow::editDialogueFromPensario(const DialogueStore::Dialogue& request
         newHtml = SceneUtils::replaceSceneHtml(fullHtml, dialogue.sceneIndex, newHtml);
     const QString key = DocCache::chapterKey(chapter->manuscriptId, chapter->id);
     docCache->set(key, newHtml, /*markDirty=*/true);
+    // livro inteiro com esse capítulo dentro: remonta, senão o livro regravaria a fala velha
+    if (editorHost->isBook() && editorHost->showsKey(key)) editorHost->reloadFromCache();
     scanChapterDialogues(chapter->id);
 }
 
@@ -11568,6 +11919,11 @@ EditorHost::ViewMode MainWindow::viewModeForDocKey(const QString& docKey) const
     for (const Manuscript& ms : projectModel->manuscripts()) {
         if (QStringLiteral("ms:%1").arg(ms.id) == docKey) {
             vm.type = EditorHost::ManuscriptDoc;
+            vm.manuscriptId = ms.id;
+            return vm;
+        }
+        if (QStringLiteral("book:%1").arg(ms.id) == docKey) {   // o livro inteiro
+            vm.type = EditorHost::BookDoc;
             vm.manuscriptId = ms.id;
             return vm;
         }
@@ -11712,6 +12068,9 @@ void MainWindow::openDocKeyInEditor(const QString& docKey)
     if (!editorHost || docKey.isEmpty()) return;
     EditorHost::ViewMode vm = viewModeForDocKey(docKey);
     if (vm.type == EditorHost::Disabled) return;
+    // livro inteiro aberto com esse capítulo dentro: só rola até ele
+    if (vm.type == EditorHost::ChapterDoc && editorHost->isBook() && editorHost->showsKey(docKey)
+        && editorHost->scrollToChapter(vm.chapterId)) return;
     editorHost->setViewMode(vm);
 }
 
@@ -11719,7 +12078,7 @@ QString MainWindow::currentEditorDocTitle() const
 {
     if (!editorHost || !projectModel) return QString();
 
-    const auto vm = editorHost->viewMode();
+    const auto vm = editorHost->scopeViewMode();   // livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) {
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
         return ch ? (ch->title.isEmpty() ? tr("Capítulo sem título") : ch->title) : QString();

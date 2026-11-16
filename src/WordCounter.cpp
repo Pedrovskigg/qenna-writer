@@ -417,6 +417,7 @@ int WordCounter::countActiveScopeWords() const {
         case EditorHost::SceneDoc: return countScene(vm.chapterId, vm.sceneIndex);
         case EditorHost::ChapterDoc: return countChapter(vm.chapterId);
         case EditorHost::DrawerDoc: return countItem(vm.itemId);
+        case EditorHost::BookDoc: return countManuscript(vm.manuscriptId);   // o livro inteiro aberto
         default: return 0;
         }
     }
@@ -460,6 +461,11 @@ int WordCounter::countActiveScopeChars() const {
         }
         case EditorHost::ChapterDoc: return charsForChapter(vm.chapterId);
         case EditorHost::DrawerDoc: return charsForItem(vm.itemId);
+        case EditorHost::BookDoc: {
+            int total = 0;
+            for (const Chapter* ch : m_model->orderedChaptersForManuscript(vm.manuscriptId)) total += charsForChapter(ch->id);
+            return total;
+        }
         default: return 0;
         }
     }
@@ -953,6 +959,10 @@ QString WordCounter::screenplayPagesKey(QStringList* htmls) const {
         } else if (vm.type == EditorHost::ChapterDoc) {
             key += QStringLiteral(":") + vm.chapterId;
             if (htmls) *htmls << chapterHtml(vm.chapterId);
+        } else if (vm.type == EditorHost::BookDoc) {
+            key += QStringLiteral(":book:") + vm.manuscriptId;
+            if (htmls)
+                for (const Chapter* ch : m_model->orderedChaptersForManuscript(vm.manuscriptId)) *htmls << chapterHtml(ch->id);
         }
     } else if (htmls) {
         for (const Manuscript& ms : m_model->manuscripts())
@@ -1161,7 +1171,8 @@ bool WordCounter::shouldCountTimeNow() const {
     const auto vm = m_host->viewMode();
     const QString gs = activeGoal().goalScope;
     auto isManuscriptView = [](EditorHost::ViewModeType t) {
-        return t == EditorHost::ChapterDoc || t == EditorHost::SceneDoc || t == EditorHost::ManuscriptDoc;
+        return t == EditorHost::ChapterDoc || t == EditorHost::SceneDoc || t == EditorHost::ManuscriptDoc
+            || t == EditorHost::BookDoc;
     };
     if (gs == QStringLiteral("manuscript")) return isManuscriptView(vm.type);
     if (gs == QStringLiteral("all-items-manuscript")) return isManuscriptView(vm.type) || vm.type == EditorHost::DrawerDoc;
@@ -1172,7 +1183,8 @@ bool WordCounter::shouldCountTimeNow() const {
 QString WordCounter::viewModeScope() const {
     if (!m_host) return QString();
     const auto vm = m_host->viewMode();
-    if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) return QStringLiteral("manuscript");
+    if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc || vm.type == EditorHost::BookDoc)
+        return QStringLiteral("manuscript");
     if (vm.type == EditorHost::DrawerDoc) return QStringLiteral("drawer");
     return QString();
 }

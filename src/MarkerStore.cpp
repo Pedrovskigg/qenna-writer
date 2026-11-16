@@ -139,17 +139,22 @@ bool MarkerStore::save() const
 
 void MarkerStore::applyToDocument(const QString& docKey, QTextDocument* doc)
 {
+    applyToDocument(docKey, doc, 0, 0);
+}
+
+void MarkerStore::applyToDocument(const QString& docKey, QTextDocument* doc, int blockOffset, int posOffset)
+{
     if (!doc) return;
     const auto it = m_entries.constFind(docKey);
     if (it == m_entries.constEnd()) return;
 
     for (const Entry& e : it.value()) {
-        QTextBlock block = doc->findBlockByNumber(e.blockIndex);
+        QTextBlock block = doc->findBlockByNumber(e.blockIndex + blockOffset);
         if (!block.isValid()) continue;
         const int blockStart = block.position();
         const int blockLen = block.length() - 1;
-        const int from = blockStart + qBound(0, e.start - blockStart, blockLen);
-        const int to = blockStart + qBound(0, e.end - blockStart, blockLen);
+        const int from = blockStart + qBound(0, e.start + posOffset - blockStart, blockLen);
+        const int to = blockStart + qBound(0, e.end + posOffset - blockStart, blockLen);
         if (to <= from) continue;
 
         QTextCursor c(doc);

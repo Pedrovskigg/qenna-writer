@@ -2159,6 +2159,7 @@ void ManuscriptPanel::placeOverlays() {
         m_carouselMini->setGeometry(sr.left(), sr.top(), sr.width(), 52);
         if (m_carouselMini->isVisible()) m_carouselMini->raise();
     }
+    placeBookSeam();
     for (QWidget* h : { m_resizeHandle, m_resizeHandleBottom, m_resizeHandleCorner }) if (h) h->raise();
 }
 

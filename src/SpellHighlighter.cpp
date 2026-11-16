@@ -48,6 +48,7 @@ void SpellHighlighter::highlightBlock(const QString& text)
 
     if (!m_enabled || m_suspended || !m_checker || !m_checker->isEnabled()) return;
     if (text.isEmpty()) return;
+    if (m_gate && !m_gate(blk)) return;
 
     auto it = m_wordRe.globalMatch(text);
     while (it.hasNext()) {

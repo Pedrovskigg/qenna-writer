@@ -47,6 +47,9 @@ class ElementsStore;
 class RefMenuPanel : public QWidget {
     Q_OBJECT
 public:
+    // O editor principal passou a mostrar outro documento (ou o livro inteiro):
+    // se for o que está sendo editado aqui, a edição daqui fecha e grava.
+    void editorShowsChanged();
     // Estilo de layout do painel — preferência visual GLOBAL (QSettings), como
     // o estilo do contador. Os dados, a busca, os fixados e os recentes são os
     // mesmos em todos; muda só onde cada coisa mora.

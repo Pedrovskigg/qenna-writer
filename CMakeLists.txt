@@ -557,7 +557,10 @@ qt_add_executable(qenna-writer
     src/TimelineTracksView.cpp
     src/TimelineTracksView.h
     src/SceneBreaks.cpp
+    src/BookSeams.cpp
+    src/EditorHostBook.cpp
     src/SceneBreaks.h
+    src/BookSeams.h
     src/SheetDialog.cpp
     src/SheetDialog.h
     src/SheetDialogs.cpp

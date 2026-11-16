@@ -801,7 +801,125 @@ void ManuscriptPanel::setCurrentLocation(const QString& chapterId, int sceneInde
     if (m_curChapterId == chapterId && m_curScene == sceneIndex) return;
     m_curChapterId = chapterId;
     m_curScene = sceneIndex;
+    if (m_bookRebuildQueued) return;   // a remontagem da chave já vem e leva isto junto
     if (isPanelOpen()) rebuildList();
+}
+
+void ManuscriptPanel::setBookManuscript(const QString& manuscriptId) {
+    if (m_bookMsId == manuscriptId) return;
+    m_bookMsId = manuscriptId;
+    if (!isPanelOpen() || m_bookRebuildQueued) return;
+    // na fila: a troca de documento também move o capítulo marcado logo em
+    // seguida, e as duas mudanças saem numa remontagem só
+    m_bookRebuildQueued = true;
+    QTimer::singleShot(0, this, [this]() {
+        m_bookRebuildQueued = false;
+        if (isPanelOpen()) rebuildList();
+    });
+}
+
+bool ManuscriptPanel::bookModeOnActive() const {
+    return !m_bookMsId.isEmpty() && m_bookMsId == activeManuscriptId();
+}
+
+// A chave Capítulo | Livro inteiro: igual em todos os estilos, no fim do topo.
+QWidget* ManuscriptPanel::makeBookLever() {
+    const QString msId = activeManuscriptId();
+    if (msId.isEmpty() || !m_model || readingChapters().isEmpty()) return nullptr;
+    const bool on = bookModeOnActive();
+    auto* track = new QFrame(m_top);
+    track->setObjectName(QStringLiteral("msBookLever"));
+    track->setAttribute(Qt::WA_StyledBackground, true);
+    track->setStyleSheet(Theme::qss(QStringLiteral(
+        "#msBookLever { background: %1; border: 1px solid %2; border-radius: @radius-control; }"))
+        .arg(Theme::hoverOverlay(), Theme::subtleBorder()));
+    auto* lay = new QHBoxLayout(track);
+    lay->setContentsMargins(2, 2, 2, 2);
+    lay->setSpacing(2);
+    const QString onQss = Theme::qss(QStringLiteral(
+        "QToolButton { background: %1; border: 1px solid %2; border-radius: @radius-control; color: %3;"
+        " font-size: 12px; padding: 4px 6px; }"))
+        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft(), Theme::textBright());
+    const QString offQss = Theme::qss(QStringLiteral(
+        "QToolButton { background: transparent; border: 1px solid transparent; border-radius: @radius-control; color: %1;"
+        " font-size: 12px; padding: 4px 6px; }"
+        "QToolButton:hover { color: %2; }"))
+        .arg(Theme::textMuted(), Theme::textBright());
+    auto make = [&](const QString& text, bool active, const QString& tip) {
+        auto* b = new QToolButton(track);
+        b->setText(text);
+        b->setToolTip(tip);
+        b->setCursor(active ? Qt::ArrowCursor : Qt::PointingHandCursor);
+        b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        b->setStyleSheet(active ? onQss : offQss);
+        lay->addWidget(b, 1);
+        return b;
+    };
+    auto* chapterBtn = make(tr("Capítulo"), !on, tr("Escrever um capítulo de cada vez"));
+    auto* bookBtn = make(tr("Livro inteiro"), on,
+        tr("Abrir o livro inteiro no editor, com todos os capítulos em sequência"));
+    bookBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/manuscriptbook.svg"),
+        QColor(on ? Theme::textBright() : Theme::textMuted()), QColor(Theme::textBright()),
+        QColor(Theme::textBright()), QSize(14, 14)));
+    bookBtn->setIconSize(QSize(14, 14));
+    connect(chapterBtn, &QToolButton::clicked, this, [this, msId, on]() { if (on) emit bookModeRequested(msId, false); });
+    connect(bookBtn, &QToolButton::clicked, this, [this, msId, on]() { if (!on) emit bookModeRequested(msId, true); });
+    return track;
+}
+
+// A costura: com o livro inteiro aberto, uma linha só liga os capítulos da
+// lista (só nos estilos em que eles ficam um embaixo do outro).
+void ManuscriptPanel::placeBookSeam() {
+    QWidget* host = m_scroll ? m_scroll->widget() : nullptr;
+    if (!host) return;
+    if (m_bookSeam && m_bookSeam->parentWidget() != host) { delete m_bookSeam; m_bookSeam = nullptr; }
+    QList<QWidget*> rows;
+    if (bookModeOnActive()) {
+        for (QWidget* w : host->findChildren<QWidget*>()) {
+            if (w->property("kind").toString() == QLatin1String("chapter") && w->isVisibleTo(host)) rows << w;
+        }
+    }
+    int left = 0, top = 0, bottom = 0;
+    bool column = rows.size() >= 2;
+    if (column) {
+        std::sort(rows.begin(), rows.end(), [host](QWidget* a, QWidget* b) {
+            return a->mapTo(host, QPoint(0, 0)).y() < b->mapTo(host, QPoint(0, 0)).y();
+        });
+        // a caixa de cada linha (a barrinha de diálogo, o rosto do narrador e o título)
+        auto boxOf = [host](QWidget* w) {
+            return (w->parentWidget() && w->parentWidget() != host) ? w->parentWidget() : w;
+        };
+        const int x0 = boxOf(rows.first())->mapTo(host, QPoint(0, 0)).x();
+        bool allLead = true;   // toda linha começa com alguma coisa antes do título
+        for (QWidget* w : rows) {
+            QWidget* box = boxOf(w);
+            if (qAbs(box->mapTo(host, QPoint(0, 0)).x() - x0) > 3) { column = false; break; }
+            if (box == w || w->x() <= 2) allLead = false;
+        }
+        if (column) {
+            // a linha cobre as barrinhas do começo; se alguma linha não tem, fica logo antes
+            left = allLead ? x0 : qMax(1, x0 - 7);
+            top = rows.first()->mapTo(host, QPoint(0, 0)).y() + 2;
+            QWidget* last = rows.last();
+            bottom = last->mapTo(host, QPoint(0, last->height())).y() - 2;
+        }
+    }
+    if (!column || bottom <= top) {
+        if (m_bookSeam) m_bookSeam->hide();
+        return;
+    }
+    if (!m_bookSeam) {
+        m_bookSeam = new QWidget(host);
+        m_bookSeam->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_bookSeam->setAttribute(Qt::WA_StyledBackground, true);
+        m_bookSeam->setObjectName(QStringLiteral("msBookSeam"));
+    }
+    m_bookSeam->setStyleSheet(QStringLiteral("#msBookSeam { background: %1; border-radius: 2px; }").arg(Theme::accentDefault()));
+    m_bookSeam->setToolTip(QString());
+    m_bookSeam->setGeometry(qMax(0, left), top, 4, bottom - top);
+    m_bookSeam->show();
+    m_bookSeam->raise();
 }
 
 void ManuscriptPanel::setVisitedProgress(const QHash<QString, double>& visited) {
@@ -1897,6 +2015,7 @@ void ManuscriptPanel::rebuildTop() {
     } else if (m_style == Style::Box) {
         if (QWidget* w = makeBoxTop()) m_topLayout->addWidget(w);
     }
+    if (QWidget* lever = makeBookLever()) m_topLayout->addWidget(lever);
 
     m_top->setVisible(m_topLayout->count() > 0);
 }
@@ -3361,6 +3480,11 @@ void ManuscriptPanel::showManuscriptContextMenu(const QString& manuscriptId, con
     auto* previewAct = menu.addAction(tr("Visualizar como e-reader"));
     connect(previewAct, &QAction::triggered, this, [this, manuscriptId]() {
         emit previewEreaderRequested(manuscriptId);
+    });
+    const bool bookOn = !m_bookMsId.isEmpty() && m_bookMsId == manuscriptId;
+    auto* bookAct = menu.addAction(bookOn ? tr("Voltar a um capítulo por vez") : tr("Abrir manuscrito completo"));
+    connect(bookAct, &QAction::triggered, this, [this, manuscriptId, bookOn]() {
+        emit bookModeRequested(manuscriptId, !bookOn);
     });
 
     // Cor da lombada / da capa gerada (Lombadas, Vitrine, Trilho). No

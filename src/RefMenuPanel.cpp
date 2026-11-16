@@ -2316,7 +2316,7 @@ QString RefMenuPanel::editorDocKey() const
     // aberto — não depende do MainWindow avisar a cada troca de cena. Mesma
     // chave que o ElementsStore usa pra guardar quem está presente.
     if (!m_host || !m_model) return QString();
-    const auto vm = m_host->viewMode();
+    const auto vm = m_host->scopeViewMode();   // no livro inteiro: o capítulo do cursor
     if (vm.type == EditorHost::SceneDoc) {
         const Chapter* ch = m_model->findChapter(vm.chapterId);
         if (!ch || vm.sceneIndex < 0 || vm.sceneIndex >= ch->scenes.size()) return QString();
@@ -3997,8 +3997,13 @@ QString RefMenuPanel::editableCacheKey() const
     if (key.isEmpty()) return QString();
     // Evita conflito com o editor principal: se o mesmo doc está aberto lá,
     // edição fica bloqueada no RefMenu.
-    if (m_host && m_host->activeKey() == key) return QString();
+    if (m_host && m_host->showsKey(key)) return QString();   // no livro: qualquer capítulo dele
     return key;
+}
+
+void RefMenuPanel::editorShowsChanged()
+{
+    if (m_editing && m_host && m_host->showsKey(m_editingKey)) updateEditAvailability();
 }
 
 void RefMenuPanel::updateEditAvailability()
@@ -4024,7 +4029,7 @@ void RefMenuPanel::updateEditAvailability()
         m_editBtn->setToolTip(tr("Editar documento"));
     } else if (m_selectedKey.startsWith(QStringLiteral("sc:"))) {
         m_editBtn->setToolTip(tr("Edição de cena individual em breve"));
-    } else if (m_host && !m_selectedKey.isEmpty() && m_host->activeKey() == selectedCacheKey()) {
+    } else if (m_host && !m_selectedKey.isEmpty() && m_host->showsKey(selectedCacheKey())) {
         m_editBtn->setToolTip(tr("Este documento está aberto no editor principal"));
     } else {
         m_editBtn->setToolTip(tr("Editar documento"));
@@ -6248,7 +6253,7 @@ void RefMenuPanel::rebuildUsageMap()
     };
     m_map->editorCol = -1;
     if (m_host) {
-        const auto vm = m_host->viewMode();
+        const auto vm = m_host->scopeViewMode();
         if (vm.manuscriptId == msId) m_map->editorCol = colOf(vm.chapterId);
     }
     m_map->selCol = -1;

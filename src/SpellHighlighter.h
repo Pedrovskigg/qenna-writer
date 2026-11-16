@@ -3,6 +3,7 @@
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
+#include <functional>
 
 class SpellChecker;
 
@@ -21,6 +22,10 @@ public:
     void suspend() { m_suspended = true; }
     void resume()  { m_suspended = false; }
 
+    // Só marca os blocos que o portão deixar (livro inteiro: o capítulo do
+    // cursor). Sem portão, marca tudo.
+    void setBlockGate(std::function<bool(const QTextBlock&)> gate) { m_gate = std::move(gate); }
+
 protected:
     void highlightBlock(const QString& text) override;
 
@@ -30,4 +35,5 @@ private:
     QRegularExpression m_wordRe;
     bool m_enabled = true;
     bool m_suspended = false;
+    std::function<bool(const QTextBlock&)> m_gate;
 };

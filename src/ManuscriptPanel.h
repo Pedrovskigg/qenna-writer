@@ -80,6 +80,10 @@ public:
     // Capítulo/cena aberto no editor — marca a linha e alimenta Mosaico,
     // Jornada e Ritmo. sceneIndex -1 = capítulo inteiro.
     void setCurrentLocation(const QString& chapterId, int sceneIndex);
+    // Manuscrito completo: o livro aberto inteiro no editor (vazio = nenhum).
+    // A chave da gaveta mostra "Livro inteiro" ligado quando é o livro à vista.
+    void setBookManuscript(const QString& manuscriptId);
+    bool bookModeOnActive() const;
     void setResumeTrail(const QList<ResumeEntry>& trail);
     // Leitor: até onde o cursor já chegou em cada capítulo (0…1), na revisão atual.
     void setVisitedProgress(const QHash<QString, double>& visited);
@@ -103,6 +107,8 @@ signals:
     void renameManuscriptRequested(QString manuscriptId);
     void deleteManuscriptRequested(QString manuscriptId);
     void previewEreaderRequested(QString manuscriptId);
+    // Chave Capítulo | Livro inteiro (e o "Abrir manuscrito completo" do menu).
+    void bookModeRequested(QString manuscriptId, bool on);
     // Comando: o nome não achou nada — procurar o texto no livro inteiro.
     void searchTextRequested(QString query);
     void statsRequested(QString manuscriptId);
@@ -208,6 +214,8 @@ private:
     QWidget* makePovBar(const QList<Chapter>& chs);
     QWidget* makeRhythmBar(const QList<Chapter>& chs);
     QWidget* makeBookBlock(bool withCover);
+    QWidget* makeBookLever();
+    void placeBookSeam();   // a costura: as linhas dos capítulos emendadas no modo livro
     void applyStyleWidth();
 
     // ---- estilos das levas 6 a 8 (ManuscriptPanelStyles2.cpp) ----
@@ -405,6 +413,9 @@ private:
     int m_povReading = 0;             // "Ler a linha": 0 = ainda não começou
     QSet<QString> m_collapsedParts;
     QString m_curChapterId;
+    QString m_bookMsId;          // livro aberto inteiro no editor
+    QWidget* m_bookSeam = nullptr;
+    bool m_bookRebuildQueued = false;
     int m_curScene = -1;
     QList<ResumeEntry> m_resume;
     QHash<QString, double> m_visited;

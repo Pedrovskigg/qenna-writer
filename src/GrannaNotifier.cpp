@@ -80,7 +80,8 @@ bool GrannaNotifier::activeDoc(QString* chapterId) const
     if (d.enabled && !d.enabled()) return false;
     // Roteiro: o nome do personagem já vem escrito em cima de cada fala.
     if (d.model->isScreenplay()) return false;
-    const EditorHost::ViewMode vm = d.host->viewMode();
+    // no livro inteiro: o capítulo do cursor
+    const EditorHost::ViewMode vm = d.host->scopeViewMode();
     if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return false;
     if (chapterId) *chapterId = vm.chapterId;
     return true;

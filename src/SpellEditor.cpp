@@ -30,6 +30,7 @@
 #include <QTextImageFormat>
 #include <QTextObjectInterface>
 #include <QTimer>
+#include <QtMath>
 #include <QVariantAnimation>
 #include <qmath.h>
 
@@ -127,12 +128,35 @@ SpellEditor::SpellEditor(QWidget* parent)
     // Modo de página: o QTextEdit mede a rolagem até a última linha; a folha
     // vai além dela (até o pé da página). Toda vez que ele refaz a conta, estica.
     connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() { extendScrollToLastPage(); });
+    // Rolagem curta (bug do Pe no livro inteiro, 16/11/2026): ao chegar no fim da
+    // rolagem, e logo depois que o layout assenta, confere se o documento é mais
+    // alto do que a barra acha.
+    m_scrollRangeCheck = new QTimer(this);
+    m_scrollRangeCheck->setSingleShot(true);
+    m_scrollRangeCheck->setInterval(250);
+    connect(m_scrollRangeCheck, &QTimer::timeout, this, &SpellEditor::syncScrollRangeToDocument);
+    connect(document()->documentLayout(), &QAbstractTextDocumentLayout::update, m_scrollRangeCheck,
+            qOverload<>(&QTimer::start));
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int v) {
+        if (v >= verticalScrollBar()->maximum() - 2) syncScrollRangeToDocument();
+    });
     // Ao rolar, o Qt só arrasta os pixels do viewport; as faixas das folhas
     // que caem nas margens em volta dele (o padding dos lados) ficavam paradas,
     // com o vão entre as folhas no lugar antigo. Repinta essas faixas também.
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() {
         if (m_pageMode) update(QRegion(rect()) - QRegion(viewport()->geometry()));
     });
+}
+
+void SpellEditor::syncScrollRangeToDocument()
+{
+    QAbstractTextDocumentLayout* lay = document()->documentLayout();
+    if (!lay) return;
+    const QSizeF size = lay->documentSize();
+    // o QTextEdit refaz a conta da barra quando ouve este sinal (é o mesmo que o
+    // layout manda; aqui só é reenviado quando a barra ficou curta)
+    if (qCeil(size.height()) - viewport()->height() > verticalScrollBar()->maximum() + 1)
+        emit lay->documentSizeChanged(size);
 }
 
 void SpellEditor::setPageMargins(int left, int top, int right, int bottom)

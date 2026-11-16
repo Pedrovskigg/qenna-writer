@@ -1,4 +1,5 @@
 #include "ScreenplayFormat.h"
+#include "BookSeams.h"
 
 #include <QCoreApplication>
 #include <QFont>
@@ -262,6 +263,8 @@ int ScreenplayFormat::ensureSceneBreaks(QTextDocument* doc, bool joinPrevious)
     QList<QTextBlock> need;
     bool seenContent = false, afterBreak = false;
     for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        // livro inteiro: cada capítulo recomeça (o 1º cabeçalho dele não pede quebra)
+        if (BookSeams::isSeam(b)) { seenContent = false; afterBreak = false; continue; }
         if (isSceneBreak(b)) { afterBreak = true; continue; }
         if (b.text().trimmed().isEmpty()) continue;
         if (seenContent && !afterBreak && detect(b.blockFormat(), b.text()) == ScreenplayElement::Scene
@@ -331,7 +334,7 @@ void ScreenplayFormat::normalizeDocument(QTextDocument* doc)
     QTextCursor c(doc);
     c.beginEditBlock();
     for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
-        if (isSceneBreak(b)) continue;
+        if (isSceneBreak(b) || BookSeams::isSeam(b)) continue;
         QTextCursor bc(b);
         applyBlockFormat(bc, detect(b.blockFormat(), b.text()));
     }
