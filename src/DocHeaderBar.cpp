@@ -60,6 +60,56 @@ protected:
     }
 };
 
+// Voltar e Avançar (15/11/2026): só as duas setas, finas e apagadas, sem moldura (o Pe pediu mais discreto
+// que a pílula). A seta acende com o mouse em cima; a sem destino quase some; sem destino nenhum, nada aparece.
+class NavChip : public QWidget {
+public:
+    explicit NavChip(QWidget* parent) : QWidget(parent)
+    {
+        setFocusPolicy(Qt::NoFocus);
+        setAttribute(Qt::WA_Hover);
+        setMouseTracking(true);
+        setFixedSize(40, 22);
+    }
+    bool back = false, forward = false;
+    std::function<void()> onBack, onForward;
+
+protected:
+    int half(const QPoint& p) const { return p.x() < width() / 2 ? 0 : 1; }
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        const int h = half(e->pos());
+        if (h != m_hot) { m_hot = h; update(); }
+        setCursor((h == 0 ? back : forward) ? Qt::PointingHandCursor : Qt::ArrowCursor);
+        const QString tip = h == 0 ? QCoreApplication::translate("DocHeaderBar", "Voltar ao documento anterior (Alt+←)")
+                                   : QCoreApplication::translate("DocHeaderBar", "Avançar (Alt+→)");
+        if (toolTip() != tip) setToolTip(tip);
+    }
+    void leaveEvent(QEvent*) override { m_hot = -1; update(); }
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        if (e->button() != Qt::LeftButton) return;
+        if (half(e->pos()) == 0) { if (back && onBack) onBack(); }
+        else if (forward && onForward) onForward();
+    }
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        const Tracks::Palette pal = Tracks::Palette::onPage();
+        for (int i = 0; i < 2; ++i) {
+            const bool on = i == 0 ? back : forward;
+            const QColor c = !on ? Tracks::alpha(pal.dim, 0.18) : m_hot == i ? pal.ink : Tracks::alpha(pal.dim, 0.6);
+            p.setPen(QPen(c, 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            const double cx = width() * (i == 0 ? 0.3 : 0.7), cy = height() / 2.0, s = i == 0 ? 1 : -1;
+            p.drawPolyline(QPolygonF({ QPointF(cx + 2 * s, cy - 3.6), QPointF(cx - 2 * s, cy), QPointF(cx + 2 * s, cy + 3.6) }));
+        }
+    }
+
+private:
+    int m_hot = -1;
+};
+
 // Comporta o bloco de duas linhas (título + subtítulo) com folga.
 constexpr int kHeightBase = 54;
 constexpr int kHeightFloor = 40;
@@ -929,7 +979,7 @@ void DocHeaderBar::relayoutText()
     const int avatarW = hasAvatar ? m_avatar->width() + kAvatarGap : 0;
     // O guia do roteiro mora no canto direito; o título continua centralizado,
     // então a folga sai dos dois lados.
-    const int avail = qMax(40, width() - kSideMargin * 2 - avatarW - guideReserve() * 2);
+    const int avail = qMax(40, width() - kSideMargin * 2 - avatarW - qMax(guideReserve(), navReserve()) * 2);
 
     m_title->setVisible(!m_rawTitle.isEmpty());
     m_title->setText(QFontMetrics(m_title->font()).elidedText(m_rawTitle, Qt::ElideRight, avail));
@@ -991,9 +1041,42 @@ void DocHeaderBar::paintEvent(QPaintEvent* event)
     underlay(p, event->rect());
 }
 
+void DocHeaderBar::setNavState(bool canBack, bool canForward)
+{
+    if (!m_nav) {
+        auto* chip = new NavChip(this);
+        chip->onBack = [this]() { emit navBackRequested(); };
+        chip->onForward = [this]() { emit navForwardRequested(); };
+        chip->hide();
+        m_nav = chip;
+    }
+    auto* chip = static_cast<NavChip*>(m_nav);
+    const bool was = m_nav->isVisibleTo(this);
+    chip->back = canBack;
+    chip->forward = canForward;
+    m_nav->update();
+    placeNav();
+    if (was != m_nav->isVisibleTo(this)) relayoutText();
+}
+
+int DocHeaderBar::navReserve() const
+{
+    return m_nav && m_nav->isVisibleTo(this) ? m_nav->width() + kGuideGap : 0;
+}
+
+void DocHeaderBar::placeNav()
+{
+    if (!m_nav) return;
+    auto* chip = static_cast<NavChip*>(m_nav);
+    m_nav->setVisible(chip->back || chip->forward);
+    m_nav->move(kSideMargin, (height() - m_nav->height()) / 2);
+    m_nav->raise();
+}
+
 void DocHeaderBar::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    placeNav();
     refreshGuide();  // canto direito e teclas dependem da largura
     refreshGroupTag();
     relayoutText(); // a elipse depende da largura disponível

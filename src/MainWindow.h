@@ -225,6 +225,8 @@ private:
     // Aviso curto no rodapé do editor, some sozinho.
     void showEditorToast(const QString& text, int durationMs = 1800);
     void positionWordCountPanel();
+    void positionDocTabs();
+    void refreshDocTabs();
     void positionSidePanels();
     // Reaplica nos paineis flutuantes a largura da chrome (barras) que eles
     // precisam evitar. Tem que rodar DEPOIS da janela aparecer — ver definicao.
@@ -535,6 +537,7 @@ private:
     ProjectSaver *projectSaver;
     WordCounter *wordCounter;
     WordCountPanel *wordCountPanel;
+    class DocTabs *docTabs = nullptr;   // abas dos documentos abertos (canto de baixo, do lado da RightBar)
     RefMenuPanel *refMenuPanel;
     PensarioPanel *pensarioPanel = nullptr;
     StatsPanel *statsPanel = nullptr;

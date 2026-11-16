@@ -85,6 +85,8 @@ qt_add_executable(qenna-writer
     src/CounterPanelParts.cpp
     src/CounterPanelParts.h
     src/WordCountPanel.cpp
+    src/DocTabs.cpp
+    src/DocTabs.h
     src/WordCountPanel.h
     src/MiniCounterWidget.cpp
     src/MiniCounterWidget.h

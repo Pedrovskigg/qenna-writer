@@ -38,6 +38,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QCursor>
+#include <QGraphicsView>
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QShowEvent>
@@ -205,6 +206,9 @@
 #include "BackgroundWidget.h"
 #include "PanelGlass.h"
 #include "WordCountPanel.h"
+#include "DocTabs.h"
+#include "AvatarUtils.h"
+#include "IconUtils.h"
 #include "WordCounter.h"
 #include "Theme.h"
 #include "TopToolbar.h"
@@ -2515,6 +2519,46 @@ void MainWindow::setupEditor()
         }
     });
 
+    // Voltar/Avançar entre os documentos abertos (15/11/2026): Alt+← e Alt+→, e os botões laterais do mouse.
+    // No Mapa, na Lousa e na Timeline as teclas e os botões ficam com eles.
+    const auto navBlocked = [this](QWidget* w) {
+        if (!w || w->window() != this) return true;
+        for (QWidget* p = w; p; p = p->parentWidget()) {
+            if (p == cartoPanel || qobject_cast<QGraphicsView*>(p)) return true;
+        }
+        return false;
+    };
+    auto* navBackShortcut = new QShortcut(QKeySequence(Qt::ALT | Qt::Key_Left), this);
+    connect(navBackShortcut, &QShortcut::activated, this, [this, navBlocked]() {
+        if (editorHost && !navBlocked(QApplication::focusWidget() ? QApplication::focusWidget() : this)) editorHost->goBack();
+    });
+    auto* navForwardShortcut = new QShortcut(QKeySequence(Qt::ALT | Qt::Key_Right), this);
+    connect(navForwardShortcut, &QShortcut::activated, this, [this, navBlocked]() {
+        if (editorHost && !navBlocked(QApplication::focusWidget() ? QApplication::focusWidget() : this)) editorHost->goForward();
+    });
+    {
+        class NavMouseFilter : public QObject {
+        public:
+            using QObject::QObject;
+            std::function<bool(QWidget*, bool)> handle;
+        protected:
+            bool eventFilter(QObject* o, QEvent* e) override
+            {
+                if (e->type() != QEvent::MouseButtonPress) return false;
+                const auto* me = static_cast<QMouseEvent*>(e);
+                if (me->button() != Qt::BackButton && me->button() != Qt::ForwardButton) return false;
+                auto* w = qobject_cast<QWidget*>(o);
+                return w && handle && handle(w, me->button() == Qt::BackButton);
+            }
+        };
+        auto* navMouse = new NavMouseFilter(this);
+        navMouse->handle = [this, navBlocked](QWidget* w, bool back) {
+            if (!editorHost || navBlocked(w)) return false;
+            return back ? editorHost->goBack() : editorHost->goForward();
+        };
+        qApp->installEventFilter(navMouse);
+    }
+
     // Ctrl+S → paulada.
     auto* saveShortcut = new QShortcut(QKeySequence::Save, this);
     connect(saveShortcut, &QShortcut::activated, this, [this]() {
@@ -2818,6 +2862,12 @@ void MainWindow::setupEditor()
     // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
+    // Voltar/Avançar: as setinhas no canto da faixa acompanham o histórico do editor
+    connect(docHeader, &DocHeaderBar::navBackRequested, this, [this]() { if (editorHost) editorHost->goBack(); });
+    connect(docHeader, &DocHeaderBar::navForwardRequested, this, [this]() { if (editorHost) editorHost->goForward(); });
+    connect(editorHost, &EditorHost::historyChanged, docHeader, [this]() {
+        docHeader->setNavState(editorHost->canGoBack(), editorHost->canGoForward());
+    });
     // a faixa do título é o topo da mesma folha: o fundo passa por trás dela
     // (ela fica logo acima do editor, então o y do editor é o dela menos a altura)
     connect(docHeader, &DocHeaderBar::presenceClicked, this, &MainWindow::onPresenceClicked);
@@ -2985,6 +3035,30 @@ void MainWindow::setupEditor()
     wordCountPanel = new WordCountPanel(wordCounter, editorHost, projectModel, container);
     wordCountPanel->raise();
     connect(wordCountPanel, &WordCountPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
+
+    // Abas dos documentos abertos (15/11/2026, Abas Lab): escondidas no canto de baixo, sobem com o mouse.
+    docTabs = new DocTabs(container);
+    docTabs->activate = [this](int i) { if (editorHost) editorHost->openDocAt(i); };
+    docTabs->close = [this](int i) { if (editorHost) editorHost->closeDocAt(i); };
+    docTabs->showHidden = [this](QPoint at) {
+        // as mais antigas que não couberam: uma lista pra escolher
+        if (!editorHost || !docTabs) return;
+        const int hidden = docTabs->tabCount() - 6;
+        if (hidden <= 0) return;
+        QMenu menu(this);
+        const auto docs = editorHost->openDocs();
+        for (int i = 0; i < hidden && i < docs.size(); ++i) {
+            QString title;
+            const auto& vm = docs[i];
+            if (vm.type == EditorHost::DrawerDoc) { if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) title = it->title; }
+            else if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) title = ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title;
+            menu.addAction(title.isEmpty() ? tr("(item sem título)") : title, this, [this, i]() { editorHost->openDocAt(i); });
+        }
+        menu.exec(at - QPoint(0, menu.sizeHint().height() + 4));
+    };
+    docTabs->hide();
+    connect(editorHost, &EditorHost::historyChanged, this, &MainWindow::refreshDocTabs);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, &MainWindow::refreshDocTabs);
     positionWordCountPanel();
 
     // Painel flutuante de Referência — drag/resize livres, geometria persistida em QSettings.
@@ -7635,15 +7709,12 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
 void MainWindow::positionUpdateToast()
 {
     if (!m_updateToast) return;
+    // No centro de baixo (15/11/2026, pedido do Pe): o canto de baixo à direita é das abas dos documentos.
     const int margin = 16;
     const QRect r = rect();
-    int bottom = r.bottom() - margin;
-    if (m_reminderToast && m_reminderToast->isVisible()) {
-        bottom = m_reminderToast->y() - margin;
-    }
     m_updateToast->move(
-        r.right() - m_updateToast->width() - margin,
-        bottom - m_updateToast->height());
+        r.center().x() - m_updateToast->width() / 2,
+        r.bottom() - margin - m_updateToast->height());
 }
 
 QString MainWindow::updateActionText() const
@@ -8576,6 +8647,65 @@ void MainWindow::positionWordCountPanel()
         x = parent->mapFrom(leftBar->parentWidget(), leftBar->outerGeometry().topRight()).x() + 1 + 10;
     const int y = parent->height() - wordCountPanel->height() - bottomMargin;
     wordCountPanel->move(x, y);
+    positionDocTabs();
+}
+
+void MainWindow::positionDocTabs()
+{
+    if (!docTabs || !docTabs->parentWidget()) return;
+    QWidget* parent = docTabs->parentWidget();
+    const bool show = docTabs->tabCount() >= 2;   // com um documento só, aba não tem serventia
+    docTabs->setVisible(show);
+    if (!show) return;
+    const QSize sz = docTabs->zoneSize();
+    // no canto da RightBar: a direita, a não ser que a LeftBar tenha ido pra lá (aí encosta nela)
+    int right = parent->width();
+    if (leftBar && leftBar->isVisible() && leftBar->barSide() == Qt::RightEdge)
+        right = parent->mapFrom(leftBar->parentWidget(), leftBar->outerGeometry().topLeft()).x() - 4;
+    docTabs->setGeometry(right - sz.width(), parent->height() - sz.height(), sz.width(), sz.height());
+    docTabs->raise();
+}
+
+void MainWindow::refreshDocTabs()
+{
+    if (!docTabs || !editorHost || !projectModel) return;
+    const auto docs = editorHost->openDocs();
+    const QString curKey = EditorHost::keyFor(editorHost->viewMode());
+    QVector<DocTabs::Tab> tabs;
+    for (const auto& vm : docs) {
+        DocTabs::Tab t;
+        t.active = EditorHost::keyFor(vm) == curKey;
+        if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) {
+            const Chapter* ch = projectModel->findChapter(vm.chapterId);
+            if (!ch) continue;
+            t.kind = DocTabs::Tab::Chapter;
+            t.title = ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title;
+            t.mono = projectModel->chapterNumberLabel(*ch);
+            if (t.mono.isEmpty()) t.mono = projectModel->chapterTypeName(*ch).left(1);
+        } else if (vm.type == EditorHost::DrawerDoc) {
+            QString drawerKey;
+            const DrawerItem* it = projectModel->findDrawerItem(vm.itemId, &drawerKey);
+            if (!it) continue;
+            const Drawer* d = projectModel->findDrawer(drawerKey);
+            t.title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
+            t.color = QColor(d && !d->color.isEmpty() ? d->color : Theme::accentDefault());
+            const Element* el = (elementsStore && !it->elementId.isEmpty()) ? elementsStore->findElement(it->elementId) : nullptr;
+            if (el) {
+                t.kind = DocTabs::Tab::Element;
+                if (!el->image.isEmpty()) t.icon = AvatarUtils::decodeDataUrl(el->image).scaled(40, 40, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            } else {
+                t.kind = DocTabs::Tab::Doc;
+                const QString iconId = d ? (!d->drawerIcon.isEmpty() ? d->drawerIcon : d->drawerElementIcon) : QString();
+                const QString path = iconId.isEmpty() ? QStringLiteral(":/icons/elements/file.svg") : QStringLiteral(":/icons/elements/%1.svg").arg(iconId);
+                const qreal dpr = devicePixelRatioF();
+                const int px = qRound(20 * dpr);
+                t.icon = IconUtils::loadToolbarIcon(path, t.color, t.color, t.color, QSize(px, px)).pixmap(px, px);
+            }
+        } else continue;
+        tabs.append(t);
+    }
+    docTabs->setTabs(tabs);
+    positionDocTabs();
 }
 
 void MainWindow::positionFindBar()

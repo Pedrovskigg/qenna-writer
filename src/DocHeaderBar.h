@@ -74,6 +74,9 @@ public:
     void setSheetMenuVisible(bool visible);
     QRect sheetMenuGlobalRect() const;
 
+    // Voltar/Avançar entre os documentos abertos: as duas setinhas no canto esquerdo, só quando há pra onde ir.
+    void setNavState(bool canBack, bool canForward);
+
     // Roteiro: guia no canto direito — em que elemento está a linha do cursor
     // e pra onde o Enter, o Tab e o Shift+Tab levam. Fora do roteiro, some.
     // Fica fora do layout (posição fixa no canto) pra não tirar o título do centro.
@@ -126,6 +129,8 @@ signals:
     void grannaAnnounceEnded();
     void presenceClicked(const QString& elementId, const QRect& globalRect);
     void sheetMenuRequested();
+    void navBackRequested();
+    void navForwardRequested();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -183,4 +188,7 @@ private:
     bool m_tagsWanted = false;
     QWidget* m_sheetMenu = nullptr;
     bool m_sheetMenuWanted = false;
+    QWidget* m_nav = nullptr;   // NavChip (DocHeaderBar.cpp)
+    int navReserve() const;
+    void placeNav();
 };

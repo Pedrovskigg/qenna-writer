@@ -1394,6 +1394,11 @@ QString HelpPanel::keyboardShortcutsContent() const
         "Ir para o próximo capítulo (ou próximo item da gaveta aberta)."));
     html += row(QStringLiteral("Shift+Page&nbsp;Up"), tr(
         "Ir para o capítulo anterior (ou item anterior da gaveta aberta)."));
+    html += row(QStringLiteral("Alt+←"), tr(
+        "Voltar ao documento que estava aberto antes, com o cursor onde você parou (os botões laterais do mouse também servem)."));
+    html += row(QStringLiteral("Alt+→"), tr("Avançar de novo pro documento de onde você voltou."));
+    html += row(tr("Mouse no canto ↘"), tr(
+        "Mostra as abas dos documentos abertos, no canto de baixo à direita. Clique numa pra trocar; o × (ou o botão do meio do mouse) fecha a aba, sem apagar nada."));
     html += QStringLiteral("</table>");
 
     html += group(tr("Busca"));

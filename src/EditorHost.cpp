@@ -6,7 +6,12 @@
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
 
+#include <QCoreApplication>
+#include <algorithm>
+#include <QCryptographicHash>
+#include <QPointer>
 #include <QScrollBar>
+#include <QSettings>
 #include <QClipboard>
 #include <QEvent>
 #include <QFile>
@@ -23,6 +28,8 @@
 
 namespace {
 constexpr int kDefaultFlushMs = 200;
+constexpr int kHistoryMax = 60;     // passos de Voltar guardados
+constexpr int kSpotsMax = 400;      // documentos com posição lembrada, por projeto
 }
 
 bool EditorHost::ViewMode::operator==(const ViewMode& other) const {
@@ -47,7 +54,11 @@ EditorHost::EditorHost(QTextEdit* editor, DocCache* cache, ProjectModel* model, 
     if (m_editor) {
         connect(m_editor, &QTextEdit::textChanged, this, &EditorHost::onEditorTextChanged);
         m_editor->installEventFilter(this);
+        // rolar com a mão (roda, barra, teclas) cancela a rolagem guardada que ainda ia ser aplicada
+        connect(m_editor->verticalScrollBar(), &QAbstractSlider::actionTriggered, this, [this]() { m_spotPending = false; });
     }
+    // fechar o app: o documento aberto guarda onde parou (abre ali na próxima vez)
+    connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() { rememberSpot(); });
 }
 
 bool EditorHost::eventFilter(QObject* watched, QEvent* event) {
@@ -148,8 +159,172 @@ void EditorHost::setFlushDebounceMs(int ms) {
 }
 
 void EditorHost::setProjectRoot(const QString& root) {
+    if (root == m_projectRoot) return;
+    rememberSpot();
+    persistSpots();
     m_projectRoot = root;
+    m_back.clear();
+    m_forward.clear();
+    loadSpots();
+    emit historyChanged();
 }
+
+// ── Voltar/Avançar e a posição de cada documento ──
+QString EditorHost::spotKey(const ViewMode& vm) {
+    const QString k = keyFor(vm);
+    if (k.isEmpty()) return k;
+    // a cena mostra só o pedaço dela: a posição é da cena, não do capítulo
+    return vm.type == SceneDoc ? QStringLiteral("%1#s%2").arg(k).arg(vm.sceneIndex) : k;
+}
+
+void EditorHost::saveSpot() {
+    if (!m_editor || m_viewMode.type == Disabled || m_loadingContent) return;
+    const QString key = spotKey(m_viewMode);
+    if (key.isEmpty()) return;
+    const QTextCursor c = m_editor->textCursor();
+    m_spots.insert(key, Spot{ c.position(), c.anchor(), m_editor->verticalScrollBar()->value() });
+}
+
+void EditorHost::rememberSpot() {
+    saveSpot();
+    persistSpots();
+}
+
+void EditorHost::restoreSpot() {
+    m_spotPending = false;
+    if (!m_editor) return;
+    const QString key = spotKey(m_viewMode);
+    const auto it = m_spots.constFind(key);
+    if (it == m_spots.constEnd()) return;
+    const Spot sp = *it;
+    QTextDocument* doc = m_editor->document();
+    const int maxPos = qMax(0, doc->characterCount() - 1);
+    QTextCursor c(doc);
+    c.setPosition(qBound(0, sp.anchor, maxPos));
+    c.setPosition(qBound(0, sp.cursor, maxPos), QTextCursor::KeepAnchor);
+    m_editor->setTextCursor(c);
+    m_editor->verticalScrollBar()->setValue(sp.scroll);
+    // O layout do documento termina depois (no modo de página, as folhas): a rolagem é refeita quando ele
+    // chegar. Quem abriu o documento pra mostrar outro lugar (busca, fala do Granna) move o cursor, e aí
+    // a rolagem guardada não vale mais; a mão do usuário na barra também cancela.
+    m_spotPending = true;
+    const int at = c.position();
+    QPointer<QTextEdit> ed(m_editor);
+    auto apply = [this, ed, key, at, sp]() {
+        if (!ed || !m_spotPending || spotKey(m_viewMode) != key || ed->textCursor().position() != at) return;
+        ed->verticalScrollBar()->setValue(sp.scroll);
+    };
+    QTimer::singleShot(0, this, apply);
+    QTimer::singleShot(90, this, [this, apply]() { apply(); m_spotPending = false; });
+}
+
+void EditorHost::loadSpots() {
+    m_spots.clear();
+    m_open.clear();
+    if (m_projectRoot.isEmpty()) return;
+    const QString id = QString::fromLatin1(QCryptographicHash::hash(m_projectRoot.toUtf8(), QCryptographicHash::Md5).toHex().left(16));
+    for (const QString& s : QSettings().value(QStringLiteral("editorTabs/") + id).toStringList()) {
+        const QStringList p = s.split(QLatin1Char('|'));
+        if (p.size() != 5) continue;
+        ViewMode vm;
+        vm.type = static_cast<ViewModeType>(p[0].toInt());
+        vm.manuscriptId = p[1]; vm.chapterId = p[2]; vm.sceneIndex = p[3].toInt(); vm.itemId = p[4];
+        if (vm.type != Disabled) m_open.append(vm);
+    }
+    const QVariantMap map = QSettings().value(QStringLiteral("editorSpots/") + id).toMap();
+    for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+        const QStringList p = it.value().toString().split(QLatin1Char(','));
+        if (p.size() == 3) m_spots.insert(it.key(), Spot{ p[0].toInt(), p[1].toInt(), p[2].toInt() });
+    }
+}
+
+void EditorHost::persistSpots() const {
+    if (m_projectRoot.isEmpty()) return;
+    const QString id = QString::fromLatin1(QCryptographicHash::hash(m_projectRoot.toUtf8(), QCryptographicHash::Md5).toHex().left(16));
+    QVariantMap map;
+    for (auto it = m_spots.constBegin(); it != m_spots.constEnd() && map.size() < kSpotsMax; ++it)
+        map.insert(it.key(), QStringLiteral("%1,%2,%3").arg(it->cursor).arg(it->anchor).arg(it->scroll));
+    QSettings().setValue(QStringLiteral("editorSpots/") + id, map);
+    QStringList tabs;
+    for (const ViewMode& vm : m_open)
+        tabs << QStringLiteral("%1|%2|%3|%4|%5").arg(int(vm.type)).arg(vm.manuscriptId, vm.chapterId).arg(vm.sceneIndex).arg(vm.itemId);
+    QSettings().setValue(QStringLiteral("editorTabs/") + id, tabs);
+}
+
+QVector<EditorHost::ViewMode> EditorHost::openDocs() const {
+    QVector<ViewMode> out;
+    for (const ViewMode& vm : m_open) if (isOpenable(vm)) out.append(vm);
+    return out;
+}
+
+void EditorHost::openTarget(const ViewMode& vm) {
+    if (m_model && !vm.manuscriptId.isEmpty() && m_model->activeManuscriptId() != vm.manuscriptId && m_model->findManuscript(vm.manuscriptId))
+        m_model->setActiveManuscriptId(vm.manuscriptId);
+    setViewMode(vm);
+}
+
+void EditorHost::openDocAt(int index) {
+    const QVector<ViewMode> docs = openDocs();
+    if (index >= 0 && index < docs.size()) openTarget(docs[index]);
+}
+
+void EditorHost::closeDocAt(int index) {
+    const QVector<ViewMode> docs = openDocs();
+    if (index < 0 || index >= docs.size()) return;
+    const ViewMode gone = docs[index];
+    m_open.erase(std::remove_if(m_open.begin(), m_open.end(), [&](const ViewMode& v) { return keyFor(v) == keyFor(gone); }), m_open.end());
+    // fechou a que está na tela: vai pra vizinha (a da esquerda; sem ela, a da direita)
+    if (keyFor(gone) == keyFor(m_viewMode)) {
+        const QVector<ViewMode> rest = openDocs();
+        if (!rest.isEmpty()) { openTarget(rest[qBound(0, index - 1, rest.size() - 1)]); return; }
+    }
+    emit historyChanged();
+}
+
+bool EditorHost::isOpenable(const ViewMode& vm) const {
+    if (!m_model) return false;
+    switch (vm.type) {
+    case ChapterDoc: return m_model->findChapter(vm.chapterId) != nullptr;
+    case SceneDoc: {
+        const Chapter* ch = m_model->findChapter(vm.chapterId);
+        return ch && vm.sceneIndex >= 0 && vm.sceneIndex < ch->scenes.size();
+    }
+    case DrawerDoc: return m_model->findDrawerItem(vm.itemId) != nullptr;
+    case ManuscriptDoc: return m_model->findManuscript(vm.manuscriptId) != nullptr;
+    case Disabled: break;
+    }
+    return false;
+}
+
+bool EditorHost::canGoBack() const {
+    for (int i = m_back.size() - 1; i >= 0; --i) if (isOpenable(m_back[i]) && m_back[i] != m_viewMode) return true;
+    return false;
+}
+
+bool EditorHost::canGoForward() const {
+    for (int i = m_forward.size() - 1; i >= 0; --i) if (isOpenable(m_forward[i]) && m_forward[i] != m_viewMode) return true;
+    return false;
+}
+
+bool EditorHost::travel(QVector<ViewMode>& from, QVector<ViewMode>& to) {
+    // pula o que foi apagado (ou é o próprio documento aberto) no caminho
+    while (!from.isEmpty() && (!isOpenable(from.last()) || from.last() == m_viewMode)) from.removeLast();
+    if (from.isEmpty()) { emit historyChanged(); return false; }
+    const ViewMode target = from.takeLast();
+    if (m_viewMode.type != Disabled) to.append(m_viewMode);
+    // o documento de outro manuscrito: o manuscrito ativo acompanha, como no abrir pela gaveta
+    if (m_model && !target.manuscriptId.isEmpty() && m_model->activeManuscriptId() != target.manuscriptId
+        && m_model->findManuscript(target.manuscriptId))
+        m_model->setActiveManuscriptId(target.manuscriptId);
+    m_travelling = true;
+    setViewMode(target);
+    m_travelling = false;
+    emit historyChanged();
+    return true;
+}
+
+bool EditorHost::goBack() { return travel(m_back, m_forward); }
+bool EditorHost::goForward() { return travel(m_forward, m_back); }
 
 namespace {
 QString readVariationFile(const QString& root, const QString& msId,
@@ -302,6 +477,14 @@ void EditorHost::setViewMode(const ViewMode& vm) {
     // Antes de trocar, garante que o conteúdo atual do editor está no cache.
     syncEditorToCache();
 
+    // onde o cursor estava no documento que sai, e o documento que sai vira o passo de Voltar
+    saveSpot();
+    if (!m_travelling && m_viewMode.type != Disabled && vm.type != Disabled) {
+        if (m_back.isEmpty() || m_back.last() != m_viewMode) m_back.append(m_viewMode);
+        while (m_back.size() > kHistoryMax) m_back.removeFirst();
+        m_forward.clear();
+    }
+
     m_viewMode = vm;
     emit viewModeChanged();
 
@@ -331,6 +514,14 @@ void EditorHost::setViewMode(const ViewMode& vm) {
     loadIntoEditor(htmlToEdit);
 
     if (m_editor) m_editor->setEnabled(true);
+    {
+        const QString k = keyFor(m_viewMode);
+        auto it = std::find_if(m_open.begin(), m_open.end(), [&](const ViewMode& v) { return keyFor(v) == k; });
+        if (it != m_open.end()) *it = m_viewMode;   // a cena ou o capítulo inteiro: a mesma aba
+        else m_open.append(m_viewMode);
+    }
+    restoreSpot();          // volta onde o cursor estava da última vez nesse documento
+    emit historyChanged();
 }
 
 QString EditorHost::hydrateFromModel(const ViewMode& vm) const {
