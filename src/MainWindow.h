@@ -13,6 +13,7 @@
 #include "MemoriesStore.h"
 #include "PresenceTypes.h"
 #include "RepetitionDetector.h"
+#include "BookSeams.h"
 #include "SceneBreaks.h"
 #include "PageBackgroundUi.h"
 #include "TopToolbar.h"
@@ -420,6 +421,15 @@ private:
     // A cena que começa depois da quebra de número breakIndex no editor (título,
     // tempo, Flashback) — pro desenho da quebra (SceneBreaks).
     SceneBreaks::Info sceneBreakInfo(int breakIndex) const;
+    // Abertura de capítulo (BookSeams): o que o nó mostra pra um capítulo, e o
+    // menu do estilo (botão direito na abertura ou no nome da faixa de cima).
+    BookSeams::Info bookSeamInfo(const QString& chapterId) const;
+    // O documento que a faixa de cima mostra. No livro inteiro é o capítulo no
+    // topo da folha (como a cena no capítulo sozinho), não o do cursor: rolar
+    // pra ler muda a faixa; as ferramentas continuam no capítulo do cursor.
+    EditorHost::ViewMode headerViewMode() const;
+    void showChapterOpeningMenu(const QPoint& globalPos);
+    QList<QRect> m_seamHits;   // onde as aberturas foram pintadas, pro botão direito
     // Fundo da folha: as faixas do documento aberto (uma por cena no capítulo)
     // e o fundo de cada uma. Vazio = nada a pintar.
     QList<PageBg::Region> pageBackgroundRegions() const;

@@ -1,6 +1,8 @@
 #include "DocHeaderBar.h"
 
 #include <QAbstractButton>
+#include <QContextMenuEvent>
+#include <QtMath>
 #include <QCoreApplication>
 #include <QEnterEvent>
 #include <QEvent>
@@ -108,6 +110,38 @@ protected:
 
 private:
     int m_hot = -1;
+};
+
+// O nó do capítulo em miniatura (ver BookSeams::paintHead). Um widget próprio
+// no lugar dos dois QLabel: entra no mesmo grupo centralizado da foto, então a
+// foto da ficha e o botão de variação continuam onde sempre estiveram.
+class NodeView : public QWidget {
+public:
+    explicit NodeView(QWidget* parent) : QWidget(parent) {}
+    BookSeams::Head head;
+    BookSeams::HeadPalette pal;
+    qreal natural = 0;
+    std::function<void()> onDoubleClick;
+    // A parte desenhada, em coordenadas do pai (o Margem encosta à esquerda
+    // e o widget pode ser mais largo que ele).
+    QRect contentRect() const
+    {
+        const bool left = BookSeams::style() == BookSeams::Margin;
+        const int w = left ? qMin(width(), qCeil(natural)) : width();
+        const int x = left ? geometry().x() : geometry().center().x() - w / 2;
+        return QRect(x, geometry().y(), w, height());
+    }
+protected:
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        BookSeams::paintHead(p, QRectF(rect()), BookSeams::style(), head, pal);
+    }
+    void mouseDoubleClickEvent(QMouseEvent* e) override
+    {
+        if (onDoubleClick) onDoubleClick();
+        e->accept();
+    }
 };
 
 // Comporta o bloco de duas linhas (título + subtítulo) com folga.
@@ -553,6 +587,12 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     m_avatar->installEventFilter(this);
     centerRow->addWidget(m_avatar, 0, Qt::AlignVCenter);
 
+    auto* node = new NodeView(this);
+    node->setVisible(false);
+    node->onDoubleClick = [this]() { emit titleDoubleClicked(); };
+    m_node = node;
+    centerRow->addWidget(m_node, 0, Qt::AlignVCenter);
+
     m_textCol = new QVBoxLayout;
     m_textCol->setContentsMargins(0, 0, 0, 0);
     m_textCol->setSpacing(0);
@@ -616,6 +656,11 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
             this, &DocHeaderBar::applyTheme);
     connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
             this, &DocHeaderBar::applyUiScale);
+    // estilo do nó trocado (menu, Configurações): a faixa redesenha na hora
+    connect(BookSeams::notifier(), &BookSeams::Notifier::changed, this, [this]() {
+        relayoutText();
+        if (m_node) m_node->update();
+    });
 
     applyUiScale();
     applyTheme();
@@ -678,6 +723,13 @@ void DocHeaderBar::applyTheme()
     const QString guideColor = (accent.isValid() && contrast(accent, paper) >= 3.0)
         ? accent.name() : titleColor;
     m_grannaAccent = QColor(guideColor);
+    // o nó: rótulo na cor de destaque (com contraste), título na cor do título
+    m_headPal.accent = QColor(guideColor);
+    m_headPal.text = QColor(titleColor);
+    m_headPal.muted = QColor(subtitleColor);
+    m_headPal.serifFamily = family.isEmpty() ? QStringLiteral("Lora") : family;
+    m_headPal.scale = UiScale::scale();
+    if (m_node) m_node->update();
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#docHeaderBar { background: %1; }
@@ -885,6 +937,44 @@ void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitl
     relayoutText();
 }
 
+void DocHeaderBar::setDocumentNode(const BookSeams::Head& head)
+{
+    m_head = head;
+    relayoutText();
+    if (m_node) m_node->update();
+}
+
+bool DocHeaderBar::nodeMode() const
+{
+    return BookSeams::nodeInHeader() && !m_head.isEmpty();
+}
+
+QRect DocHeaderBar::textBounds() const
+{
+    if (m_node && m_node->isVisible()) return static_cast<NodeView*>(m_node)->contentRect();
+    QRect r;
+    for (QLabel* l : { m_title, m_subtitle }) {
+        if (!l || l->isHidden() || l->text().isEmpty()) continue;
+        const int w = qMin(l->width(), QFontMetrics(l->font()).horizontalAdvance(l->text()));
+        const QRect lr(l->geometry().center().x() - w / 2, l->y(), w, l->height());
+        r = r.isNull() ? lr : r.united(lr);
+    }
+    return r;
+}
+
+void DocHeaderBar::contextMenuEvent(QContextMenuEvent* event)
+{
+    const QRect bounds = textBounds();
+    const QRect hot = bounds.adjusted(-14, -6, 14, 6);
+    const bool onAvatar = m_avatar && m_avatar->isVisible() && m_avatar->geometry().contains(event->pos());
+    if (!bounds.isNull() && (hot.contains(event->pos()) || onAvatar)) {
+        emit titleMenuRequested(event->globalPos());
+        event->accept();
+        return;
+    }
+    QWidget::contextMenuEvent(event);
+}
+
 void DocHeaderBar::setDocumentAvatar(const QString& imageDataUrl)
 {
     if (m_avatarDataUrl == imageDataUrl) return;
@@ -980,6 +1070,30 @@ void DocHeaderBar::relayoutText()
     // O guia do roteiro mora no canto direito; o título continua centralizado,
     // então a folga sai dos dois lados.
     const int avail = qMax(40, width() - kSideMargin * 2 - avatarW - qMax(guideReserve(), navReserve()) * 2);
+
+    if (m_node) {
+        auto* nv = static_cast<NodeView*>(m_node);
+        const bool node = nodeMode();
+        nv->setVisible(node);
+        if (node) {
+            nv->head = m_head;
+            nv->head.hasAvatar = hasAvatar;
+            nv->pal = m_headPal;
+            const bool showVar = m_subtitleWanted && m_varWanted;
+            const int varW = showVar ? kVarBtnGap + m_varButton->width() : 0;
+            const int room = qMax(40, avail - varW);
+            nv->natural = BookSeams::headWidth(BookSeams::style(), nv->head, nv->pal, height());
+            const int w = BookSeams::style() == BookSeams::Margin ? room : qMin(room, qCeil(nv->natural) + 2);
+            nv->setFixedSize(w, qMax(10, height() - 8));
+            m_title->setVisible(false);
+            m_subtitle->setVisible(false);
+            m_varButton->setVisible(showVar);
+            nv->update();
+            placeGrannaMark();
+            placePresence();
+            return;
+        }
+    }
 
     m_title->setVisible(!m_rawTitle.isEmpty());
     m_title->setText(QFontMetrics(m_title->font()).elidedText(m_rawTitle, Qt::ElideRight, avail));
@@ -1176,13 +1290,8 @@ void DocHeaderBar::placePresence()
     if (!m_presence || m_presence->isHidden()) return;
     if (layout()) layout()->activate();
     // Borda direita do TEXTO (o QLabel pode ser mais largo que ele).
-    int right = INT_MIN;
-    for (QLabel* l : { m_title, m_subtitle }) {
-        if (!l || l->isHidden() || l->text().isEmpty()) continue;
-        const int w = qMin(l->width(), QFontMetrics(l->font()).horizontalAdvance(l->text()));
-        right = qMax(right, l->geometry().center().x() + (w + 1) / 2);
-    }
-    if (right == INT_MIN) right = width() / 2;
+    const QRect tb = textBounds();
+    const int right = tb.isNull() ? width() / 2 : tb.x() + tb.width();
     const int x = right + qRound(kAvatarGap * UiScale::scale()) - m_presence->pad();
     const int h = m_presence->side() + m_presence->pad() * 2;
     m_presence->setGeometry(x, (height() - h) / 2, qMin(m_presence->preferredWidth(), qMax(0, width() - x)), h);
@@ -1197,13 +1306,8 @@ void DocHeaderBar::placeGrannaMark()
     if (!m_granna) return;
     if (layout()) layout()->activate();
     // Borda esquerda do TEXTO (o QLabel pode ser mais largo que ele).
-    int left = INT_MAX;
-    for (QLabel* l : { m_title, m_subtitle }) {
-        if (!l || l->isHidden() || l->text().isEmpty()) continue;
-        const int w = qMin(l->width(), QFontMetrics(l->font()).horizontalAdvance(l->text()));
-        left = qMin(left, l->geometry().center().x() - w / 2);
-    }
-    if (left == INT_MAX) left = width() / 2;
+    const QRect tb = textBounds();
+    const int left = tb.isNull() ? width() / 2 : tb.x();
     const int side = qMax(16, qRound(kAvatarBase * UiScale::scale()));
     const int pad = grannaPad();
     const int w = pad * 2 + side + grannaSlide();

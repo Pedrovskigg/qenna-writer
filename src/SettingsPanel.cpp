@@ -1,5 +1,6 @@
 #include "SettingsPanel.h"
 #include "ElementCreateDialog.h"
+#include "BookSeams.h"
 #include "SceneBreaks.h"
 #include "SheetDialogs.h"
 #include "GlossaryInText.h"
@@ -700,6 +701,41 @@ SettingsPanel::SettingsPanel(QWidget* parent)
               "o arquivo e a exportação não mudam."));
     connect(breakCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [breakCombo](int idx) {
         SceneBreaks::setStyle(SceneBreaks::Style(breakCombo->itemData(idx).toInt()));
+    });
+
+    // Abertura de capítulo (ver BookSeams): o mesmo menu do botão direito na
+    // abertura do livro inteiro e no nome da faixa de cima. Seis estilos não
+    // cabem em pílulas (máximo de 4 por linha): lista suspensa.
+    auto* openCombo = new QComboBox(this);
+    for (int i = 0; i < BookSeams::kStyleCount; ++i)
+        openCombo->addItem(BookSeams::styleName(BookSeams::Style(i)), i);
+    openCombo->setCurrentIndex(int(BookSeams::style()));
+    addRow(Writing, tr("Abertura de capítulo"), tr("O nó que abre cada capítulo no livro inteiro."),
+           openCombo,
+           tr("Fios: o rótulo entre dois fios, com o título embaixo. Nó: a bolinha da Timeline com o "
+              "número. Numeral: o número grande em itálico. Romano: algarismo romano e título em "
+              "itálico. Margem: alinhado à esquerda, como revista. Fleurão: um ornamento clássico "
+              "em cima. Também muda no botão direito da abertura ou do nome na faixa de cima."));
+    connect(openCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [openCombo](int idx) {
+        BookSeams::setStyle(BookSeams::Style(openCombo->itemData(idx).toInt()));
+    });
+    auto* nodeHeadCheck = new ToggleSwitch(this);
+    nodeHeadCheck->setChecked(BookSeams::nodeInHeader());
+    addRow(Writing, tr("Nó na faixa de cima"), tr("O nome do documento no estilo da abertura."), nodeHeadCheck,
+           tr("Ligado, a faixa acima da folha mostra o documento no estilo da abertura de capítulo, "
+              "em qualquer documento: capítulo, cena, gaveta e ficha. Desligado, volta a faixa "
+              "simples, só com o nome."));
+    connect(nodeHeadCheck, &ToggleSwitch::toggled, this, [](bool on) { BookSeams::setNodeInHeader(on); });
+    // o menu do botão direito também troca: os dois daqui acompanham
+    connect(BookSeams::notifier(), &BookSeams::Notifier::changed, this, [openCombo, nodeHeadCheck]() {
+        if (openCombo->currentIndex() != int(BookSeams::style())) {
+            QSignalBlocker block(openCombo);
+            openCombo->setCurrentIndex(int(BookSeams::style()));
+        }
+        if (nodeHeadCheck->isChecked() != BookSeams::nodeInHeader()) {
+            QSignalBlocker block(nodeHeadCheck);
+            nodeHeadCheck->setChecked(BookSeams::nodeInHeader());
+        }
     });
 
     auto* caretCheck = new ToggleSwitch(this);

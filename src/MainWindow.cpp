@@ -36,6 +36,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QMenu>
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QCursor>
 #include <QGraphicsView>
@@ -1363,8 +1364,8 @@ void MainWindow::setupEditor()
     // Atualiza o título do doc na TopToolbar conforme troca viewMode ou metadata muda.
     auto refreshDocTitle = [this]() {
         if (!toolbar || !editorHost || !projectModel) return;
-        // livro inteiro: a faixa mostra o capítulo onde o cursor está
-        const auto vm = editorHost->scopeViewMode();
+        // livro inteiro: a faixa mostra o capítulo no topo da folha
+        const auto vm = headerViewMode();
         QString title;
         QString subtitle;
         QString avatar;
@@ -1382,11 +1383,11 @@ void MainWindow::setupEditor()
                 if (!ch->scenes.isEmpty() && editor) {
                     int local = 0;
                     if (editorHost->isBook()) {
-                        // a cena do cursor, contada dentro do capítulo
-                        const int cb = editor->textCursor().blockNumber();
-                        for (QTextBlock b = editor->document()->findBlock(editorHost->scopeStart());
-                             b.isValid() && b.blockNumber() < cb; b = b.next())
-                            if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) ++local;
+                        // a cena no topo da folha, contada dentro do capítulo dela
+                        const QTextBlock top = editor->cursorForPosition(QPoint(2, 2)).block();
+                        if (!BookSeams::isSeam(top))
+                            for (QTextBlock b = top.previous(); b.isValid() && !BookSeams::isSeam(b); b = b.previous())
+                                if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) ++local;
                     } else {
                         const QTextCursor top = editor->cursorForPosition(QPoint(2, 2));
                         local = SceneUtils::sceneIndexForBlock(editor->document(), top.blockNumber());
@@ -1394,6 +1395,21 @@ void MainWindow::setupEditor()
                     const int si = qBound(0, local, int(ch->scenes.size()) - 1);
                     const Scene& sc = ch->scenes.at(si);
                     subtitle = sc.title.isEmpty() ? tr("Cena %1").arg(si + 1) : sc.title;
+                }
+                // livro inteiro: com a abertura do capítulo à vista, o título dela já
+                // está na tela; a faixa se cala pra não repetir "Capítulo X" duas vezes
+                // e volta assim que a abertura passa por baixo dela
+                if (editorHost->isBook() && editor) {
+                    QTextBlock seam = editor->cursorForPosition(QPoint(2, 2)).block();
+                    while (seam.isValid() && !BookSeams::isSeam(seam)) seam = seam.previous();
+                    if (seam.isValid()) {
+                        const int dy = editor->verticalScrollBar()->value();
+                        const QRectF r = editor->document()->documentLayout()->blockBoundingRect(seam).translated(0, -dy);
+                        if (r.bottom() > 6 && r.top() < editor->viewport()->height()) {
+                            title.clear();
+                            subtitle.clear();
+                        }
+                    }
                 }
             }
             break;
@@ -1444,6 +1460,30 @@ void MainWindow::setupEditor()
             // Na ficha, nome, papel e foto já estão grandes na própria folha:
             // a faixa fica só com as etiquetas e o "⋯" da ficha.
             docHeader->setDocumentTitle(sheetDoc ? QString() : title, sheetDoc ? QString() : subtitle);
+            // O nó em miniatura (BookSeams::paintHead): o mesmo documento em
+            // partes. Capítulo sem título próprio fica com duas linhas, como os
+            // outros documentos: o rótulo e a cena no lugar do título.
+            BookSeams::Head head;
+            if (!sheetDoc && !title.isEmpty()) {
+                if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) {
+                    const BookSeams::Info in = bookSeamInfo(vm.chapterId);
+                    head.manuscript = true;
+                    head.label = in.label.isEmpty() ? title : in.label;
+                    head.kind = in.kind;
+                    head.number = in.number;
+                    head.numberInt = in.numberInt;
+                    if (!in.title.isEmpty()) { head.title = in.title; head.scene = subtitle; }
+                    else if (!subtitle.isEmpty()) { head.title = subtitle; head.sceneAsTitle = true; }
+                } else if (vm.type == EditorHost::DrawerDoc) {
+                    head.title = title;
+                    head.label = subtitle;   // o papel do personagem, quando tem
+                    if (head.label.isEmpty())
+                        for (const Drawer& d : projectModel->drawers())
+                            for (const DrawerItem& it : d.items)
+                                if (it.id == vm.itemId) { head.label = d.title; break; }
+                }
+            }
+            docHeader->setDocumentNode(head);
             docHeader->setDocumentAvatar(sheetDoc ? QString() : avatar);
             docHeader->setAvatarEditable(avatarEditable && !sheetDoc);
             docHeader->setSheetMenuVisible(sheetDoc);
@@ -1673,16 +1713,12 @@ void MainWindow::setupEditor()
         if (!editor->isScreenplayMode())
             hits = SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
         // Livro inteiro: a abertura de cada capítulo
+        m_seamHits.clear();
         if (editorHost && editorHost->isBook()) {
-            hits += BookSeams::paint(editor, p, clip, [this](const QString& chId) {
-                BookSeams::Info in;
-                if (const Chapter* c = projectModel ? projectModel->findChapter(chId) : nullptr) {
-                    in.label = projectModel->chapterDisplayLabel(*c);
-                    in.title = c->title;
-                }
-                in.focus = editorHost->focusChapterId() == chId;
-                return in;
-            });
+            const auto seams = BookSeams::paint(editor, p, clip,
+                [this](const QString& chId) { return bookSeamInfo(chId); });
+            for (const auto& s : seams) m_seamHits << s.first;
+            hits += seams;
         }
         return hits;
     });
@@ -1713,6 +1749,19 @@ void MainWindow::setupEditor()
                 else SceneBreaks::applySpacing(editor->document(), true);
                 if (editorHost && editorHost->isBook()) BookSeams::applySpacing(editor->document(), true);
             });
+        });
+        // estilo da abertura trocado: o respiro de cima muda junto com o desenho
+        connect(BookSeams::notifier(), &BookSeams::Notifier::changed, this, [this]() {
+            if (!editor) return;
+            if (editorHost && editorHost->isBook()) BookSeams::applySpacing(editor->document(), false);
+            editor->viewport()->update();
+        });
+        // botão direito na abertura: o menu do estilo, no lugar do menu do texto
+        editor->setContextMenuOverride([this](const QPoint& pos, const QPoint& globalPos) {
+            if (!editorHost || !editorHost->isBook()) return false;
+            for (const QRect& r : std::as_const(m_seamHits))
+                if (r.contains(pos)) { showChapterOpeningMenu(globalPos); return true; }
+            return false;
         });
         connect(SceneBreaks::notifier(), &SceneBreaks::Notifier::styleChanged, this, [this]() {
             if (!editor) return;
@@ -3097,12 +3146,12 @@ void MainWindow::setupEditor()
     m_docPov->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
     m_docPov->options = [this]() {
         if (!editorHost) return QList<PovPicker::Option>();
-        const auto vm = editorHost->scopeViewMode();
+        const auto vm = headerViewMode();
         return povOptionsFor(vm.manuscriptId, vm.chapterId);
     };
     m_docPov->picked = [this](const QString& elementId) {
         if (!editorHost) return;
-        const auto vm = editorHost->scopeViewMode();
+        const auto vm = headerViewMode();
         if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
         projectModel->updateChapterPov(vm.chapterId, elementId);
     };
@@ -3123,9 +3172,10 @@ void MainWindow::setupEditor()
     // capítulo dela): a folha de Editar capítulo, com o "Quem narra".
     connect(docHeader, &DocHeaderBar::titleDoubleClicked, this, [this]() {
         if (!editorHost) return;
-        const auto vm = editorHost->scopeViewMode();
+        const auto vm = headerViewMode();
         if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) editChapterDetails(vm.chapterId);
     });
+    connect(docHeader, &DocHeaderBar::titleMenuRequested, this, &MainWindow::showChapterOpeningMenu);
     connect(docHeader, &DocHeaderBar::sheetMenuRequested, this, [this]() {
         if (characterSheetPanel && characterSheetPanel->isVisible())
             characterSheetPanel->openMenu(docHeader->sheetMenuGlobalRect());
@@ -10073,6 +10123,75 @@ int MainWindow::availableSheetHeight() const
 
 // Zero quando a faixa nao existe (barra no topo) — e e por isso que o modo
 // horizontal nao sente nada dessa conta.
+EditorHost::ViewMode MainWindow::headerViewMode() const
+{
+    if (!editorHost) return EditorHost::ViewMode();
+    EditorHost::ViewMode vm = editorHost->scopeViewMode();
+    if (!editorHost->isBook() || !editor) return vm;
+    // da linha no topo da folha pra trás até a abertura do capítulo dela
+    for (QTextBlock b = editor->cursorForPosition(QPoint(2, 2)).block(); b.isValid(); b = b.previous())
+        if (BookSeams::isSeam(b)) {
+            vm.chapterId = BookSeams::seamChapter(b);
+            break;
+        }
+    return vm;
+}
+
+BookSeams::Info MainWindow::bookSeamInfo(const QString& chapterId) const
+{
+    BookSeams::Info in;
+    if (const Chapter* c = projectModel ? projectModel->findChapter(chapterId) : nullptr) {
+        in.label = projectModel->chapterDisplayLabel(*c);
+        in.kind = projectModel->chapterTypeName(*c);
+        // o número como o projeto mostra ("15" ou "XV"), e o valor dele
+        if (in.label.size() > in.kind.size() && in.label.startsWith(in.kind)) {
+            in.number = in.label.mid(in.kind.size()).trimmed();
+            bool ok = false;
+            in.numberInt = in.number.toInt(&ok);
+            if (!ok) {
+                static const QHash<QChar, int> val = { { 'I', 1 }, { 'V', 5 }, { 'X', 10 }, { 'L', 50 },
+                                                        { 'C', 100 }, { 'D', 500 }, { 'M', 1000 } };
+                int total = 0, prev = 0;
+                for (int i = in.number.size() - 1; i >= 0; --i) {
+                    const int v = val.value(in.number.at(i).toUpper(), 0);
+                    total += v < prev ? -v : v;
+                    prev = qMax(prev, v);
+                }
+                in.numberInt = total;
+            }
+        }
+        in.title = BookSeams::ownTitle(c->title, in.label);
+    }
+    in.focus = editorHost && editorHost->focusChapterId() == chapterId;
+    return in;
+}
+
+void MainWindow::showChapterOpeningMenu(const QPoint& globalPos)
+{
+    QMenu menu(this);
+    menu.setToolTipsVisible(true);
+    QAction* caption = menu.addAction(tr("Estilo da abertura"));
+    caption->setEnabled(false);
+    auto* group = new QActionGroup(&menu);
+    group->setExclusive(true);
+    for (int i = 0; i < BookSeams::kStyleCount; ++i) {
+        const auto s = BookSeams::Style(i);
+        QAction* a = menu.addAction(BookSeams::styleName(s));
+        a->setCheckable(true);
+        a->setChecked(BookSeams::style() == s);
+        a->setToolTip(BookSeams::styleHint(s));
+        group->addAction(a);
+        connect(a, &QAction::triggered, this, [s]() { BookSeams::setStyle(s); });
+    }
+    menu.addSeparator();
+    QAction* inHeader = menu.addAction(tr("Usar o nó na faixa de cima"));
+    inHeader->setCheckable(true);
+    inHeader->setChecked(BookSeams::nodeInHeader());
+    inHeader->setToolTip(tr("Desligado, a faixa de cima volta a mostrar só o nome do documento."));
+    connect(inHeader, &QAction::toggled, this, [](bool on) { BookSeams::setNodeInHeader(on); });
+    menu.exec(globalPos);
+}
+
 int MainWindow::docHeaderExtent() const
 {
     return (docHeader && !docHeader->isHidden()) ? docHeader->height() : 0;

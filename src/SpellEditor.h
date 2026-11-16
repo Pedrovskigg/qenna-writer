@@ -84,6 +84,10 @@ public:
     // ver SceneBreaks). Devolve as áreas desenhadas com o texto do tooltip.
     using OverlayPainter = std::function<QList<QPair<QRect, QString>>(QPainter&, const QRect&)>;
     void setOverlayPainter(OverlayPainter fn) { m_overlay = std::move(fn); }
+    // Botão direito: quem devolver true já tratou o clique (a abertura de
+    // capítulo do livro inteiro abre o menu do estilo dela) e o menu do texto
+    // não aparece.
+    void setContextMenuOverride(std::function<bool(const QPoint& pos, const QPoint& globalPos)> fn) { m_contextOverride = std::move(fn); }
     // Roda logo antes da pintura normal (ex.: garantir a paleta que esconde o
     // traço do <hr> do Qt, que troca de tema e folha de estilo podem desfazer).
     void setBeforePaint(std::function<void()> fn) { m_beforePaint = std::move(fn); }
@@ -181,6 +185,7 @@ private:
     // Troca a margem da folha sem deixar o Ctrl+Z tirá-la (ver o .cpp).
     void setMarginOutsideHistory(qreal margin);
     OverlayPainter m_overlay;
+    std::function<bool(const QPoint&, const QPoint&)> m_contextOverride;
     std::function<void()> m_beforePaint;
     std::function<void(QPainter&, const QRect&)> m_underlay;
     QList<QPair<QRect, QString>> m_overlayTips;

@@ -478,6 +478,10 @@ void SpellEditor::insertFromMimeData(const QMimeData* source)
 
 void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
 {
+    if (m_contextOverride && m_contextOverride(event->pos(), event->globalPos())) {
+        event->accept();
+        return;
+    }
     QMenu* menu = createStandardContextMenu(event->pos());
 
     // Marcador de inserção — tudo que adicionamos (spell + glossário) vai antes

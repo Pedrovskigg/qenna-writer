@@ -9,6 +9,7 @@
 
 class QPainter;
 
+#include "BookSeams.h"
 #include "ScreenplayFormat.h"
 
 class GrannaBadge;
@@ -45,6 +46,9 @@ public:
     // Mesma assinatura de TopToolbar::setDocumentTitle — o MainWindow alimenta
     // os dois pelo mesmo ponto, sem lógica duplicada.
     void setDocumentTitle(const QString& title, const QString& subtitle);
+    // O mesmo documento descrito em partes, pro nó em miniatura (BookSeams):
+    // com o nó ligado, ele substitui o título e o subtítulo na faixa.
+    void setDocumentNode(const BookSeams::Head& head);
 
     // Foto do elemento (Element::image, data-URL) quando o documento aberto é
     // um personagem/cenário. Vazio esconde o avatar e a faixa volta a ser só
@@ -124,6 +128,8 @@ signals:
     void avatarChangeRequested();
     // Duplo clique no título (capítulo/cena: abre a folha de Editar capítulo).
     void titleDoubleClicked();
+    // Botão direito no nome do documento: o menu do estilo da abertura.
+    void titleMenuRequested(const QPoint& globalPos);
     void grannaMarkClicked();
     // Um aviso que some sozinho (não o fixo) terminou de sumir.
     void grannaAnnounceEnded();
@@ -138,6 +144,7 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private:
     void applyTheme();
@@ -189,6 +196,13 @@ private:
     QWidget* m_sheetMenu = nullptr;
     bool m_sheetMenuWanted = false;
     QWidget* m_nav = nullptr;   // NavChip (DocHeaderBar.cpp)
+    // Nó em miniatura (NodeView, DocHeaderBar.cpp), no lugar de título e subtítulo.
+    QWidget* m_node = nullptr;
+    BookSeams::Head m_head;
+    BookSeams::HeadPalette m_headPal;
+    bool nodeMode() const;
+    // Onde o texto do documento está desenhado (rótulos ou nó), em coordenadas da faixa.
+    QRect textBounds() const;
     int navReserve() const;
     void placeNav();
 };
