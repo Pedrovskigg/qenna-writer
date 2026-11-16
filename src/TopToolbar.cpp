@@ -504,7 +504,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
             this, &TopToolbar::applyUiScale);
     applyUiScale(); // aplica a escala persistida (icones recarregados no tamanho certo)
 
-    const int savedStyle = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 0).toInt();
+    const int savedStyle = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 6).toInt();
     {
         const QSettings st;
         const QString key = QStringLiteral("ui/topToolbarRibbonFloating");

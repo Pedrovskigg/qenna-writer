@@ -382,7 +382,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     m_toolbarStyleCombo->addItem(tr("Giratória"), 6);
     m_toolbarStyleCombo->addItem(tr("Só as abas"), 3);
     {
-        const int saved = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 0).toInt();
+        const int saved = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 6).toInt();
         const int idx = m_toolbarStyleCombo->findData(saved);
         if (idx >= 0) m_toolbarStyleCombo->setCurrentIndex(idx);
     }
