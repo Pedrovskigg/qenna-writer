@@ -384,6 +384,8 @@ inline const QString LeftBar    = QStringLiteral("leftbar");
 inline const QString RefMenu    = QStringLiteral("refmenu");
 inline const QString Counter    = QStringLiteral("counter");
 inline const QString Drawers    = QStringLiteral("drawers");
+// Barra da direita (2.5). Sem cor própria, segue a barra lateral.
+inline const QString RightBar   = QStringLiteral("rightbar");
 }
 // Cor/borda do painel `key`, caindo na global quando o tema não tem override.
 QString panelBackgroundFor(const QString& key);

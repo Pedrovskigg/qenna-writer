@@ -17,6 +17,7 @@
 #include <QRegularExpression>
 #include <QRunnable>
 #include <QSvgRenderer>
+#include <QSettings>
 #include <QTextLayout>
 #include <QThreadPool>
 #include <cmath>
@@ -60,14 +61,18 @@ struct Pal {
     QColor fill(const QString& key) const
     {
         QColor c = pn;
-        const auto it = per.constFind(key);
+        auto it = per.constFind(key);
+        if ((it == per.constEnd() || it->background.isEmpty()) && key == Theme::PanelKey::RightBar)
+            it = per.constFind(Theme::PanelKey::LeftBar);
         if (it != per.constEnd() && !it->background.isEmpty()) c = col(it->background, pn);
         c.setAlphaF(c.alphaF() * pnOpacity);
         return c;
     }
     QColor border(const QString& key) const
     {
-        const auto it = per.constFind(key);
+        auto it = per.constFind(key);
+        if ((it == per.constEnd() || it->border.isEmpty()) && key == Theme::PanelKey::RightBar)
+            it = per.constFind(Theme::PanelKey::LeftBar);
         return (it != per.constEnd() && !it->border.isEmpty()) ? col(it->border, bd) : bd;
     }
 };
@@ -175,6 +180,22 @@ void panelShape(QPainter& p, const QPainterPath& path, const Pal& c, const QStri
         p.restore();
     }
     p.setPen(QPen(c.border(key), 1.0));
+    p.setBrush(c.fill(key));
+    p.drawPath(path);
+}
+
+// Só o corpo do painel (vidro + cor), sem a borda.
+void panelFill(QPainter& p, const QRectF& r, const Pal& c, const QString& key)
+{
+    QPainterPath path;
+    path.addRect(r);
+    if (!c.glass.isNull()) {
+        p.save();
+        p.setClipPath(path, Qt::IntersectClip);
+        p.drawImage(r, c.glass, QRectF(r.x() / 4.0, r.y() / 4.0, r.width() / 4.0, r.height() / 4.0));
+        p.restore();
+    }
+    p.setPen(Qt::NoPen);
     p.setBrush(c.fill(key));
     p.drawPath(path);
 }
@@ -315,11 +336,10 @@ void drawDrawerIcon(QPainter& p, const DrawerIcon& d, const QRectF& r)
 // Uma só fonte de verdade pra onde cada coisa fica na cena: a pintura e o
 // clique do Criador de Temas (regions) leem daqui.
 
-const QRectF kToolbar(254, -1, 978, 41);
-const QRectF kLeftBar(7, 43, 38, kSceneH - 43 + 1);
-const QRectF kSheet(410, 42, 666, kSceneH - 42);
+const QRectF kLeftBar(7, 43, 38, kSceneH - 43 + 61);   // passa do chão: a janela desce com a barra de cima
+const QRectF kSheet(410, 42, 666, kSceneH - 42 + 60);
 const QRectF kTitle(410, 54, 666, 20);
-const QRectF kColumn(488, 148, 510, kSceneH - 148);
+const QRectF kColumn(488, 148, 510, kSceneH - 148 + 60);
 const QRectF kRefMenu(1100, 86, kSceneW - 1100 + 1, 600);
 const QRectF kCounter(54, 643, 192, 107);
 const QRectF kCounterTab(57, 630, 14, 13);
@@ -346,19 +366,6 @@ const QList<TbItem>& toolbarItems()
         {Icon, I + "reminder.svg", {}, 20}, {Icon, I + "elements/star.svg", {}, 20},
     };
     return items;
-}
-
-// x de cada item da barra de cima, distribuídos como space-between.
-QList<QRectF> toolbarItemRects()
-{
-    const auto& items = toolbarItems();
-    qreal total = 0;
-    for (const auto& it : items) total += it.w;
-    const qreal gap = (kToolbar.width() - 32 - total) / (items.size() - 1);
-    QList<QRectF> out;
-    qreal x = kToolbar.left() + 16;
-    for (const auto& it : items) { out.append(QRectF(x, 10, it.w, 20)); x += it.w + gap; }
-    return out;
 }
 
 enum LbKind { LbIcon, LbRule, LbAdd, LbDrawer };
@@ -404,51 +411,452 @@ QList<QRectF> refMenuIconRects()
 
 // ------------------------------------------------------------ pintura
 
-void paintToolbar(QPainter& p, const Pal& c)
+// ------------------------------------------------------------ barras do usuário
+// (2.5, pedido do Pe) A prévia veste a barra de cima que a pessoa usa (estilo e
+// posição, lidos das Configurações) e a barra da direita quando ela está ligada.
+// O resto da janela desce ou sobe com a altura da barra de cima.
+
+struct Chrome {
+    int bar = 6;            // TopToolbar::BarStyle: 0 clássica, 1 completas, 2 simples, 3 só abas, 4 cartão, 5 pasta, 6 giratória
+    bool floating = true;
+    bool side = false;      // barra na lateral (a clássica, em pé)
+    bool rightBar = true;
+};
+
+Chrome chrome()
 {
-    panelRect(p, kToolbar, c, 0, 0, c.r, c.r, Theme::PanelKey::TopToolbar);
-    const auto& items = toolbarItems();
-    const auto rects = toolbarItemRects();
-    const qreal cy = 20;
-    // Botões de texto (fonte, tamanho, entrelinha) seguem a cor dos ícones
-    // quando o tema define uma; sem ela ficam como no app de sempre.
+    const QSettings s;
+    Chrome ch;
+    ch.bar = s.value(QStringLiteral("ui/topToolbarStyle"), 6).toInt();
+    if (ch.bar < 0 || ch.bar > 6) ch.bar = 0;
+    const QString fk = QStringLiteral("ui/topToolbarRibbonFloating");
+    ch.floating = s.contains(fk) ? s.value(fk).toBool() : (ch.bar == 0 || ch.bar == 6);
+    ch.side = s.value(QStringLiteral("ui/topToolbarSide"), int(Qt::TopEdge)).toInt() != int(Qt::TopEdge);
+    ch.rightBar = s.value(QStringLiteral("ui/rightBarEnabled"), true).toBool();
+    if (ch.side) { ch.bar = 0; ch.floating = true; }
+    return ch;
+}
+
+constexpr qreal kSheetCX = 743.0;   // centro da folha na cena
+
+qreal barHeight(const Chrome& ch)
+{
+    if (ch.side) return 0;
+    switch (ch.bar) {
+    case 1: return 93;
+    case 2: return 54;
+    case 3: return 24;
+    case 4: return 67;
+    case 5: return 46;
+    case 6: return 33;
+    default: return 41;
+    }
+}
+
+enum SlotKind { SIcon, SGlyph, SBox, SSep, SQ, SReel, STab, SFile, SLabel, SBig, SText };
+struct Slot {
+    SlotKind k;
+    QString a;      // ícone (svg) ou texto
+    QString b;      // rótulo ao lado / embaixo
+    QRectF r;
+    bool on = false;     // aba aberta, caret, ponto
+};
+struct BarShape { QRectF r; qreal tl, tr_, br, bl; bool card = false; };
+struct Geo {
+    Chrome ch;
+    qreal topH = 41;
+    qreal dy = 0;           // quanto a janela abaixo da barra desce (negativo sobe)
+    qreal dyDrawer = 0;     // a gaveta aberta (de ponta a ponta começa embaixo da barra)
+    qreal refDx = 0;        // a Referência abre ao lado da barra da direita
+    bool edge = false;      // barra de cima de ponta a ponta, emendada na lateral
+    QRectF rightBar;        // vazio = desligada
+    QList<BarShape> shapes;
+    QList<Slot> items;
+};
+
+QString ttr(const char* s) { return QCoreApplication::translate("TopToolbar", s); }
+
+// Linha de comandos da seção Editor (a mesma da faixa real), a partir de x.
+// Devolve o x logo depois do último item.
+qreal editorRow(QList<Slot>& out, qreal x, qreal cy, bool labels)
+{
+    const QString I = QStringLiteral(":/icons/");
+    auto add = [&](SlotKind k, const QString& a, const QString& b, qreal w, qreal h, bool on = false) {
+        out.append({ k, a, b, QRectF(x, cy - h / 2, w, h), on });
+        x += w;
+    };
+    add(SBox, QStringLiteral("Alegreya"), QString(), 82, 18, true);  x += 3;
+    add(SBox, QStringLiteral("16"), QString(), 30, 18, true);        x += 8;
+    add(SSep, {}, {}, 1, 16);                                        x += 7;
+    for (const char* n : { "bold.svg", "italic.svg", "underline.svg", "strikethrough.svg" }) { add(SIcon, I + n, {}, 18, 18); x += 2; }
+    x += 5; add(SSep, {}, {}, 1, 16); x += 7;
+    add(SIcon, I + "align-left.svg", {}, 26, 18, true);              x += 4;
+    add(SIcon, I + "text-spacing.svg", QStringLiteral("1.1"), 36, 18, true); x += 2;
+    add(SGlyph, QStringLiteral("¶"), QStringLiteral("dot"), 16, 18); x += 7;
+    add(SSep, {}, {}, 1, 16);                                        x += 8;
+    if (labels) {
+        add(SIcon, I + "page-setup.svg", ttr("Página"), 56, 18, true); x += 6;
+        add(SIcon, I + "add-image.svg", ttr("Imagem"), 52, 18);        x += 6;
+        add(SIcon, I + "search.svg", ttr("Buscar"), 52, 18);
+    } else {
+        add(SIcon, I + "page-setup.svg", {}, 18, 18); x += 4;
+        add(SIcon, I + "add-image.svg", {}, 18, 18);  x += 4;
+        add(SIcon, I + "search.svg", {}, 18, 18);
+    }
+    return x;
+}
+
+// Abas das seções. Devolve o x depois da última.
+qreal tabsRow(QList<Slot>& out, qreal x, qreal cy, const Chrome& ch, qreal h = 20)
+{
+    QStringList names = { ttr("Editor"), ttr("Revisão") };
+    if (!ch.rightBar) names << ttr("Mundo");
+    names << ttr("Ambiente");
+    const QFontMetricsF fm(uiFont(9.5));
+    for (int i = 0; i < names.size(); ++i) {
+        const qreal w = fm.horizontalAdvance(names.at(i)) + 22;
+        out.append({ STab, names.at(i), QString(), QRectF(x, cy - h / 2, w, h), i == 0 });
+        x += w + 2;
+    }
+    return x;
+}
+
+void shiftSlots(QList<Slot>& s, int from, qreal dx)
+{
+    for (int i = from; i < s.size(); ++i) s[i].r.translate(dx, 0);
+}
+
+Geo geometry(const Chrome& ch)
+{
+    Geo g;
+    g.ch = ch;
+    g.topH = barHeight(ch);
+    g.dy = ch.side ? -34 : g.topH - 41;
+    g.edge = !ch.side && !ch.floating;
+    g.dyDrawer = g.edge ? g.topH + 1 : 0;
+    if (ch.rightBar) {
+        g.rightBar = QRectF(kSceneW - 33, 43 + g.dy, 34, 6 * 26 + 14);
+        g.refDx = -38;
+    }
+    const QString I = QStringLiteral(":/icons/");
+    auto& sl = g.items;
+    const qreal H = g.topH;
+
+    if (ch.side) {
+        // Barra clássica em pé, encostada na direita (o app a põe na lateral).
+        const QRectF bar(kSceneW - 41, -1, 42, kSceneH + 2);
+        g.shapes.append({ bar, 0, 0, 0, 0 });
+        qreal y = 12;
+        for (const char* n : { "home.svg", "newproject.svg", "loadproject.svg", "save-project.svg", "download.svg",
+                               "font-size.svg", "text-spacing.svg", "align-left.svg", "bold.svg", "italic.svg",
+                               "underline.svg", "add-image.svg", "search.svg", "focusmode-off.svg", "theme-panel.svg", "settings.svg" }) {
+            sl.append({ SIcon, I + n, {}, QRectF(bar.center().x() - 9, y, 18, 18) });
+            y += 30;
+        }
+        if (ch.rightBar) { g.rightBar.translate(-42, 0); g.refDx -= 42; }
+        else g.refDx = -42;
+        return g;
+    }
+
+    if (ch.bar == 0) {
+        // Clássica: a de sempre. Com a barra da direita ligada, os botões do
+        // projeto saem dela (vão pra plaquinha da direita).
+        static const QSet<QString> project = { "constructor.svg", "pensario.svg", "stats-chart.svg", "refmenu.svg",
+                                               "reminder.svg", "elements/star.svg" };
+        QList<TbItem> items;
+        for (const TbItem& it : toolbarItems())
+            if (!(ch.rightBar && it.k == Icon && project.contains(it.a.mid(I.size())))) items.append(it);
+        qreal total = 0;
+        for (const auto& it : items) total += it.w;
+        const qreal gap = 12;
+        const qreal content = total + gap * (items.size() - 1);
+        const qreal barW = content + 32;
+        const QRectF bar = g.edge ? QRectF(-1, -1, kSceneW + 2, H + 1)
+                                  : QRectF(kSheetCX - barW / 2, -1, barW, H);
+        g.shapes.append({ bar, 0, 0, g.edge ? 0.0 : -1.0, g.edge ? 0.0 : -1.0 });
+        qreal x = kSheetCX - content / 2;
+        for (const auto& it : items) {
+            SlotKind k = it.k == Icon ? SIcon : it.k == Text ? SText : SGlyph;
+            sl.append({ k, it.a, it.b, QRectF(x, H / 2 - 10, it.w, 20) });
+            x += it.w + gap;
+        }
+        return g;
+    }
+
+    if (ch.bar == 6) {
+        // Giratória: o Q, o rolo das seções, os comandos e o salvar.
+        QList<Slot> row;
+        qreal x = 0;
+        const qreal cy = H / 2;
+        row.append({ SQ, QString(), QString(), QRectF(x, cy - 9, 20, 18), true }); x += 26;
+        row.append({ SReel, ttr("Editor"), ttr("Ambiente") + QLatin1Char('|') + ttr("Revisão"), QRectF(x, 0, 52, H) }); x += 58;
+        x = editorRow(row, x, cy, true);
+        x += 12;
+        row.append({ SIcon, I + "save-project.svg", {}, QRectF(x, cy - 9, 18, 18) }); x += 22;
+        row.append({ SIcon, I + "ribbon-mode.svg", {}, QRectF(x, cy - 9, 18, 18) }); x += 18;
+        const qreal content = x;
+        const qreal barW = content + 20;
+        const QRectF bar = g.edge ? QRectF(-1, -1, kSceneW + 2, H + 1)
+                                  : QRectF(kSheetCX - barW / 2, -1, barW, H + 1);
+        g.shapes.append({ bar, 0, 0, g.edge ? 0.0 : -1.0, g.edge ? 0.0 : -1.0 });
+        shiftSlots(row, 0, kSheetCX - content / 2);
+        sl += row;
+        return g;
+    }
+
+    // Faixas com abas (completas, simples, cartão, pasta, só as abas).
+    const bool qMark = ch.bar == 4 || ch.bar == 5;
+    const qreal left = 50;   // o conteúdo começa alinhado com a borda da barra lateral
+    QRectF bar = g.edge ? QRectF(-1, -1, kSceneW + 2, H + 1) : QRectF(kSheetCX - 470, -1, 940, H + 1);
+    g.shapes.append({ bar, 0, 0, g.edge ? 0.0 : -1.0, g.edge ? 0.0 : -1.0 });
+    const qreal x0 = g.edge ? left : bar.left() + 14;
+    const qreal tabsCy = ch.bar == 5 ? 13 : 12;
+    qreal x = x0;
+    if (qMark) { sl.append({ SQ, QString(), QString(), QRectF(x, tabsCy - 9, 20, 18), true }); x += 30; }
+    else { sl.append({ SFile, ttr("Arquivo"), QString(), QRectF(x, 2, 42, 20) }); x += 50; }
+    // ponta direita: salvar e opções da faixa
+    const qreal rx = (g.edge ? kSceneW - 14 : bar.right() - 12) - 18;
+    sl.append({ SIcon, I + "ribbon-mode.svg", {}, QRectF(rx, tabsCy - 9, 18, 18) });
+    sl.append({ SIcon, I + "save-project.svg", {}, QRectF(rx - 24, tabsCy - 9, 18, 18) });
+
+    if (ch.bar == 5) {
+        // Pasta: as abas e os comandos centralizados com a folha.
+        const int tabFrom = sl.size();
+        const qreal tw = tabsRow(sl, 0, tabsCy, ch, 20) - 2;
+        shiftSlots(sl, tabFrom, kSheetCX - tw / 2);
+        const int rowFrom = sl.size();
+        const qreal rw = editorRow(sl, 0, 34, true);
+        shiftSlots(sl, rowFrom, kSheetCX - rw / 2);
+        return g;
+    }
+    tabsRow(sl, x, tabsCy, ch);
+    if (ch.bar == 3) return g;                       // só as abas
+    if (ch.bar == 2) { editorRow(sl, x0, 40, true); return g; }
+    if (ch.bar == 4) {
+        const qreal rw = editorRow(sl, x0 + 10, 45, true);
+        Q_UNUSED(rw);
+        const QRectF card(x0, 29, (g.edge ? kSceneW - 14 : bar.right() - 12) - x0, 32);
+        g.shapes.append({ card, 4, 4, 4, 4, true });
+        return g;
+    }
+    // Completas: grupos com botões grandes e o nome embaixo.
+    const qreal top = 28;
+    x = x0 + 4;
+    auto group = [&](const QString& name, qreal from, qreal to) {
+        sl.append({ SLabel, name, QString(), QRectF(from, top + 54, to - from, 10) });
+        sl.append({ SSep, {}, {}, QRectF(to + 6, top + 4, 1, 58) });
+    };
+    {   // Fonte
+        const qreal gx = x;
+        sl.append({ SBox, QStringLiteral("Alegreya"), QString(), QRectF(x, top + 6, 82, 18), true });
+        sl.append({ SBox, QStringLiteral("16"), QString(), QRectF(x + 86, top + 6, 30, 18), true });
+        qreal ix = x;
+        for (const char* n : { "bold.svg", "italic.svg", "underline.svg", "strikethrough.svg" }) {
+            sl.append({ SIcon, I + n, {}, QRectF(ix, top + 30, 18, 18) }); ix += 22;
+        }
+        x += 120;
+        group(ttr("Fonte"), gx, x);
+        x += 14;
+    }
+    {   // Parágrafo
+        const qreal gx = x;
+        qreal ix = x;
+        for (const char* n : { "align-left.svg", "align-center.svg", "align-right.svg", "align-justify.svg" }) {
+            sl.append({ SIcon, I + n, {}, QRectF(ix, top + 6, 18, 18), qstrcmp(n, "align-left.svg") == 0 }); ix += 22;
+        }
+        sl.append({ SIcon, I + "text-spacing.svg", QStringLiteral("1.1"), QRectF(x, top + 30, 36, 18), true });
+        sl.append({ SGlyph, QStringLiteral("¶"), QStringLiteral("dot"), QRectF(x + 42, top + 30, 16, 18) });
+        x += 96;
+        group(ttr("Parágrafo"), gx, x);
+        x += 14;
+    }
+    const struct { const char* svg; const char* label; const char* group; } bigs[] = {
+        { "page-setup.svg", "Página", "Página" }, { "add-image.svg", "Imagem", "Inserir" }, { "search.svg", "Buscar", "Edição" } };
+    for (const auto& b : bigs) {
+        sl.append({ SBig, I + b.svg, ttr(b.label), QRectF(x, top + 2, 40, 48) });
+        group(ttr(b.group), x, x + 40);
+        x += 54;
+    }
+    return g;
+}
+
+QImage tintedQ(const QColor& c)
+{
+    static QHash<QRgb, QImage> cache;
+    if (cache.contains(c.rgba())) return cache.value(c.rgba());
+    QImage img = QImage(QStringLiteral(":/app/splash-letters/q.png")).scaledToHeight(64, Qt::SmoothTransformation)
+                     .convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QPainter p(&img);
+    p.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    p.fillRect(img.rect(), c);
+    p.end();
+    cache.insert(c.rgba(), img);
+    return img;
+}
+
+void paintTopBar(QPainter& p, const Pal& c, const Geo& g)
+{
+    const QString key = Theme::PanelKey::TopToolbar;
+    for (const BarShape& s : g.shapes) {
+        if (s.card) {
+            p.setPen(QPen(c.border(key), 1));
+            p.setBrush(withAlpha(opaque(c.app), 0.55));
+            p.drawRoundedRect(s.r, s.tl, s.tl);
+            continue;
+        }
+        if (g.edge) {
+            // Teto da janela: a borda só embaixo, e não onde a lateral desce emendada.
+            panelFill(p, s.r, c, key);
+            p.setPen(QPen(c.border(key), 1));
+            p.drawLine(QPointF(kLeftBar.right(), s.r.bottom()), QPointF(s.r.right(), s.r.bottom()));
+            continue;
+        }
+        const qreal br = s.br < 0 ? c.r : s.br, bl = s.bl < 0 ? c.r : s.bl;
+        panelRect(p, s.r, c, s.tl, s.tr_, br, bl, key);
+    }
     const QColor textCol = c.icSet ? c.ic : c.ui;
     const QColor fontCol = c.icSet ? c.ic : c.br;
-    for (int i = 0; i < items.size(); ++i) {
-        const auto& it = items.at(i);
-        const qreal x = rects.at(i).left();
-        if (it.k == Icon) {
-            drawIcon(p, it.a, QRectF(x + 3.5, cy - 6.5, 13, 13), c.ic);
-            if (!it.b.isEmpty()) {
+    const QString caret = QStringLiteral(":/icons/caret-down.svg");
+    for (const Slot& s : g.items) {
+        const QRectF r = s.r;
+        const qreal cy = r.center().y();
+        switch (s.k) {
+        case SIcon: {
+            const bool label = !s.b.isEmpty();
+            const QRectF ir(label || s.on ? r.left() + 2 : r.center().x() - 6.5, cy - 6.5, 13, 13);
+            drawIcon(p, s.a, ir, c.ic);
+            if (label) {
                 p.setPen(textCol);
                 p.setFont(uiFont(9));
-                p.drawText(QRectF(x + 19, cy - 8, it.w - 19, 16), Qt::AlignVCenter | Qt::AlignLeft, it.b);
+                p.drawText(QRectF(ir.right() + 4, cy - 8, r.right() - ir.right() - 4, 16), Qt::AlignVCenter | Qt::AlignLeft, s.b);
             }
-        } else if (it.k == Text) {
+            if (s.on) drawIcon(p, caret, QRectF(r.right() - 7, cy - 3, 6, 6), c.ic);
+            break;
+        }
+        case SText:
             p.setPen(fontCol);
             p.setFont(serifFont(10.5, QFont::DemiBold));
-            p.drawText(QRectF(x, cy - 8, it.w, 16), Qt::AlignCenter, it.a);
-        } else {
+            p.drawText(r, Qt::AlignCenter, s.a);
+            break;
+        case SGlyph: {
             QFont f = serifFont(11.5, QFont::Bold);
-            if (it.a == QLatin1String("I")) f.setItalic(true);
-            if (it.a == QLatin1String("U")) f.setUnderline(true);
-            if (it.a == QLatin1String("S")) f.setStrikeOut(true);
-            if (it.a == QLatin1String("?")) f = uiFont(11, QFont::DemiBold);
+            if (s.a == QLatin1String("I")) f.setItalic(true);
+            if (s.a == QLatin1String("U")) f.setUnderline(true);
+            if (s.a == QLatin1String("S")) f.setStrikeOut(true);
+            if (s.a == QLatin1String("?")) f = uiFont(11, QFont::DemiBold);
             p.setFont(f);
             p.setPen(c.ic);
-            p.drawText(QRectF(x, cy - 9, it.w, 18), Qt::AlignCenter, it.a);
-            if (it.b == QLatin1String("dot")) {
+            p.drawText(QRectF(r.left(), cy - 9, r.width(), 18), Qt::AlignCenter, s.a);
+            if (s.b == QLatin1String("dot")) {
                 p.setPen(Qt::NoPen);
                 p.setBrush(c.dg);
-                p.drawRoundedRect(QRectF(x + it.w - 7, cy - 9, 5, 5), 1, 1);
+                p.drawRoundedRect(QRectF(r.right() - 6, cy - 9, 5, 5), 1, 1);
             }
+            break;
+        }
+        case SBox:
+            p.setPen(Qt::NoPen);
+            p.setBrush(withAlpha(opaque(c.app), 0.6));
+            p.drawRoundedRect(r, 3, 3);
+            p.setPen(s.a.at(0).isDigit() ? textCol : fontCol);
+            p.setFont(s.a.at(0).isDigit() ? uiFont(9) : serifFont(10, QFont::DemiBold));
+            p.drawText(r.adjusted(4, 0, -12, 0), Qt::AlignCenter, s.a);
+            drawIcon(p, caret, QRectF(r.right() - 10, cy - 3, 6, 6), c.ic);
+            break;
+        case SSep:
+            p.fillRect(QRectF(r.left(), cy - r.height() / 2, 1, r.height()), c.sb);
+            break;
+        case SQ: {
+            const QImage q = tintedQ(c.ac);
+            const qreal h = r.height() - 4, w = h * q.width() / q.height();
+            p.drawImage(QRectF(r.left(), cy - h / 2, w, h), q);
+            drawIcon(p, caret, QRectF(r.left() + w + 3, cy - 2, 6, 6), c.ic);
+            break;
+        }
+        case SReel: {
+            const QStringList ghost = s.b.split(QLatin1Char('|'));
+            p.setFont(serifFont(10.5, QFont::Normal, true));
+            p.setPen(c.br);
+            p.drawText(QRectF(r.left(), cy - 8, r.width(), 16), Qt::AlignCenter, s.a);
+            QFont gf = serifFont(7.5, QFont::Normal, true);
+            p.setFont(gf);
+            p.setPen(withAlpha(c.mu, 0.45));
+            p.drawText(QRectF(r.left(), cy - 17, r.width(), 9), Qt::AlignCenter, ghost.value(0));
+            p.drawText(QRectF(r.left(), cy + 8, r.width(), 9), Qt::AlignCenter, ghost.value(1));
+            p.fillRect(QRectF(r.left() + 6, cy + 7, r.width() - 12, 1), withAlpha(c.ac, 0.8));
+            break;
+        }
+        case STab:
+            p.setFont(uiFont(9.5, s.on ? QFont::DemiBold : QFont::Normal));
+            p.setPen(s.on ? c.br : c.mu);
+            p.drawText(r, Qt::AlignCenter, s.a);
+            if (s.on) p.fillRect(QRectF(r.left() + 3, r.bottom() - 1, r.width() - 6, 2), c.ac);
+            break;
+        case SFile:
+            p.setPen(Qt::NoPen);
+            p.setBrush(c.ac);
+            p.drawRoundedRect(r, 2, 2);
+            p.setPen(contrast(c.ac, QColor(255, 255, 255)) >= 3.0 ? QColor(255, 255, 255) : QColor(20, 20, 20));
+            p.setFont(uiFont(9, QFont::DemiBold));
+            p.drawText(r, Qt::AlignCenter, s.a);
+            break;
+        case SLabel:
+            p.setPen(c.mu);
+            p.setFont(uiFont(7));
+            p.drawText(r, Qt::AlignCenter, s.a);
+            break;
+        case SBig:
+            drawIcon(p, s.a, QRectF(r.center().x() - 10, r.top() + 4, 20, 20), c.ic);
+            p.setPen(textCol);
+            p.setFont(uiFont(8.5));
+            p.drawText(QRectF(r.left() - 6, r.top() + 28, r.width() + 12, 14), Qt::AlignCenter, s.b);
+            break;
         }
     }
 }
 
-void paintLeftBar(QPainter& p, const Pal& c, bool drawerOpen)
+QList<QRectF> rightBarIconRects(const Geo& g)
 {
-    panelRect(p, kLeftBar, c, c.r, c.r, 0, 0, Theme::PanelKey::LeftBar);
+    QList<QRectF> out;
+    if (g.rightBar.isEmpty()) return out;
+    qreal y = g.rightBar.top() + 9;
+    for (int i = 0; i < 6; ++i) {
+        out.append(QRectF(g.rightBar.center().x() - 9, y, 18, 18));
+        y += 26;
+    }
+    return out;
+}
+
+void paintRightBar(QPainter& p, const Pal& c, const Geo& g)
+{
+    if (g.rightBar.isEmpty()) return;
+    panelRect(p, g.rightBar, c, c.r, 0, 0, c.r, Theme::PanelKey::RightBar);
+    const QString I = QStringLiteral(":/icons/");
+    const QStringList icons = { I + "construtor.svg", I + "refmenu.svg", I + "pensario.svg",
+                                I + "reminder.svg", I + "stats-chart.svg", I + "elements/star.svg" };
+    const auto rects = rightBarIconRects(g);
+    for (int i = 0; i < icons.size(); ++i) {
+        const QRectF ir = rects.at(i);
+        drawIcon(p, icons.at(i), QRectF(ir.center().x() - 7, ir.center().y() - 7, 14, 14), c.ic);
+        if (i == 1) {   // a Referência aberta na cena: o botão aceso
+            p.setPen(QPen(withAlpha(c.ac, 0.9), 1));
+            p.setBrush(Qt::NoBrush);
+            p.drawRoundedRect(ir.adjusted(-2, -2, 2, 2), 3, 3);
+        }
+    }
+}
+
+void paintLeftBar(QPainter& p, const Pal& c, bool drawerOpen, bool joined = false)
+{
+    // Com a barra de cima de ponta a ponta, a lateral desce emendada nela (um L).
+    if (joined) {
+        const QRectF lr(-1, kLeftBar.top() - 2, kLeftBar.right() + 1, kLeftBar.height() + 2);
+        panelFill(p, lr, c, Theme::PanelKey::LeftBar);
+        p.setPen(QPen(c.border(Theme::PanelKey::LeftBar), 1));
+        p.drawLine(QPointF(lr.right(), lr.top()), QPointF(lr.right(), lr.bottom()));
+    } else {
+        panelRect(p, kLeftBar, c, c.r, c.r, 0, 0, Theme::PanelKey::LeftBar);
+    }
     const QColor bd = c.border(Theme::PanelKey::LeftBar);
     for (const LbItem& it : leftBarItems()) {
         const QPointF m = it.r.center();
@@ -839,7 +1247,7 @@ void paintEditor(QPainter& p, const QRectF& r, const Pal& c)
 }
 
 // Fundo + folha desfocados, a 1/4 da cena — o que o vidro dos painéis mostra.
-QImage glassBackdrop(const Theme::MiraTheme& t, const Pal& c, const QPixmap& bg)
+QImage glassBackdrop(const Theme::MiraTheme& t, const Pal& c, const QPixmap& bg, qreal sheetDy)
 {
     QImage img(QSize(int(kSceneW / 4), int(kSceneH / 4) + 1), QImage::Format_ARGB32_Premultiplied);
     img.fill(opaque(c.app));
@@ -850,7 +1258,7 @@ QImage glassBackdrop(const Theme::MiraTheme& t, const Pal& c, const QPixmap& bg)
         drawBackground(p, QRectF(0, 0, kSceneW, kSceneH), t, c.app, bg);
         QColor fill = c.ed;
         fill.setAlpha(qMin(fill.alpha(), qBound(0, t.editorOpacity * 255 / 100, 255)));
-        p.fillRect(kSheet, fill);
+        p.fillRect(kSheet.translated(0, sheetDy), fill);
     }
     PanelGlass::boxBlur(img, qMax(1, qRound(t.panelBlur * 0.75 / 4.0)));
     return img;
@@ -919,17 +1327,20 @@ void paintScene(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, Scene s
         p.restore();
         return;
     }
-    if (t.panelBlur > 0 && t.panelOpacity < 100) c.glass = glassBackdrop(t, c, bg);
+    const Geo g = geometry(chrome());
+    if (t.panelBlur > 0 && t.panelOpacity < 100) c.glass = glassBackdrop(t, c, bg, g.dy);
     p.translate(r.topLeft());
     p.scale(r.width() / kSceneW, r.height() / kSceneH);
     const QRectF all(0, 0, kSceneW, kSceneH);
     drawBackground(p, all, t, c.app, bg, true);
-    paintSheet(p, c, t);
-    paintToolbar(p, c);
-    paintRefMenu(p, c);
+    p.save(); p.translate(0, g.dy); paintSheet(p, c, t); p.restore();
+    if (!g.edge) paintTopBar(p, c, g);
+    p.save(); p.translate(g.refDx, g.dy); paintRefMenu(p, c); p.restore();
     if (scene == Writing) paintCounter(p, c);
-    paintLeftBar(p, c, scene == Drawers);
-    if (scene == Drawers) paintDrawer(p, c);
+    p.save(); p.translate(0, g.dy); paintLeftBar(p, c, scene == Drawers, g.edge); p.restore();
+    paintRightBar(p, c, g);
+    if (scene == Drawers) { p.save(); p.translate(0, g.dyDrawer); paintDrawer(p, c); p.restore(); }
+    if (g.edge) paintTopBar(p, c, g);
     p.restore();
 }
 
@@ -944,32 +1355,42 @@ QList<Region> regions(Scene scene, const QRectF& r)
         return out;
     }
     const qreal kx = r.width() / kSceneW, ky = r.height() / kSceneH;
-    auto map = [&](const QRectF& s) {
+    const Geo g = geometry(chrome());
+    auto map = [&](const QRectF& s0, qreal dx = 0, qreal dy = 0) {
+        const QRectF s = s0.translated(dx, dy);
         return QRectF(r.left() + s.left() * kx, r.top() + s.top() * ky, s.width() * kx, s.height() * ky);
     };
     // Prioridade de cima pra baixo: o primeiro que contém o ponto ganha.
     if (scene == Drawers) {
         const auto ppl = people();
-        out.append({ Group::Accent, QString(), map(kNewChar) });
-        for (int i = 0; i < ppl.size(); ++i) out.append({ Group::Accent, QString(), map(tagRect(i, ppl.at(i).role)) });
+        out.append({ Group::Accent, QString(), map(kNewChar, 0, g.dyDrawer) });
+        for (int i = 0; i < ppl.size(); ++i) out.append({ Group::Accent, QString(), map(tagRect(i, ppl.at(i).role), 0, g.dyDrawer) });
         for (const LbItem& it : leftBarItems())
-            if (it.k == LbDrawer && it.drawer == 1) out.append({ Group::Accent, QString(), map(it.r) });
+            if (it.k == LbDrawer && it.drawer == 1) out.append({ Group::Accent, QString(), map(it.r, 0, g.dy) });
     } else {
         out.append({ Group::Accent, QString(), map(kRing) });
     }
-    for (const QRectF& ir : toolbarItemRects()) out.append({ Group::Icons, QString(), map(ir) });
-    for (const LbItem& it : leftBarItems())
-        if (it.k == LbIcon || it.k == LbAdd) out.append({ Group::Icons, QString(), map(it.r) });
-    for (const QRectF& ir : refMenuIconRects()) out.append({ Group::Icons, QString(), map(ir.adjusted(-3, -3, 3, 3)) });
-    if (scene == Drawers) {
-        out.append({ Group::Panels, Theme::PanelKey::Drawers, map(kDrawer) });
+    for (const Slot& sl : g.items) {
+        if (sl.k == SQ || sl.k == SFile) out.append({ Group::Accent, QString(), map(sl.r) });
+        else if (sl.k == SIcon || sl.k == SGlyph || sl.k == SBig || sl.k == SText) out.append({ Group::Icons, QString(), map(sl.r) });
     }
-    out.append({ Group::Title, QString(), map(QRectF(kTitle.center().x() - 60, kTitle.top(), 120, kTitle.height())) });
-    out.append({ Group::Text, QString(), map(kColumn) });
-    out.append({ Group::Sheet, QString(), map(kSheet) });
-    out.append({ Group::Panels, Theme::PanelKey::TopToolbar, map(kToolbar) });
-    out.append({ Group::Panels, Theme::PanelKey::LeftBar, map(kLeftBar) });
-    out.append({ Group::Panels, Theme::PanelKey::RefMenu, map(kRefMenu) });
+    for (const LbItem& it : leftBarItems())
+        if (it.k == LbIcon || it.k == LbAdd) out.append({ Group::Icons, QString(), map(it.r, 0, g.dy) });
+    for (const QRectF& ir : refMenuIconRects()) out.append({ Group::Icons, QString(), map(ir.adjusted(-3, -3, 3, 3), g.refDx, g.dy) });
+    for (const QRectF& ir : rightBarIconRects(g)) out.append({ Group::Icons, QString(), map(ir) });
+    if (scene == Drawers) {
+        out.append({ Group::Panels, Theme::PanelKey::Drawers, map(kDrawer, 0, g.dyDrawer) });
+    }
+    if (!g.rightBar.isEmpty()) out.append({ Group::Panels, Theme::PanelKey::RightBar, map(g.rightBar) });
+    for (const BarShape& b : g.shapes)
+        if (!b.card) out.append({ Group::Panels, Theme::PanelKey::TopToolbar, map(b.r) });
+    out.append({ Group::Title, QString(), map(QRectF(kTitle.center().x() - 60, kTitle.top(), 120, kTitle.height()), 0, g.dy) });
+    out.append({ Group::Text, QString(), map(kColumn, 0, g.dy) });
+    out.append({ Group::Sheet, QString(), map(kSheet, 0, g.dy) });
+    out.append({ Group::Panels, Theme::PanelKey::LeftBar, map(g.edge ? QRectF(-1, kLeftBar.top() - 2, kLeftBar.right() + 1, kLeftBar.height() + 2) : kLeftBar, 0, g.dy) });
+    out.append({ Group::Panels, Theme::PanelKey::RefMenu, map(kRefMenu, g.refDx, g.dy) });
+    for (const BarShape& b : g.shapes)
+        if (b.card) out.append({ Group::Panels, Theme::PanelKey::TopToolbar, map(b.r) });
     if (scene == Writing) {
         out.append({ Group::Panels, Theme::PanelKey::Counter, map(kCounter) });
         out.append({ Group::Panels, Theme::PanelKey::Counter, map(kCounterTab) });

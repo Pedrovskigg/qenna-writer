@@ -21317,14 +21317,19 @@ QString panelBackgroundFor(const QString& key)
 {
     const auto& pc = Manager::instance()->current().panelColors;
     const auto it = pc.constFind(key);
-    return (it != pc.constEnd() && !it->background.isEmpty()) ? it->background : panelBackground();
+    if (it != pc.constEnd() && !it->background.isEmpty()) return it->background;
+    // A barra da direita espelha a lateral até ganhar cor própria.
+    if (key == PanelKey::RightBar) return panelBackgroundFor(PanelKey::LeftBar);
+    return panelBackground();
 }
 
 QString panelBorderFor(const QString& key)
 {
     const auto& pc = Manager::instance()->current().panelColors;
     const auto it = pc.constFind(key);
-    return (it != pc.constEnd() && !it->border.isEmpty()) ? it->border : panelBorder();
+    if (it != pc.constEnd() && !it->border.isEmpty()) return it->border;
+    if (key == PanelKey::RightBar) return panelBorderFor(PanelKey::LeftBar);
+    return panelBorder();
 }
 
 QString withPanelOpacity(const QString& css)

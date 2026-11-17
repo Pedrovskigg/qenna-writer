@@ -9906,7 +9906,26 @@ void MainWindow::onThemePanelRequested()
 {
     // O painel pinta as miniaturas numa widget só (sem um preview por tema),
     // então abre na hora — não precisa mais do toast de "Carregando…".
-    if (!themesPanel) themesPanel = new ThemesPanel(this);
+    // As prévias vestem as barras da pessoa (estilo, posição, lado e barra da
+    // direita). Se ela mudou isso nas Configurações desde que o painel nasceu,
+    // ele é refeito do zero e as prévias saem todas certas de uma vez (antes
+    // iam se atualizando aos poucos). Sem mudança, o painel volta como estava:
+    // quem fecha e abre pra testar tema continua de onde parou (Pe, 17/11/2026).
+    static QString chromeAtBirth;
+    const QSettings st;
+    const QString chromeNow = QStringLiteral("%1|%2|%3|%4")
+        .arg(st.value(QStringLiteral("ui/topToolbarStyle"), 6).toInt())
+        .arg(st.value(QStringLiteral("ui/topToolbarRibbonFloating")).toString())
+        .arg(st.value(QStringLiteral("ui/topToolbarSide"), int(Qt::TopEdge)).toInt())
+        .arg(st.value(QStringLiteral("ui/rightBarEnabled"), true).toBool());
+    if (themesPanel && !themesPanel->isVisible() && chromeNow != chromeAtBirth) {
+        themesPanel->deleteLater();
+        themesPanel = nullptr;
+    }
+    if (!themesPanel) {
+        themesPanel = new ThemesPanel(this);
+        chromeAtBirth = chromeNow;
+    }
     themesPanel->show();
     themesPanel->raise();
     themesPanel->activateWindow();

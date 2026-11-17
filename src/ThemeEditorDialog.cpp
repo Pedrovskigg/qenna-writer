@@ -634,6 +634,7 @@ QString ThemeEditorDialog::panelName(const QString& key)
     if (key == Theme::PanelKey::RefMenu)    return tr("Referência");
     if (key == Theme::PanelKey::Counter)    return tr("Contador");
     if (key == Theme::PanelKey::Drawers)    return tr("Gavetas");
+    if (key == Theme::PanelKey::RightBar)   return tr("Barra da direita");
     return key;
 }
 
@@ -644,6 +645,7 @@ QString ThemeEditorDialog::onlyPanelText(const QString& key)
     if (key == Theme::PanelKey::RefMenu)    return tr("Só a Referência");
     if (key == Theme::PanelKey::Counter)    return tr("Só o contador");
     if (key == Theme::PanelKey::Drawers)    return tr("Só as gavetas");
+    if (key == Theme::PanelKey::RightBar)   return tr("Só a barra da direita");
     return key;
 }
 
@@ -1279,7 +1281,14 @@ void ThemeEditorDialog::rebuildControls()
             connect(one, &QPushButton::clicked, this, [this]() {
                 if (m_theme.panelColors.contains(m_panel)) { rebuildControls(); return; }
                 pushUndo();
-                m_theme.panelColors.insert(m_panel, { m_theme.panelBackground, m_theme.panelBorder });
+                // A barra da direita parte da cor que já mostra (a da lateral, se ela tiver uma).
+                Theme::MiraTheme::PanelColors start{ m_theme.panelBackground, m_theme.panelBorder };
+                if (m_panel == Theme::PanelKey::RightBar) {
+                    const auto lb = m_theme.panelColors.value(Theme::PanelKey::LeftBar);
+                    if (!lb.background.isEmpty()) start.background = lb.background;
+                    if (!lb.border.isEmpty()) start.border = lb.border;
+                }
+                m_theme.panelColors.insert(m_panel, start);
                 refreshPreview();
                 rebuildControls();
             });
@@ -1289,7 +1298,9 @@ void ThemeEditorDialog::rebuildControls()
         if (only) {
             add(swatch(QStringLiteral("panel:%1:bg").arg(m_panel)));
             add(swatch(QStringLiteral("panel:%1:bd").arg(m_panel)));
-            add(hint(tr("Arredondamento, opacidade e vidro continuam valendo pra todos. \"Todos os painéis\" devolve este painel pra cor global."), 320));
+            add(hint(m_panel == Theme::PanelKey::RightBar
+                         ? tr("Arredondamento, opacidade e vidro continuam valendo pra todos. \"Todos os painéis\" faz a barra da direita voltar a acompanhar a barra lateral.")
+                         : tr("Arredondamento, opacidade e vidro continuam valendo pra todos. \"Todos os painéis\" devolve este painel pra cor global."), 320));
         } else {
             add(swatch(QStringLiteral("panelBackground")));
             add(swatch(QStringLiteral("panelBorder")));

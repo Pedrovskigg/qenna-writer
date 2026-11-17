@@ -222,7 +222,7 @@ QString RightBar::panelStyle() const
 {
     // A cor do painel é a da LeftBar ("só este painel" no Criador de Temas
     // pinta as duas): são a mesma peça, uma de cada lado.
-    QString qss = Theme::panelQss(QStringLiteral("rightBar"), Theme::PanelKey::LeftBar);
+    QString qss = Theme::panelQss(QStringLiteral("rightBar"), Theme::PanelKey::RightBar);
     // Colada na beira da janela, como uma lingueta: sem borda e sem canto
     // redondo do lado da beira.
     if (m_side == Qt::RightEdge)
