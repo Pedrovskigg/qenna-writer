@@ -72,6 +72,7 @@ private:
     void openImageZoom(const QString& resourcePath);
     QString contentFor(const QString& id) const;
     QString startHereContent() const;
+    QString barsContent() const;
     QString manuscriptsContent() const;
     QString drawersContent() const;
     QString exportContent() const;

@@ -163,6 +163,20 @@ QString foldForSearch(const QString& s)
     return out;
 }
 
+// Print clicável no padrão da Ajuda (miniatura que abre ampliada).
+QString helpImage(const QString& path, int width)
+{
+    return QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:%1' style='text-decoration:none;'>"
+        "<img src=':%1' width='%2'>"
+        "<br><span style='font-size:11px;color:%3;'>%4</span>"
+        "</a>"
+        "</p>"
+    ).arg(path, QString::number(width), Theme::textMuted(),
+          QCoreApplication::translate("HelpPanel", "Clique para expandir"));
+}
+
 constexpr int kPanelWidth = 980;
 constexpr int kPanelHeight = 640;
 constexpr int kMinWidth = 760;
@@ -177,17 +191,11 @@ constexpr int kThumbWidth = 480;
 // capturas é boa o bastante pra aguentar e, em compensação, ficam legíveis
 // sem precisar clicar pra expandir toda hora (pedido do usuário 2026-07-18:
 // "aumenta um pouco o tamanho dos prints").
-constexpr int kManuscriptsThumbWidth = 460; // nativo 372x246
+constexpr int kManuscriptsThumbWidth = 360; // nativo 412x700 (2.5)
 constexpr int kDrawersCreateThumbWidth  = 650; // nativo 556
 constexpr int kDrawersOpenThumbWidth    = 460; // nativo 372
 constexpr int kDrawersMenuThumbWidth    = 400; // nativo 300
-constexpr int kExportTopbarThumbWidth   = 340; // nativo 245
-constexpr int kExportPanelThumbWidth    = 500; // nativo 475
-constexpr int kEditorToolbarThumbWidth      = 720; // nativo 893
-constexpr int kEditorSelectionThumbWidth    = 500; // nativo 448
-constexpr int kEditorFocusModesThumbWidth   = 160; // nativo 76 — recorte minúsculo, upscale maior
 constexpr int kEditorFocusOnThumbWidth      = 320; // nativo 230
-constexpr int kEditorPageConfigThumbWidth   = 480; // nativo 410
 constexpr int kCounterThumbWidth       = 360; // nativo 269
 constexpr int kCounterPanelThumbWidth  = 340; // nativo 264 (recorte alto, 264x509)
 constexpr int kCalendarThumbWidth      = 340; // nativo 264 (aba Mês)
@@ -196,23 +204,8 @@ constexpr int kOffDaysThumbWidth       = 340; // nativo 264 (página das folgas)
 constexpr int kRefMenuOpenThumbWidth   = 500; // nativo 498, recorte alto
 constexpr int kRefMenuSearchThumbWidth = 500; // nativo 460
 constexpr int kRefMenuEditThumbWidth   = 480; // nativo 454, recorte alto
-constexpr int kTimelinePanelThumbWidth       = 620; // nativo 748
-constexpr int kTimelineManuscriptThumbWidth  = 420; // nativo 341
-constexpr int kTimelineChapterSceneThumbWidth = 420; // nativo 344
-constexpr int kTimelineCharactersThumbWidth  = 560; // nativo 621
-constexpr int kTimelineEventCreatorThumbWidth = 380; // nativo 480x621, recorte alto
-constexpr int kTimelineCreatorThumbWidth     = 420; // nativo 408
-constexpr int kTimelineModeTrackThumbWidth   = 520; // nativo 561
-constexpr int kTimelineModeBranchesThumbWidth = 620; // nativo 864
-constexpr int kTimelineModeSpiralThumbWidth  = 520; // nativo 667
-constexpr int kTimelineLineFocusThumbWidth   = 640; // nativo 893
 constexpr int kCreateDocSelectMenuThumbWidth = 560; // nativo 563
 constexpr int kCreateDocDialogThumbWidth  = 480; // nativo 559
-constexpr int kThemePanelThumbWidth = 620; // nativo 811
-constexpr int kThemeFavoriteThumbWidth = 620; // nativo 793
-constexpr int kThemeDuplicateThumbWidth = 620; // nativo 801
-constexpr int kThemeEditorThumbWidth = 640; // nativo 968
-constexpr int kThemeTimeChangeThumbWidth = 620; // nativo 799
 constexpr int kMarkerSelectMenuThumbWidth   = 500; // nativo 455
 constexpr int kMarkerColorPickerThumbWidth  = 300; // nativo 284
 constexpr int kMarkerCommentPickerThumbWidth = 340; // nativo 328
@@ -286,6 +279,7 @@ void HelpPanel::buildTopics()
 {
     m_topics = {
         { QStringLiteral("comece-aqui"), tr("Comece aqui") },
+        { QStringLiteral("barras"), tr("Personalizar as barras") },
         { QStringLiteral("manuscritos"), tr("Manuscritos") },
         { QStringLiteral("gavetas"), tr("Gavetas") },
         { QStringLiteral("exportacao"), tr("Exportação") },
@@ -313,7 +307,7 @@ void HelpPanel::buildTopics()
     };
     m_groups = {
         { tr("Começo"),    QStringLiteral(":/icons/home.svg"),
-          { QStringLiteral("comece-aqui"), QStringLiteral("atalhos-teclado") } },
+          { QStringLiteral("comece-aqui"), QStringLiteral("barras"), QStringLiteral("atalhos-teclado") } },
         { tr("Escrever"),  QStringLiteral(":/icons/edit.svg"),
           { QStringLiteral("editor"), QStringLiteral("manuscritos"), QStringLiteral("variacao-cenas"),
             QStringLiteral("meta-diaria-contador"), QStringLiteral("marcadores"), QStringLiteral("som-imersivo"),
@@ -479,14 +473,28 @@ QString HelpPanel::labelOf(const QString& id) const
     return QString();
 }
 
-// Tópicos reescritos na versão atual ganham "NOVO" na lista até serem abertos.
-bool HelpPanel::isNew(const QString& id) const
+// Tópicos reescritos ganham "NOVO" na lista até serem abertos. O valor é a
+// versão em que o tópico mudou: abrir grava essa versão em help/seen/<id>, e
+// uma reescrita futura (versão nova aqui) acende o selo de novo.
+static QString helpChangedIn(const QString& id)
 {
     static const QHash<QString, QString> changed = {
-        { QStringLiteral("glossario"),  QStringLiteral("0.18.1") },
-        { QStringLiteral("construtor"), QStringLiteral("0.18.1") },
+        { QStringLiteral("comece-aqui"),  QStringLiteral("2.5.0") },
+        { QStringLiteral("barras"),       QStringLiteral("2.5.0") },
+        { QStringLiteral("manuscritos"),  QStringLiteral("2.5.0") },
+        { QStringLiteral("editor"),       QStringLiteral("2.5.0") },
+        { QStringLiteral("exportacao"),   QStringLiteral("2.5.0") },
+        { QStringLiteral("funcao-temas"), QStringLiteral("2.5.0") },
+        { QStringLiteral("funcao-timeline"), QStringLiteral("2.5.0") },
+        { QStringLiteral("glossario"),    QStringLiteral("0.18.1") },
+        { QStringLiteral("construtor"),   QStringLiteral("0.18.1") },
     };
-    const QString v = changed.value(id);
+    return changed.value(id);
+}
+
+bool HelpPanel::isNew(const QString& id) const
+{
+    const QString v = helpChangedIn(id);
     return !v.isEmpty() && QSettings().value(QStringLiteral("help/seen/") + id).toString() != v;
 }
 
@@ -529,7 +537,7 @@ void HelpPanel::selectTopic(const QString& id, int step)
     updateContent();
     if (isNew(id)) {
         // Abriu: tira o "NOVO" (grava a versão em que o tópico mudou).
-        QSettings().setValue(QStringLiteral("help/seen/") + id, QStringLiteral("0.18.1"));
+        QSettings().setValue(QStringLiteral("help/seen/") + id, helpChangedIn(id));
         for (int i = 0; i < m_list->count(); ++i)
             if (m_list->item(i)->data(Qt::UserRole).toString() == id)
                 m_list->item(i)->setData(HelpListDelegate::NewRole, false);
@@ -623,6 +631,7 @@ void HelpPanel::runSearch()
 QString HelpPanel::contentFor(const QString& id) const
 {
     if (id == QStringLiteral("comece-aqui")) return startHereContent();
+    if (id == QStringLiteral("barras")) return barsContent();
     if (id == QStringLiteral("manuscritos")) return manuscriptsContent();
     if (id == QStringLiteral("gavetas")) return drawersContent();
     if (id == QStringLiteral("exportacao")) return exportContent();
@@ -677,31 +686,36 @@ QString HelpPanel::startHereContent() const
         "que se espalhe. Conforme a screenshot acima, aqui estão o que cada número é:"));
 
     struct Step { const char* title; const char* desc; };
+    // 2.5: a janela de fábrica é a barra Giratória + a barra da direita.
     const Step steps[] = {
-        { QT_TR_NOOP("Opções diversas do editor de texto."),
-          QT_TR_NOOP("Negrito, itálico, tamanho e fonte, alinhamento, adicionar imagens.") },
-        { QT_TR_NOOP("Opções básicas do programa."),
-          QT_TR_NOOP("Retornar ao menu, criar novo projeto, carregar, salvar e exportar documentos.") },
+        { QT_TR_NOOP("O Q."),
+          QT_TR_NOOP("O menu do arquivo: voltar ao Menu Principal, criar um projeto novo, abrir, salvar, "
+                     "exportar, a Ajuda e as Configurações.") },
+        { QT_TR_NOOP("O rolo das seções."),
+          QT_TR_NOOP("Editor, Revisão e Ambiente. Gire com a roda do mouse, com um clique ou arrastando, "
+                     "e as ferramentas do lado mudam junto, como um cadeado de segredo.") },
+        { QT_TR_NOOP("As ferramentas da seção."),
+          QT_TR_NOOP("No Editor: fonte, tamanho, negrito, itálico, sublinhado, tachado, alinhamento, "
+                     "entrelinha, recuo, Página, Imagem e Buscar. Na Revisão: Repetições e Ler em voz alta. "
+                     "No Ambiente: Editor Focado, Modo Foco, Som Imersivo, Temas e Tela cheia.") },
+        { QT_TR_NOOP("Salvar e opções da barra."),
+          QT_TR_NOOP("O disquete salva o projeto (Ctrl+S). O botão do lado troca o estilo da barra na hora: "
+                     "abas como no Word, a barra clássica e outros.") },
+        { QT_TR_NOOP("Documento em edição."),
+          QT_TR_NOOP("Mostra o capítulo, a cena ou o documento aberto. Quando há pra onde ir, aparecem "
+                     "setinhas no canto pra voltar e avançar entre os documentos (Alt+← e Alt+→).") },
         { QT_TR_NOOP("Acesso geral de projeto e planejamento."),
-          QT_TR_NOOP("Informações da obra, Lousa, Timeline, Manuscrito e organização de Grupos.") },
+          QT_TR_NOOP("Informações da obra, Lousa, Timeline, Mapa, Manuscritos, Outline e Grupos.") },
         { QT_TR_NOOP("Gavetas."),
           QT_TR_NOOP("Para criar novas gavetas e acessar as que já existem. Não há um limite de quantas gavetas você pode criar.") },
         { QT_TR_NOOP("Contador."),
           QT_TR_NOOP("Aqui você visualiza o seu contador de palavras e acessa o gerenciamento das suas metas de escrita.") },
-        { QT_TR_NOOP("Documento em edição."),
-          QT_TR_NOOP("Exibe o documento que está sendo editado no momento.") },
-        { QT_TR_NOOP("Opções gerais."),
-          QT_TR_NOOP("Aqui, você consegue ativar o Editor Focado e o Modo Foco (que apesar dos nomes "
-                     "similares, são funções diferentes). O Editor Focado recua toda a UI e deixa "
-                     "somente a página em exibição. O Modo Foco esmaece o texto e foca somente no "
-                     "parágrafo que está sendo escrito.") },
-        { QT_TR_NOOP("Opções de Ambiente de Trabalho."),
-          QT_TR_NOOP("Acesso a função de Lembretes e Som Imersivo.") },
-        { QT_TR_NOOP("Opções de Referência e Criação."),
-          QT_TR_NOOP("Aqui, você pode acessar as ferramentas: Construtor, Pensário, Menu de Referência "
-                     "e Estatísticas.") },
-        { QT_TR_NOOP("Configurações do programa."),
-          QT_TR_NOOP("Alterar o Tema, configurar e ativar o modo tela cheia.") },
+        { QT_TR_NOOP("A barra da direita."),
+          QT_TR_NOOP("As ferramentas do projeto, do outro lado da folha: Criador de Mundos, Menu de "
+                     "Referência, Pensário, Lembretes, Estatísticas e a assistente.") },
+        { QT_TR_NOOP("A folha."),
+          QT_TR_NOOP("Onde você escreve. Os documentos que você abriu ficam em abinhas no canto de baixo à "
+                     "direita: elas sobem quando o mouse chega lá.") },
     };
 
     // Numeração manual em vez de <ol>: o motor de rich text do Qt tem
@@ -716,6 +730,63 @@ QString HelpPanel::startHereContent() const
         "A UI básica do app é pensada para manter as opções fora do seu caminho e não lhe "
         "atrapalharem durante o processo de escrita. Pode parecer que são muitos botões, mas "
         "acredite, é fácil de se acostumar."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "E se o jeito de fábrica não for o seu, quase tudo aqui muda de cara: veja \"Personalizar as barras\"."));
+    return html;
+}
+
+// Estilos das barras (2.5): a de cima, a lateral, a da direita, relevo e carrossel.
+QString HelpPanel::barsContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "As barras do Qenna mudam de jeito sem mudar de lugar: os mesmos botões, arrumados do modo que "
+        "combina com você. Tudo fica em Configurações → Aparência, e várias escolhas também estão a um "
+        "clique, na própria barra."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("A barra de cima."));
+    html += helpImage(QStringLiteral("/help/barras/topbar-styles.png"), 720);
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "São sete estilos. A Giratória é a de fábrica: o Q, um rolo com as seções e as ferramentas da seção "
+        "do lado. A Clássica é a barra de sempre, com tudo à mostra. As Abas completas, simples, em cartão e "
+        "de pasta funcionam como no Word: uma aba por seção (Editor, Revisão e Ambiente, mais Mundo quando a "
+        "barra da direita está desligada). Em Só as "
+        "abas, a faixa desce por cima do texto quando você clica numa aba e sobe quando volta a escrever."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Troque pelo botão do lado do Salvar, ou em Configurações → Aparência → Estilo da barra. Ali também "
+        "ficam a Posição da barra (de ponta a ponta, como o teto da janela, ou flutuando em cima da folha) e, "
+        "com ela flutuando, a Largura da barra."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr("A barra lateral."));
+    html += helpImage(QStringLiteral("/help/barras/leftbar-styles.png"), 620);
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Clique com o botão direito na barra da esquerda (ou vá em Configurações → Aparência → Estilo da "
+        "barra lateral). A Clássica é a de fábrica. Gavetas com cor põe as gavetas em ladrilhos coloridos, "
+        "numa bandeja. A Barra com nomes fica larga, com tudo escrito, e as gavetas abrem como árvore ali "
+        "mesmo. No Tambor de gavetas, as gavetas giram como um tambor e a do meio acende. Lê a cena "
+        "acende as gavetas de quem aparece no capítulo aberto, com um numerinho."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "O Comprimento da barra lateral vale pra todos os estilos: De ponta a ponta, até o chão, ou Placa, "
+        "só do tamanho do que a barra tem, deixando o fundo do tema livre embaixo."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("A barra da direita."));
+    html += helpImage(QStringLiteral("/help/barras/rightbar.png"), 160);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Uma plaquinha do outro lado da folha com as ferramentas do projeto: Criador de Mundos, Menu de "
+        "Referência, Pensário, Lembretes, Estatísticas e a assistente. Vem ligada. Desligada (Configurações → "
+        "Aparência → Barra da direita), esses botões voltam pra barra de cima."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+        .arg(tr("Barras em relevo."),
+             tr("Com essa opção ligada (Configurações → Aparência), as barras paradas perdem a caixa e os "
+                "botões ficam gravados no fundo do tema. O mouse chega e a barra acorda; sai, e ela volta a "
+                "dormir devagar. Os botões nunca saem do lugar."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Quando não cabe."),
+             tr("Em janela estreita, nenhum botão some: a fileira da barra de cima gira como um carrossel, "
+                "e as gavetas da barra lateral também, quando são muitas pra altura. A roda do mouse gira, e "
+                "clicar num botão da ponta traz ele pro meio."));
     return html;
 }
 
@@ -740,13 +811,18 @@ QString HelpPanel::manuscriptsContent() const
     ).arg(QString::number(kManuscriptsThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
-        .arg(tr("Barra do Manuscrito"),
-             tr("É nessa barra que você escolhe o manuscrito aberto. Você também pode renomear e "
-                "excluir manuscritos clicando com o botão direito nela quando o manuscrito que quiser "
-                "renomear ou excluir esteja selecionado."));
+        .arg(tr("O livro aberto."),
+             tr("A capa, o nome e a contagem do manuscrito aberto. Com mais de um manuscrito, as capas "
+                "ficam na coluna da esquerda, e clicar numa abre aquele livro. Clique com o botão direito "
+                "no livro pra renomear, abrir o manuscrito completo ou excluir."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("Capítulo | Livro inteiro."),
+             tr("Escolhe se o editor mostra um capítulo por vez ou o livro todo numa folha só. Veja "
+                "\"Livro inteiro\", mais abaixo."));
 
     html += QStringLiteral(
-        "<p style='margin-bottom:4px;'><b>2- %1</b></p>"
+        "<p style='margin-bottom:4px;'><b>3- %1</b></p>"
         "<p style='margin-bottom:4px;'>%2</p>"
         "<p style='margin-bottom:4px;'>%3</p>"
         "<p style='margin-bottom:12px;'>%4</p>")
@@ -759,10 +835,6 @@ QString HelpPanel::manuscriptsContent() const
                 "para organização da linha do tempo na Timeline, mas falaremos disso quando chegar a "
                 "hora."));
 
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
-        .arg(tr("É através desse botão que você abre a gaveta de Manuscritos."),
-             tr("Ele fica na barra à esquerda, acessível a qualquer momento."));
-
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
         .arg(tr("Capítulos"),
              tr("Os capítulos criados aparecem nessa lista. Para acessá-los no editor, é somente "
@@ -770,23 +842,54 @@ QString HelpPanel::manuscriptsContent() const
                 "excluir, abrir no Menu de Referência, definir elementos presentes e etc)."));
 
     html += QStringLiteral(
-        "<p style='margin-bottom:4px;'><b>5- %1</b></p>"
-        "<p style='margin-bottom:4px;'>%2</p>"
-        "<p style='margin-bottom:2px;'>%3</p>"
-        "<p style='margin:2px 0 2px 16px; font-family:monospace;'>%4</p>"
-        "<p style='margin-bottom:12px;'>%5</p>")
+        "<p style='margin-bottom:4px;'><b>%1</b></p>"
+        "<p style='margin-bottom:2px;'>%2</p>"
+        "<p style='margin:2px 0 2px 16px; font-family:monospace;'>%3</p>"
+        "<p style='margin-bottom:12px;'>%4</p>")
         .arg(tr("Cenas"),
-             tr("As cenas dos capítulos são exibidas abaixo deles conforme a imagem. Ao usar o clique "
-                "direito em uma, você também pode acessar as opções dela."),
              tr("Para criar uma cena, digite quatro riscas em uma linha vazia e aperte Enter:"),
              QStringLiteral("----"),
              tr("Ao fazer isso, o app cria uma nova cena automaticamente. Com isso, você pode gerar "
                 "novas cenas a qualquer momento no seu capítulo, sem atrapalhar o seu fluxo de "
                 "escrita."));
 
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
         .arg(tr("Criar Manuscrito"),
              tr("Aperte nesse botão para criar novos Manuscritos."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+        .arg(tr("É através desse botão que você abre a gaveta de Manuscritos."),
+             tr("Ele fica na barra à esquerda, acessível a qualquer momento."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Embaixo do botão de novo capítulo ficam a prévia de e-reader (o livro como o leitor vai ver) e as "
+        "estatísticas do manuscrito. No fim da lista, \"Nova parte\" agrupa capítulos em partes. E o botão "
+        "no canto do título da gaveta troca o jeito dela: são vários estilos, de lista a estante de capas."));
+
+    html += QStringLiteral("<p style='margin:18px 0 4px 0;'><b>7- %1</b></p>").arg(tr("Livro inteiro"));
+    html += helpImage(QStringLiteral("/help/manuscripts/whole-book.png"), 640);
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Vire a chave pra Livro inteiro (ou clique com o botão direito no livro e escolha \"Abrir manuscrito "
+        "completo\") e o livro todo abre numa folha só, capítulo atrás de capítulo. Cada capítulo começa numa "
+        "abertura com o número e o título."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Escrever, colar, apagar, buscar e desfazer valem no livro inteiro, e cada coisa volta pro capítulo "
+        "certo. As aberturas são protegidas: Backspace no começo de um capítulo não junta ele com o anterior, "
+        "e apagar um trecho que atravessa capítulos apaga o texto de cada um e deixa as aberturas."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Com o livro aberto, a gaveta vira o sumário: clicar num capítulo rola até ele. Shift+PgUp e "
+        "Shift+PgDown pulam pro capítulo anterior e o seguinte. O corretor, os diálogos e a Timeline olham "
+        "o capítulo onde está o cursor, o que deixa o livro leve mesmo quando ele é grande."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Voltar a chave pra Capítulo abre o capítulo do cursor, no mesmo ponto do texto. O livro inteiro "
+        "volta aberto na próxima vez que o projeto abrir."));
+
+    html += QStringLiteral("<p style='margin:18px 0 4px 0;'><b>8- %1</b></p>").arg(tr("Abertura de capítulo"));
+    html += helpImage(QStringLiteral("/help/manuscripts/chapter-openings.png"), 640);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "A abertura que começa cada capítulo tem seis estilos: Fios, Nó, Numeral, Romano, Margem e Fleurão. "
+        "O mesmo nó aparece em miniatura na faixa do documento, em cima da folha. Escolha clicando com o "
+        "botão direito na abertura ou no nome do documento, ou em Configurações → Escrita."));
 
     return html;
 }
@@ -897,8 +1000,7 @@ QString HelpPanel::drawersContent() const
     return html;
 }
 
-// Conteúdo escrito pelo assistente em help-panel/export/, revisado pelo usuário,
-// montado aqui em HTML.
+// Exportação (reescrita na 2.5, com o painel novo de prévia das páginas).
 QString HelpPanel::exportContent() const
 {
     QString html;
@@ -907,92 +1009,53 @@ QString HelpPanel::exportContent() const
         "arquivo de verdade, pronto pra ler em outro programa, mandar pra alguém ou até "
         "publicar."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra abrir, clique no botão \"Exportar\" na barra de ferramentas do topo do editor."));
-
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/export/export-topbar.png' style='text-decoration:none;'>"
-        "<img src=':/help/export/export-topbar.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kExportTopbarThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "Pra abrir, clique no Q (ou em Arquivo, nas barras com abas) e em \"Exportar\". Na barra clássica, "
+        "é o botão de Exportar."));
+    html += helpImage(QStringLiteral("/help/export/export-topbar.png"), 196);
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Isso abre uma janela com três partes: uma árvore de seleção, as opções de "
-        "formato/modo, e o botão de exportar."));
+        "O painel mostra, à esquerda, a folha do que vai sair, montada pelo próprio exportador. À direita "
+        "ficam as escolhas."));
+    html += helpImage(QStringLiteral("/help/export/export-panel.png"), 640);
 
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/export/export-panel.png' style='text-decoration:none;'>"
-        "<img src=':/help/export/export-panel.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kExportPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral(
-        "<p style='margin-bottom:4px;'><b>1- %1</b></p>"
-        "<p style='margin-bottom:4px;'>%2</p>"
-        "<p style='margin-bottom:4px;'>%3</p>"
-        "<p style='margin-bottom:12px;'>%4</p>")
-        .arg(tr("Árvore de seleção."),
-             tr("Você escolhe exatamente o que quer exportar. Ela é dividida em duas seções:"),
-             tr("Manuscritos: mostra cada manuscrito do projeto com seus capítulos dentro. "
-                "Você pode marcar o manuscrito inteiro (marca todos os capítulos de uma vez) "
-                "ou só capítulos específicos. Gavetas: mostra suas gavetas, com pastas e "
-                "documentos dentro delas, do mesmo jeito."),
-             tr("Os botões \"Selecionar tudo\" e \"Desmarcar tudo\" no topo ajudam quando você "
-                "quer exportar (quase) tudo de uma vez. O contador no canto (\"X / Y\") mostra "
-                "quantos itens estão marcados no momento."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("A prévia."),
+             tr("Muda na hora com cada opção. Folheie com as setinhas embaixo dela ou com a roda do mouse em "
+                "cima da folha. O EPUB aparece numa tela de e-reader; o formato de editora mostra a página de "
+                "rosto; com um arquivo por capítulo, você vê o primeiro."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Formato."),
-             tr("Escolha entre ODT, PDF, EPUB ou DOCX, clicando no botão do formato desejado."));
+             tr("PDF, DOCX, EPUB ou ODT, nas abas do topo. Num roteiro, aparece também o Fountain. O formato "
+                "escolhido fica lembrado pra próxima vez."));
 
-    html += QStringLiteral(
-        "<p style='margin-bottom:4px;'><b>3- %1</b></p>"
-        "<p style='margin-bottom:4px;'>%2</p>"
-        "<p style='margin-bottom:4px;'>%3</p>"
-        "<p style='margin-bottom:12px;'>%4</p>")
-        .arg(tr("Modo do manuscrito."),
-             tr("Só importa se você marcou mais de um capítulo:"),
-             tr("Documento único: junta todos os capítulos marcados num arquivo só, na ordem "
-                "deles."),
-             tr("Capítulos separados: gera um arquivo pra cada capítulo."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("O que vai."),
+             tr("Já abre com o manuscrito inteiro marcado. Clique pra abrir a lista e marcar só alguns "
+                "capítulos, outro manuscrito ou documentos das gavetas."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
-        .arg(tr("Marcadores."),
-             tr("Se você usa a função de Marcadores (marcações de texto tipo grifo) no seu "
-                "texto, aqui você escolhe se eles aparecem no arquivo exportado ou são "
-                "removidos."));
+        .arg(tr("Um arquivo ou um por capítulo."),
+             tr("Junta tudo num arquivo só, na ordem do livro, ou gera um arquivo pra cada capítulo. Logo "
+                "embaixo, \"Levar os marcadores\" decide se os grifos dos Marcadores vão pro arquivo."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Formato de editora."),
+             tr("Courier, espaço duplo e uma página de rosto com o seu contato, do jeito que muitas editoras "
+                "e agentes pedem. Num roteiro, essa chave vira \"Numerar as cenas\"."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Um aviso que já vem na própria janela: se uma cena tiver variações criadas, a "
-        "exportação sempre usa a variação marcada como primária — as outras não entram no "
-        "arquivo."));
-
-    html += QStringLiteral(
-        "<p style='margin-bottom:4px;'>%1</p>"
-        "<p style='margin-bottom:4px;'>%2</p>"
-        "<p style='margin-bottom:12px;'>%3</p>")
-        .arg(tr("Depois de escolher tudo, clique em \"Exportar (N)\" — o número mostra quantos "
-                "itens serão exportados. O app pergunta onde salvar:"),
-             tr("Se for só 1 arquivo, ele pede direto o nome/local do arquivo."),
-             tr("Se for mais de um (ex.: \"capítulos separados\" com vários marcados, ou "
-                "capítulos + itens de gaveta juntos), o app empacota tudo num .zip e pergunta "
-                "onde salvar esse zip."));
-
+        "No pé do painel, o nome do que vai sair (\"Sai A Travessia.pdf\", ou \"Saem 12 arquivos PDF num "
+        ".zip\"), com a contagem de capítulos e palavras. Clique em Exportar e escolha onde salvar. Mais de um "
+        "arquivo sai empacotado num .zip."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Durante a exportação (principalmente em PDF, que pode demorar um pouco mais), "
-        "aparece um aviso na tela — é normal, só esperar terminar. No final, uma confirmação "
-        "de sucesso aparece."));
+        "Se uma cena tiver variações, a exportação usa a variação marcada como primária. E o link \"Exportar "
+        "a bíblia do universo…\", no pé, junta o que você criou no Glossário, no Criador de Mundos e no Mapa-múndi num documento só."));
 
     return html;
 }
 
-// Conteúdo escrito pelo assistente em help-panel/editor/, revisado pelo usuário,
-// montado aqui em HTML.
+// Editor (reescrito na 2.5: Giratória, menu de seleção em carrossel, Página e margens).
 QString HelpPanel::editorContent() const
 {
     QString html;
@@ -1002,26 +1065,15 @@ QString HelpPanel::editorContent() const
         "então foi construída para ser confortável."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>")
-        .arg(tr("Formatação (barra de ferramentas do topo)."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/editor/toolbar-options.png' style='text-decoration:none;'>"
-        "<img src=':/help/editor/toolbar-options.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kEditorToolbarThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        .arg(tr("Formatação (seção Editor da barra de cima)."));
+    html += helpImage(QStringLiteral("/help/editor/toolbar-options.png"), 720);
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Você encontrará as opções de Fonte, Tamanho, Espaçamento, Indentação (\"¶\"), "
-        "Alinhamento, Negrito/Itálico/Sublinhado/Tachado. Diferente de negrito/itálico."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Fonte/Tamanho/Espaçamento/Indentação não exigem seleção — valem pro documento "
-        "inteiro que você está editando. O botão Espaçamento abre um popup com entre-linhas, "
-        "espaço antes e depois do parágrafo."));
+        "Fonte, tamanho, negrito, itálico, sublinhado, tachado, alinhamento, entrelinha e recuo (\"¶\"). "
+        "Fonte, tamanho, entrelinha e recuo não pedem seleção: valem pro documento inteiro que você está "
+        "editando. A entrelinha também guarda o espaço antes e depois do parágrafo."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "O botão Alinhamento tem um extra: \"Aplicar em\" (só esse doc / todos / manuscrito / "
-        "gavetas). Isso é diferente de Configurações → Escrita, que mexe no tamanho "
-        "da folha e margens (visual do app, não do texto)."));
+        "O alinhamento tem um extra: a setinha do lado escolhe onde aplicar (só esse documento, todos, só o "
+        "manuscrito ou só as gavetas)."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Inserir imagem."),
@@ -1031,62 +1083,45 @@ QString HelpPanel::editorContent() const
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>")
         .arg(tr("Selecionar um trecho."));
+    html += helpImage(QStringLiteral("/help/editor/selection-menu.png"), 560);
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Um menu flutuante aparece acima da seleção: formatação, marcador, marcador com "
-        "comentário, Glossário, criar documento, criar evento na timeline, adicionar à "
-        "memória, alinhamento. Com essa opção, você mudar o alinhamento ou adicionar negrito "
-        "em um trecho específico, por exemplo."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/editor/selection-menu.png' style='text-decoration:none;'>"
-        "<img src=':/help/editor/selection-menu.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kEditorSelectionThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "Um menu aparece junto da seleção: formatação, marcador, marcador com comentário, Glossário, "
+        "criar documento, evento na Timeline, memória, alinhamento e mais. Ele é um carrossel: a fita de "
+        "botões gira acompanhando o mouse (e com a roda), e os risquinhos embaixo mostram em que grupo você "
+        "está."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Falaremos das Memórias, Glossário e Timeline mais tarde."));
+        "Prefere que ela fique parada? Clique no ↔ da lingueta: o meio para pra você mirar e a fita só gira "
+        "com o mouse nas pontas. A escolha vale também pra barra de cima e pras gavetas."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>")
         .arg(tr("Editor Focado × Modo Foco."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/editor/focus-modes.png' style='text-decoration:none;'>"
-        "<img src=':/help/editor/focus-modes.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kEditorFocusModesThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += helpImage(QStringLiteral("/help/editor/focus-modes.png"), 720);
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Os dois ficam na seção Ambiente da barra de cima."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Editor Focado recua toda a UI, deixa só a página (mouse no topo/esquerda traz de "
         "volta)."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Modo Foco (Ctrl+F10) esmaece o texto todo menos o parágrafo atual (segurar Ctrl "
         "mostra tudo por um instante)."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/editor/focus-mode-on.png' style='text-decoration:none;'>"
-        "<img src=':/help/editor/focus-mode-on.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kEditorFocusOnThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += helpImage(QStringLiteral("/help/editor/focus-mode-on.png"), kEditorFocusOnThumbWidth);
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "Dá pra usar os dois juntos para um modo foco extremo."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>")
-        .arg(tr("Opções adicionais."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Além disso, você pode acessar as Configurações e definir a largura e altura da "
-        "página."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/editor/page-configuration.png' style='text-decoration:none;'>"
-        "<img src=':/help/editor/page-configuration.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kEditorPageConfigThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        .arg(tr("Página e margens."));
+    html += helpImage(QStringLiteral("/help/editor/page-configuration.png"), 380);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "O botão Página, na seção Editor, junta o jeito da folha: o modo de página (folhas separadas, como no "
+        "Word), a largura, o comprimento, as margens e o desenho da quebra de cena. As mesmas opções estão em "
+        "Configurações → Escrita."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+        .arg(tr("Voltar, avançar e as abas."),
+             tr("Cada documento lembra onde o cursor e a rolagem estavam, até de um dia pro outro. Alt+← e "
+                "Alt+→ (ou os botões laterais do mouse) voltam e avançam entre os documentos, como num "
+                "navegador. Os documentos abertos ficam em abinhas no canto de baixo à direita, que sobem "
+                "quando o mouse chega lá."));
 
     return html;
 }
@@ -1580,42 +1615,28 @@ QString HelpPanel::memoriesContent() const
 // Conteúdo escrito pelo usuário em help-panel/timeline/, montado aqui em HTML.
 QString HelpPanel::timelineContent() const
 {
+    // Reescrita na 2.5 pra Timeline nova (Trilhos, Trança, inspetor, Preencher).
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "A Timeline é a função responsável por organizar a linha do tempo da história. Ela gera "
         "ramificações, conexões, backstories e muito mais conforme você escreve o seu projeto."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Porém, apesar do conceito brilhante, sou sincero: a Timeline pode ser confusa de se "
-        "entender caso você não saiba o que está fazendo. Então, para que tudo flua de maneira "
-        "boa e você não fique perdido, irei te ensinar a navegar nas águas traiçoeiras do tempo."));
-    html += QStringLiteral("<p>%1</p>").arg(tr("Vem comigo."));
+        "Ela se alimenta sozinha do que você já preenche nos capítulos, e o painel mostra a história "
+        "como uma mesa de som: cada linha da trama é uma pista, e o capítulo aberto no editor fica marcado. "
+        "Vem comigo."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "Pra abrir, clique no botão de Timeline na barra lateral (ou use o atalho F3)."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/timeline-panel.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/timeline-panel.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelinePanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-    html += QStringLiteral("<p>%1</p>").arg(tr("Vamos começar."));
+    html += helpImage(QStringLiteral("/help/timeline/timeline-panel.png"), 680);
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>")
         .arg(tr("A data-base da sua história."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Quando você cria um manuscrito (ou edita um já existente), tem um campo opcional "
-        "\"Quando a história se passa\". Esse é o marco zero da sua Timeline — a partir dele, o "
-        "app sabe distinguir o que é \"a história principal\" do que é \"flashback\"."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/manuscript-data.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/manuscript-data.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineManuscriptThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "Quando você cria um manuscrito (ou clica com o botão direito nele e escolhe renomear), a folha "
+        "tem o campo opcional \"Quando a história começa\". Esse é o marco zero da sua Timeline: a partir "
+        "dele, o app sabe distinguir o que é \"a história principal\" do que é \"flashback\". Embaixo do "
+        "campo aparece o que o Qenna entendeu da data."));
+    html += helpImage(QStringLiteral("/help/timeline/manuscript-data.png"), 420);
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "O marco zero da história é importante. Tenha uma data boa em mente. Usando um marcador "
         "não convencional — como uma medição temporal fictícia, textos com números (ex: verão, "
@@ -1630,20 +1651,14 @@ QString HelpPanel::timelineContent() const
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>")
         .arg(tr("Marcador e resumo do capítulo (e da cena)."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Ao criar ou editar um capítulo, você já viu os campos \"Quando se passa\" e \"Resumo\" "
-        "— pois é, eles não são só enfeite. Preenchendo os dois, o app cria automaticamente um "
-        "evento na Timeline pra aquele capítulo, usando o resumo como descrição do evento. Se um "
-        "capítulo tiver cenas separadas (lembra do \"----\"?), cada cena pode ter seu próprio "
-        "marcador e resumo — se você não preencher o da cena, ela simplesmente herda o do "
-        "capítulo."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/chapter-scene-data.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/chapter-scene-data.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineChapterSceneThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "Ao criar ou editar um capítulo, a folha tem \"Quando se passa\" e \"Resumo\". Preenchendo os dois, "
+        "o app cria sozinho o evento daquele capítulo na Timeline, com o resumo como descrição. Embaixo do "
+        "marcador aparece o que o Qenna entendeu, e dois atalhos ajudam: um copia o marcador do capítulo "
+        "anterior e o outro soma um dia a ele."));
+    html += helpImage(QStringLiteral("/help/timeline/chapter-scene-data.png"), 360);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Se um capítulo tiver cenas separadas (lembra do \"----\"?), cada cena pode ter seu próprio "
+        "marcador e resumo. Se você não preencher o da cena, ela herda o do capítulo."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>")
         .arg(tr("História × Flashback: a organização automática."));
@@ -1651,11 +1666,9 @@ QString HelpPanel::timelineContent() const
         "Aqui está o pulo do gato. Comparando o marcador de cada capítulo/cena com a data-base "
         "do manuscrito, o app decide sozinho onde aquele evento entra:"));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Se a data é igual ou depois da data-base → vai pra trilha \"Narrativa\" (a história "
-        "andando pra frente)."));
+        "Se a data é igual ou depois da data-base, vai pra linha \"Narrativa\" (a história andando pra frente)."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Se a data é antes da data-base → vai automaticamente pra trilha \"Flashback\" (mostrada "
-        "com um trilho tracejado)."));
+        "Se a data é antes da data-base, vai sozinha pra linha \"Flashback\"."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "Você não precisa arrastar nada nem escolher trilha manualmente — só escrever a data "
         "certa no capítulo/cena."));
@@ -1674,10 +1687,9 @@ QString HelpPanel::timelineContent() const
         "com o que estava presente até então — sinal de que você pulou pra outro grupo de "
         "personagens."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "— POV marcado manualmente: ao editar um capítulo ou cena, um checkbox \"Não é do "
-        "narrador / é de outro POV\" aparece se a sua obra já tem um narrador definido nas "
-        "gavetas de personagem — marque-o pra forçar a ramificação mesmo sem os outros dois "
-        "sinais."));
+        "— Outro POV: na folha do capítulo ou da cena, \"Este capítulo é de outro POV (não do narrador)\" "
+        "aparece quando a obra tem um narrador definido. Marque pra forçar a ramificação mesmo sem os "
+        "outros dois sinais."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Uma anomalia isolada não é o bastante — o app espera confirmar o padrão (duas anomalias "
         "parecidas seguidas) antes de criar a ramificação de verdade, pra não reagir a um único "
@@ -1693,107 +1705,50 @@ QString HelpPanel::timelineContent() const
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "E agora, vamos explorar o painel da Timeline de fato."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>")
-        .arg(tr("Alternando entre os eixos."));
-    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Um botão na barra superior do painel alterna entre o eixo \"Narrativa\" e o eixo "
-        "\"História\" (aparece como \"Backstory\" na tradução em inglês) — cada evento só "
-        "aparece num dos dois, nunca nos dois ao mesmo tempo, então essa alternância é como você "
-        "navega entre \"o que acontece na história\" e \"o que aconteceu antes\"."));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>")
-        .arg(tr("Quem está na cena."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>").arg(tr("Os Trilhos."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Se você já usa a detecção de personagens, os eventos da Timeline mostram "
-        "automaticamente \"Presentes: Fulano, Beltrana\" — quem aparece naquele capítulo/cena. E "
-        "tem um filtro \"Personagem: Todos ▾\" na barra do topo que deixa só os eventos daquele "
-        "personagem em destaque, esmaecendo o resto."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/characters-narrative.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/characters-narrative.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineCharactersThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "É o modo de abertura. À esquerda ficam as linhas (clique numa pra focar nela e esmaecer o resto); "
+        "em cima, a régua com os capítulos e cenas na ordem de leitura, e o capítulo aberto no editor "
+        "marcado com um lápis. Cada evento é uma bolinha com a data e o título. Bolinha vazada é capítulo "
+        "sem data. Quando a história pula muito tempo, o salto vem escrito no trilho."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Embaixo, o Elenco: uma faixa por personagem, mostrando em que capítulos cada um aparece. A "
+        "divisória entre as linhas e o Elenco se arrasta. Ctrl+roda do mouse (ou Pontos, Títulos e Resumos, "
+        "no rodapé) muda quanto cada evento mostra."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>7- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>").arg(tr("O evento aberto."));
+    html += helpImage(QStringLiteral("/help/timeline/inspector.png"), 680);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Clique num evento e o painel da direita abre com a data, o resumo, quem aparece e as ligações "
+        "(o que vem antes e depois, de onde a linha se separou, onde ela reencontra outra). Dali você abre "
+        "o capítulo no editor, edita o evento ou exporta ele como documento. Clique no vazio ou aperte Esc "
+        "pra fechar."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>7- %1</b></p>").arg(tr("A Trança."));
+    html += helpImage(QStringLiteral("/help/timeline/braid.png"), 680);
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Em cima, a ordem de leitura (como o leitor encontra); embaixo, a ordem da história (quando "
+        "aconteceu). Um fio liga cada capítulo às duas. Fio que cruza pra trás é flashback, e fios que caem "
+        "no mesmo ponto acontecem no mesmo dia."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
+        .arg(tr("Busca e filtros."),
+             tr("A lupa, no topo, acha um evento pelo nome. Personagem e Lugar deixam em destaque só os "
+                "eventos de quem você escolher, ou de onde eles aconteceram, e esmaecem o resto."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>9- %1</b></p>")
         .arg(tr("Criando e editando eventos e linhas do tempo manualmente."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Nem tudo precisa vir do capítulo. Clicando no \"+\" flutuante no canto do painel (ou "
-        "selecionando um trecho de texto no editor e usando o menu de seleção), você cria um "
-        "evento manual."));
+        "Nem tudo precisa vir do capítulo. Selecione um trecho no editor e use \"Criar evento da linha do tempo\" no "
+        "menu de seleção: o evento entra sozinho no capítulo certo. O botão \"+ Evento\", no topo, cria um "
+        "evento sem lugar, que fica na faixa Soltos até você arrastá-lo pra uma linha, na altura do capítulo."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Você também pode criar linhas do tempo próprias, definir a importância delas e "
-        "nomeá-las."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Linhas do tempo próprias não são alimentadas de forma automática como as linhas de "
-        "narrativa e backstory, mas são boas para criação de lore e worldbuilding."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Pra apagar uma linha que você criou, clique com o botão direito na faixa dela (Modo "
-        "Trilho) e escolha \"Excluir linha...\". Linhas automáticas (Narrativa, Flashback, "
-        "trilhas de personagem e as ramificações do item 4) não aparecem pra exclusão por ali — "
-        "elas voltam sozinhas no próximo sync, então excluir não resolveria nada."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/event-creator.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/event-creator.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "&nbsp;&nbsp;"
-        "<a href='zoom:/help/timeline/timeline-creator.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/timeline-creator.png' width='%4'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineEventCreatorThumbWidth), Theme::textMuted(),
-          tr("Clique para expandir"), QString::number(kTimelineCreatorThumbWidth));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>8- %1</b></p>")
-        .arg(tr("Formas de visualizar."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Um botão alterna entre três modos: Trilho (linhas horizontais organizadas por faixa), "
-        "Ramificações (constelação livre) e Espiral. É só estética/organização — os mesmos "
-        "eventos aparecem nos três, só a disposição muda."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/mode-track.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/mode-track.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/mode-branches.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/mode-branches.png' width='%4'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/mode-spiral.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/mode-spiral.png' width='%5'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineModeTrackThumbWidth), Theme::textMuted(), tr("Clique para expandir"),
-          QString::number(kTimelineModeBranchesThumbWidth), QString::number(kTimelineModeSpiralThumbWidth));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>9- %1</b></p>")
-        .arg(tr("Foco."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Clicando em um evento (ou usando o menu de Foco), o resto do painel esmaece, "
-        "destacando só aquela linha e o que está conectado a ela — útil quando o projeto cresce "
-        "e a tela fica cheia de eventos."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "E sim, quanto mais a sua timeline cresce, especialmente se você usar linhas e eventos "
-        "manuais que se conectam, isso fará toda a diferença, observe:"));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/timeline/line-focus.png' style='text-decoration:none;'>"
-        "<img src=':/help/timeline/line-focus.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kTimelineLineFocusThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "Qualquer evento pode ser arrastado pra outra linha. Sua escolha fica valendo (a detecção automática "
+        "não desfaz), e o evento aberto mostra que você o moveu, com um Desfazer."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "No ⋯, \"Nova linha manual\" cria uma linha sua, boa pra lore e worldbuilding. Clique com o botão "
+        "direito numa linha pra mudar a cor, editar ou excluir. As linhas automáticas (Narrativa, Flashback "
+        "e as ramificações) não se excluem: elas voltariam sozinhas."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>10- %1</b></p>")
         .arg(tr("Preencher: colocando projetos antigos em dia."));
@@ -1802,6 +1757,7 @@ QString HelpPanel::timelineContent() const
         "seus capítulos e cenas não tem marcador nem resumo preenchido, e sem isso a bolinha "
         "fica vazada. Em vez de abrir capítulo por capítulo, clique em \"capítulos sem data · "
         "Preencher\" no rodapé da Timeline, ou em ⋯ → Preencher datas e resumos."));
+    html += helpImage(QStringLiteral("/help/timeline/fill.png"), 680);
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "O painel abre na direita, um capítulo por vez, mostrando como ele começa pra você "
         "lembrar quando acontece. Embaixo do marcador aparece o que o Qenna entendeu "
@@ -1814,19 +1770,17 @@ QString HelpPanel::timelineContent() const
         "do capítulo anterior (Ctrl+D) e \"+1 dia\" soma um dia a ele (Alt+↓). Capítulo com cenas "
         "é preenchido inteiro, e as cenas herdam; \"separar cenas\" dá um campo pra cada uma."));
 
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Por último: se você preferir o jeito antigo de acompanhar personagem por personagem "
-        "(uma trilha dedicada por personagem, em vez do filtro), tem um botão \"Personagens "
-        "(legado)\" que liga esse sistema de volta. Ele vem desligado por padrão porque o filtro "
-        "+ \"Presentes:\" cobre o mesmo uso de um jeito mais simples, mas a opção continua lá se "
-        "você preferir."));
+    html += QStringLiteral("<p style='margin-bottom:12px;margin-top:12px;'><b>11- %1</b><br>%2</p>")
+        .arg(tr("Outros modos e a Timeline antiga."),
+             tr("No ⋯ também ficam Ramificações (uma constelação livre) e Espiral, os modos do motor "
+                "antigo. E \"UI Legado\" traz de volta a Timeline anterior inteira, com as trilhas por "
+                "personagem, pra quem prefere o jeito antigo. Um botão nela volta pra Timeline nova."));
 
     html += QStringLiteral("<p style='font-style:italic;color:%1;'><b>%2</b> %3</p>")
         .arg(Theme::textMuted(), tr("Nota do dev:"), tr(
             "A Timeline talvez seja a função que pareça mais complexa dentro do app. É UMA MINA "
             "DE OURO, mas tem uma leve curva de aprendizado para alcançar seu potencial máximo. "
-            "Eu pretendo tentar simplificá-la um pouco em versões futuras, mas acredite, vale a "
-            "pena tentar entendê-la. Especialmente se sua obra exige um bom planejamento "
+            "Vale a pena tentar entendê-la, especialmente se sua obra exige um bom planejamento "
             "cronológico e consistente."));
 
     return html;
@@ -1944,120 +1898,62 @@ QString HelpPanel::createDocumentsContent() const
     return html;
 }
 
-// Conteúdo escrito pelo usuário em help-panel/themes/, montado aqui em HTML.
+// Temas (reescrito na 2.5: painel novo, Criador de Temas novo, crédito das fotos).
 QString HelpPanel::themesContent() const
 {
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O Qenna Writer vem com mais de 140 temas prontos, além de deixar você criar os seus "
-        "próprios do zero. Há várias opções de customização para o app e você pode deixá-lo "
-        "com a aparência que quiser."));
+        "O Qenna Writer vem com mais de 500 temas prontos, e você ainda pode criar os seus. "
+        "Pra abrir, vá na seção Ambiente da barra de cima e clique em Temas (ou em Configurações → "
+        "Aparência → Tema)."));
+    html += helpImage(QStringLiteral("/help/themes/theme-panel.png"), 640);
 
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra acessar, clique no botão de Temas na barra de ferramentas ou vá em Configurações → Aparência → Tema."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/themes/theme-panel.png' style='text-decoration:none;'>"
-        "<img src=':/help/themes/theme-panel.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kThemePanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("Categorias."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Na coluna da esquerda: Claros, Amarelados, Escuros, Coloridos, Estampados (com foto ou pintura de "
+        "fundo) e Animados (com clima na mesa: chuva, neve, cidade, vela...). Embaixo ficam os Favoritos, os "
+        "Meus temas e o Dia e noite. A busca no topo acha um tema pelo nome."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("Busca e filtro."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr("A grade."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Em cima dela, Tudo, Novidades (os temas desta versão e da anterior) e Últimos usados, e a ordem: a "
+        "do Qenna, os mais novos, os mais antigos ou pelo nome. Na ordem do Qenna, as recomendações de cada "
+        "categoria vêm primeiro."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("O tema escolhido."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Um campo de busca filtra os temas pelo nome em tempo real. Um menu de categorias ao "
-        "lado deixa você navegar por grupos."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Os grupos principais são:"));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
-        .arg(tr("Claros — focados em tons brancos ou próximos de branco."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
-        .arg(tr("Escuros — focados em tons escurecidos, próximos de cinza e preto."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
-        .arg(tr("Amarelados — tons amarelados, amarronzados e quentes."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
-        .arg(tr("Coloridos — temas de cores destacadas e fortes."));
-    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>")
-        .arg(tr("Estampados — temas com imagens de fundo."));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr(
-        "Também há a opção \"♥ Favoritos\". Nela, você pode deixar salvos os temas que "
-        "gosta mais."));
+        "À direita, o tema aparece vestindo o app de verdade, nas cenas Escrita, Gavetas e Editor. Arraste a "
+        "linha da prévia pra comparar com o tema que você usa agora."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Para adicionar um tema aos favoritos, basta clicar no coração que fica no canto de "
-        "seu card."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/themes/favorite.png' style='text-decoration:none;'>"
-        "<img src=':/help/themes/favorite.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kThemeFavoriteThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
-        .arg(tr("Selecionar e aplicar."),
-             tr("Clique num card pra selecioná-lo, depois clique em \"Aplicar\" pra usar esse "
-                "tema no app."));
+        "Embaixo do nome vêm o autor do tema, quando ele tem um, e o crédito da foto de fundo (o nome abre a "
+        "foto no site de origem). O selo \"Recomendação do desenvolvedor\" marca os favoritos do criador do "
+        "Qenna. O coração guarda o tema nos Favoritos."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Contraste diz se o texto fica confortável de ler, e Parecidos com este sugere temas da mesma "
+        "família. \"Aplicar\" usa o tema."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>").arg(tr("Criar um tema seu."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Selecione qualquer tema pronto como base e clique em \"Duplicar\":"));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/themes/duplicate.png' style='text-decoration:none;'>"
-        "<img src=':/help/themes/duplicate.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kThemeDuplicateThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
+        "Escolha um tema pra começar e clique em \"Personalizar\". Abre o Criador de Temas:"));
+    html += helpImage(QStringLiteral("/help/themes/theme-editor.png"), 640);
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Uma vez feito isso, será aberta uma janela para que você edite o tema selecionado e "
-        "crie o seu próprio partindo dele."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/themes/theme-editor.png' style='text-decoration:none;'>"
-        "<img src=':/help/themes/theme-editor.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kThemeEditorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
+        "O app ocupa quase o Criador inteiro, e a faixa embaixo guarda os controles. Clique em qualquer "
+        "parte do app (fundo, painéis e barras, ícones, folha, título do capítulo, texto, destaque) e a faixa "
+        "vira os controles daquilo; as pílulas da esquerda fazem o mesmo sem clicar. Um painel pode ter cor "
+        "só dele."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "No Editor de Tema, você pode ajustar:"));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Nome do tema."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Cores principais: cor do texto do editor, fundo da página, texto da UI, texto "
-        "secundário, cor de destaque."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Fundo da janela: cor do app, cor dos painéis, borda dos painéis — e, se quiser, uma "
-        "imagem de fundo (com modo de exibição: Centralizar, Repetir, Esticar, Ajustar ou "
-        "Preencher)."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Página de texto: opacidade, e sombra projetada (ativar/desativar, cor, raio e "
-        "deslocamento)."));
+        "No Fundo, a aba \"Cor e foto\" põe uma imagem sua, e \"Degradê e grão\" escurece as bordas e dá "
+        "textura. Com foto, todo seletor de cor abre com as cores tiradas da imagem, prontas pra clicar."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Uma pré-visualização ao lado mostra o resultado em tempo real enquanto você mexe. "
-        "No final, \"Salvar\" grava seu tema personalizado na lista (ele aparece separado, "
-        "com opção de editar de novo depois) ou \"Cancelar\" descarta."));
+        "\"Antes e depois\" compara com o tema de partida, e Desfazer volta um passo. Salvar grava o tema em "
+        "Meus temas. Pelo \"…\" do lado de Personalizar, você exporta um tema seu pra mandar pra alguém, e "
+        "\"Importar…\", no pé do painel, traz o tema que alguém te mandou."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>").arg(tr("Troca automática por horário."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Tem uma opção \"Troca automática por horário\" que alterna sozinho entre um tema "
-        "diurno e um noturno, nos horários que você configurar. Pra usar, selecione um tema "
-        "e marque se ele é o tema do \"Dia\" ou da \"Noite\", depois defina os horários de "
-        "troca. Se você aplicar um tema manualmente enquanto essa troca automática estiver "
-        "ligada, ela se desliga sozinha — assim o app não fica sobrescrevendo uma escolha "
-        "consciente sua."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/themes/time-change.png' style='text-decoration:none;'>"
-        "<img src=':/help/themes/time-change.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kThemeTimeChangeThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>").arg(tr("Dia e noite."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Em Dia e noite, a troca automática alterna sozinha entre um tema diurno e um noturno, nos horários "
+        "que você escolher. Se você aplicar um tema na mão com ela ligada, ela se desliga sozinha: o app não "
+        "fica passando por cima de uma escolha sua."));
 
     return html;
 }
@@ -2402,7 +2298,7 @@ QString HelpPanel::fantasyMapContent() const
     shot(QStringLiteral("territories"));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
         .arg(tr("Construindo."),
-             tr("Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai \"Pelo vale\", achando o caminho entre dois cliques, ou \"À mão\". A engrenagem tem a Escala das construções (o mesmo continente parece maior) e a opção de esconder as cidades e estradas sugeridas."));
+             tr("Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai \"Pelo vale\", achando o caminho entre dois cliques, ou \"À mão\". A engrenagem tem a Escala do mundo (Normal, Menor, Pequena e Mínima: quanto menor, maior o mesmo continente parece) e a opção de esconder as cidades e estradas sugeridas."));
     shot(QStringLiteral("build"));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
         .arg(tr("Nomes."),

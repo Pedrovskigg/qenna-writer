@@ -5901,78 +5901,78 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
 <context>
     <name>HelpPanel</name>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="261"/>
-        <location filename="../src/HelpPanel.cpp" line="2950"/>
+        <location filename="../src/HelpPanel.cpp" line="254"/>
+        <location filename="../src/HelpPanel.cpp" line="2846"/>
         <source>Ajuda</source>
         <translation>Aide</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="288"/>
+        <location filename="../src/HelpPanel.cpp" line="281"/>
         <source>Comece aqui</source>
         <translation>Commencer ici</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="289"/>
+        <location filename="../src/HelpPanel.cpp" line="283"/>
         <source>Manuscritos</source>
         <translation>Manuscrits</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="290"/>
+        <location filename="../src/HelpPanel.cpp" line="284"/>
         <source>Gavetas</source>
         <translation>Tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="291"/>
+        <location filename="../src/HelpPanel.cpp" line="285"/>
         <source>Exportação</source>
         <translation>Exportation</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="292"/>
+        <location filename="../src/HelpPanel.cpp" line="286"/>
         <source>Editor</source>
         <translation>Éditeur</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="293"/>
+        <location filename="../src/HelpPanel.cpp" line="287"/>
         <source>Meta Diária e Contador</source>
         <translation>Objectif quotidien et Compteur</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="294"/>
+        <location filename="../src/HelpPanel.cpp" line="288"/>
         <source>Menu de Referência</source>
         <translation>Menu de Référence</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="295"/>
+        <location filename="../src/HelpPanel.cpp" line="289"/>
         <source>Função Timeline</source>
         <translation>Fonction Chronologie</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="296"/>
+        <location filename="../src/HelpPanel.cpp" line="290"/>
         <source>Criar capas</source>
         <translation>Créer des couvertures</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="297"/>
+        <location filename="../src/HelpPanel.cpp" line="291"/>
         <source>Atalhos de teclado</source>
         <translation>Raccourcis clavier</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="298"/>
+        <location filename="../src/HelpPanel.cpp" line="292"/>
         <source>Marcadores e Comentários</source>
         <translation>Marqueurs et Commentaires</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="299"/>
+        <location filename="../src/HelpPanel.cpp" line="293"/>
         <source>Memórias</source>
         <translation>Mémoires</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="300"/>
+        <location filename="../src/HelpPanel.cpp" line="294"/>
         <source>Criar Documentos a partir do texto ou comentários</source>
         <translation>Créer des Documents à partir du texte ou des commentaires</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="301"/>
+        <location filename="../src/HelpPanel.cpp" line="295"/>
         <source>Função de Temas</source>
         <translation>Fonction Thèmes</translation>
     </message>
@@ -5986,27 +5986,27 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation>NOUVEAU</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="302"/>
+        <location filename="../src/HelpPanel.cpp" line="296"/>
         <source>Criador de Mundos</source>
         <translation>Créateur de Mondes</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="303"/>
+        <location filename="../src/HelpPanel.cpp" line="297"/>
         <source>Pensário</source>
         <translation>Pensarium</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="304"/>
+        <location filename="../src/HelpPanel.cpp" line="298"/>
         <source>Estatísticas</source>
         <translation>Statistiques</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="305"/>
+        <location filename="../src/HelpPanel.cpp" line="299"/>
         <source>Vínculos</source>
         <translation>Liens</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="306"/>
+        <location filename="../src/HelpPanel.cpp" line="300"/>
         <source>Mapa-múndi</source>
         <translation>Mappemonde</translation>
     </message>
@@ -6015,78 +6015,78 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="obsolete">Carte de votre monde</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="308"/>
+        <location filename="../src/HelpPanel.cpp" line="302"/>
         <source>Galaxy Maps</source>
         <translation>Galaxy Maps</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="309"/>
+        <location filename="../src/HelpPanel.cpp" line="303"/>
         <source>Glossário</source>
         <translation>Glossaire</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="310"/>
+        <location filename="../src/HelpPanel.cpp" line="304"/>
         <source>Som Imersivo</source>
         <translation>Son immersif</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="311"/>
+        <location filename="../src/HelpPanel.cpp" line="305"/>
         <source>Lembretes</source>
         <translation>Rappels</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="312"/>
+        <location filename="../src/HelpPanel.cpp" line="306"/>
         <source>Variação de cenas</source>
         <translation>Variantes de scènes</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="315"/>
+        <location filename="../src/HelpPanel.cpp" line="309"/>
         <source>Começo</source>
         <translation>Premiers pas</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="317"/>
+        <location filename="../src/HelpPanel.cpp" line="311"/>
         <source>Escrever</source>
         <translation>Écrire</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="321"/>
+        <location filename="../src/HelpPanel.cpp" line="315"/>
         <source>Organizar</source>
         <translation>Organiser</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="324"/>
+        <location filename="../src/HelpPanel.cpp" line="318"/>
         <source>Mundo</source>
         <translation>Monde</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="327"/>
+        <location filename="../src/HelpPanel.cpp" line="321"/>
         <source>Publicar</source>
         <translation>Publier</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="362"/>
+        <location filename="../src/HelpPanel.cpp" line="356"/>
         <source>Buscar na Ajuda</source>
         <translation>Rechercher dans l’Aide</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="383"/>
+        <location filename="../src/HelpPanel.cpp" line="377"/>
         <source>O que você quer fazer?</source>
         <translation>Que voulez-vous faire&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="563"/>
-        <location filename="../src/HelpPanel.cpp" line="618"/>
+        <location filename="../src/HelpPanel.cpp" line="571"/>
+        <location filename="../src/HelpPanel.cpp" line="626"/>
         <source>BUSCAR</source>
         <translation>RECHERCHE</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="616"/>
+        <location filename="../src/HelpPanel.cpp" line="624"/>
         <source>NADA ENCONTRADO</source>
         <translation>AUCUN RÉSULTAT</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/HelpPanel.cpp" line="616"/>
+        <location filename="../src/HelpPanel.cpp" line="624"/>
         <source>%n TÓPICO(S)</source>
         <translation>
             <numerusform>%n RUBRIQUE</numerusform>
@@ -6094,685 +6094,634 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="652"/>
+        <location filename="../src/HelpPanel.cpp" line="661"/>
         <source>Conteúdo desta seção será adicionado em breve.</source>
         <translation>Le contenu de cette section sera bientôt ajouté.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="661"/>
+        <location filename="../src/HelpPanel.cpp" line="670"/>
         <source>Olá, seja bem-vindo ao Qenna Writer!</source>
         <translation>Bonjour et bienvenue dans Qenna Writer&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="662"/>
+        <location filename="../src/HelpPanel.cpp" line="671"/>
         <source>O Qenna Writer é um programa voltado para a escrita criativa e conta com inúmeras opções para torná-la mais fácil, organizada e aprofundada.</source>
         <translation>Qenna Writer est un programme conçu pour l&apos;écriture créative, avec d&apos;innombrables options pour la rendre plus simple, plus organisée et plus approfondie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="665"/>
+        <location filename="../src/HelpPanel.cpp" line="674"/>
         <source>Vamos começar!</source>
         <translation>C&apos;est parti&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="666"/>
+        <location filename="../src/HelpPanel.cpp" line="675"/>
         <source>Aqui, está a sua interface básica de usuário.</source>
         <translation>Voici votre interface utilisateur de base.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="674"/>
-        <location filename="../src/HelpPanel.cpp" line="740"/>
-        <location filename="../src/HelpPanel.cpp" line="812"/>
-        <location filename="../src/HelpPanel.cpp" line="843"/>
-        <location filename="../src/HelpPanel.cpp" line="873"/>
-        <location filename="../src/HelpPanel.cpp" line="919"/>
-        <location filename="../src/HelpPanel.cpp" line="932"/>
-        <location filename="../src/HelpPanel.cpp" line="1013"/>
-        <location filename="../src/HelpPanel.cpp" line="1046"/>
-        <location filename="../src/HelpPanel.cpp" line="1059"/>
-        <location filename="../src/HelpPanel.cpp" line="1073"/>
-        <location filename="../src/HelpPanel.cpp" line="1089"/>
-        <location filename="../src/HelpPanel.cpp" line="1111"/>
-        <location filename="../src/HelpPanel.cpp" line="1134"/>
-        <location filename="../src/HelpPanel.cpp" line="1193"/>
-        <location filename="../src/HelpPanel.cpp" line="1206"/>
+        <location filename="../src/HelpPanel.cpp" line="177"/>
+        <location filename="../src/HelpPanel.cpp" line="683"/>
+        <location filename="../src/HelpPanel.cpp" line="811"/>
+        <location filename="../src/HelpPanel.cpp" line="915"/>
+        <location filename="../src/HelpPanel.cpp" line="946"/>
+        <location filename="../src/HelpPanel.cpp" line="976"/>
+        <location filename="../src/HelpPanel.cpp" line="1146"/>
+        <location filename="../src/HelpPanel.cpp" line="1169"/>
         <location filename="../src/HelpPanel.cpp" line="1228"/>
-        <location filename="../src/HelpPanel.cpp" line="1274"/>
-        <location filename="../src/HelpPanel.cpp" line="1298"/>
-        <location filename="../src/HelpPanel.cpp" line="1318"/>
-        <location filename="../src/HelpPanel.cpp" line="1453"/>
-        <location filename="../src/HelpPanel.cpp" line="1472"/>
-        <location filename="../src/HelpPanel.cpp" line="1485"/>
-        <location filename="../src/HelpPanel.cpp" line="1498"/>
-        <location filename="../src/HelpPanel.cpp" line="1535"/>
-        <location filename="../src/HelpPanel.cpp" line="1558"/>
-        <location filename="../src/HelpPanel.cpp" line="1575"/>
-        <location filename="../src/HelpPanel.cpp" line="1602"/>
-        <location filename="../src/HelpPanel.cpp" line="1618"/>
-        <location filename="../src/HelpPanel.cpp" line="1646"/>
-        <location filename="../src/HelpPanel.cpp" line="1718"/>
-        <location filename="../src/HelpPanel.cpp" line="1750"/>
-        <location filename="../src/HelpPanel.cpp" line="1777"/>
-        <location filename="../src/HelpPanel.cpp" line="1796"/>
-        <location filename="../src/HelpPanel.cpp" line="1901"/>
-        <location filename="../src/HelpPanel.cpp" line="1922"/>
-        <location filename="../src/HelpPanel.cpp" line="1965"/>
-        <location filename="../src/HelpPanel.cpp" line="1996"/>
-        <location filename="../src/HelpPanel.cpp" line="2013"/>
+        <location filename="../src/HelpPanel.cpp" line="1241"/>
+        <location filename="../src/HelpPanel.cpp" line="1263"/>
+        <location filename="../src/HelpPanel.cpp" line="1309"/>
+        <location filename="../src/HelpPanel.cpp" line="1333"/>
+        <location filename="../src/HelpPanel.cpp" line="1353"/>
+        <location filename="../src/HelpPanel.cpp" line="1488"/>
+        <location filename="../src/HelpPanel.cpp" line="1507"/>
+        <location filename="../src/HelpPanel.cpp" line="1520"/>
+        <location filename="../src/HelpPanel.cpp" line="1533"/>
+        <location filename="../src/HelpPanel.cpp" line="1570"/>
+        <location filename="../src/HelpPanel.cpp" line="1593"/>
+        <location filename="../src/HelpPanel.cpp" line="1610"/>
+        <location filename="../src/HelpPanel.cpp" line="1855"/>
+        <location filename="../src/HelpPanel.cpp" line="1876"/>
+        <location filename="../src/HelpPanel.cpp" line="1985"/>
         <location filename="../src/HelpPanel.cpp" line="2025"/>
-        <location filename="../src/HelpPanel.cpp" line="2060"/>
+        <location filename="../src/HelpPanel.cpp" line="2067"/>
         <location filename="../src/HelpPanel.cpp" line="2089"/>
-        <location filename="../src/HelpPanel.cpp" line="2129"/>
-        <location filename="../src/HelpPanel.cpp" line="2171"/>
-        <location filename="../src/HelpPanel.cpp" line="2193"/>
-        <location filename="../src/HelpPanel.cpp" line="2201"/>
-        <location filename="../src/HelpPanel.cpp" line="2224"/>
-        <location filename="../src/HelpPanel.cpp" line="2240"/>
+        <location filename="../src/HelpPanel.cpp" line="2097"/>
+        <location filename="../src/HelpPanel.cpp" line="2120"/>
+        <location filename="../src/HelpPanel.cpp" line="2136"/>
+        <location filename="../src/HelpPanel.cpp" line="2160"/>
+        <location filename="../src/HelpPanel.cpp" line="2172"/>
+        <location filename="../src/HelpPanel.cpp" line="2192"/>
+        <location filename="../src/HelpPanel.cpp" line="2216"/>
+        <location filename="../src/HelpPanel.cpp" line="2232"/>
+        <location filename="../src/HelpPanel.cpp" line="2247"/>
         <location filename="../src/HelpPanel.cpp" line="2264"/>
-        <location filename="../src/HelpPanel.cpp" line="2276"/>
-        <location filename="../src/HelpPanel.cpp" line="2296"/>
-        <location filename="../src/HelpPanel.cpp" line="2320"/>
-        <location filename="../src/HelpPanel.cpp" line="2336"/>
-        <location filename="../src/HelpPanel.cpp" line="2351"/>
-        <location filename="../src/HelpPanel.cpp" line="2368"/>
-        <location filename="../src/HelpPanel.cpp" line="2438"/>
-        <location filename="../src/HelpPanel.cpp" line="2528"/>
-        <location filename="../src/HelpPanel.cpp" line="2549"/>
-        <location filename="../src/HelpPanel.cpp" line="2564"/>
+        <location filename="../src/HelpPanel.cpp" line="2334"/>
+        <location filename="../src/HelpPanel.cpp" line="2424"/>
+        <location filename="../src/HelpPanel.cpp" line="2445"/>
+        <location filename="../src/HelpPanel.cpp" line="2460"/>
+        <location filename="../src/HelpPanel.cpp" line="2484"/>
+        <location filename="../src/HelpPanel.cpp" line="2517"/>
+        <location filename="../src/HelpPanel.cpp" line="2542"/>
+        <location filename="../src/HelpPanel.cpp" line="2561"/>
         <location filename="../src/HelpPanel.cpp" line="2588"/>
-        <location filename="../src/HelpPanel.cpp" line="2621"/>
-        <location filename="../src/HelpPanel.cpp" line="2646"/>
-        <location filename="../src/HelpPanel.cpp" line="2665"/>
-        <location filename="../src/HelpPanel.cpp" line="2692"/>
-        <location filename="../src/HelpPanel.cpp" line="2728"/>
-        <location filename="../src/HelpPanel.cpp" line="2743"/>
-        <location filename="../src/HelpPanel.cpp" line="2771"/>
-        <location filename="../src/HelpPanel.cpp" line="2783"/>
-        <location filename="../src/HelpPanel.cpp" line="2794"/>
+        <location filename="../src/HelpPanel.cpp" line="2624"/>
+        <location filename="../src/HelpPanel.cpp" line="2639"/>
+        <location filename="../src/HelpPanel.cpp" line="2667"/>
+        <location filename="../src/HelpPanel.cpp" line="2679"/>
+        <location filename="../src/HelpPanel.cpp" line="2690"/>
         <source>Clique para expandir</source>
         <translation>Cliquez pour agrandir</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="675"/>
+        <location filename="../src/HelpPanel.cpp" line="684"/>
         <source>O editor é dividido em seções, para que tudo seja acessível no mesmo lugar sem que se espalhe. Conforme a screenshot acima, aqui estão o que cada número é:</source>
         <translation>L&apos;éditeur est divisé en sections, pour que tout reste accessible au même endroit sans s&apos;éparpiller. D&apos;après la capture d&apos;écran ci-dessus, voici ce que représente chaque numéro&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="681"/>
         <source>Opções diversas do editor de texto.</source>
-        <translation>Options diverses de l&apos;éditeur de texte.</translation>
+        <translation type="vanished">Options diverses de l&apos;éditeur de texte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="682"/>
         <source>Negrito, itálico, tamanho e fonte, alinhamento, adicionar imagens.</source>
-        <translation>Gras, italique, taille et police, alignement, ajout d&apos;images.</translation>
+        <translation type="vanished">Gras, italique, taille et police, alignement, ajout d&apos;images.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="683"/>
         <source>Opções básicas do programa.</source>
-        <translation>Options de base du programme.</translation>
+        <translation type="vanished">Options de base du programme.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="684"/>
         <source>Retornar ao menu, criar novo projeto, carregar, salvar e exportar documentos.</source>
-        <translation>Revenir au menu, créer un nouveau projet, charger, enregistrer et exporter des documents.</translation>
+        <translation type="vanished">Revenir au menu, créer un nouveau projet, charger, enregistrer et exporter des documents.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="685"/>
+        <location filename="../src/HelpPanel.cpp" line="707"/>
         <source>Acesso geral de projeto e planejamento.</source>
         <translation>Accès général au projet et à la planification.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="686"/>
         <source>Informações da obra, Lousa, Timeline, Manuscrito e organização de Grupos.</source>
-        <translation>Informations sur l&apos;œuvre, Board, Chronologie, Manuscrit et organisation des Groupes.</translation>
+        <translation type="vanished">Informations sur l&apos;œuvre, Board, Chronologie, Manuscrit et organisation des Groupes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="687"/>
+        <location filename="../src/HelpPanel.cpp" line="709"/>
         <source>Gavetas.</source>
         <translation>Tiroirs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="688"/>
+        <location filename="../src/HelpPanel.cpp" line="710"/>
         <source>Para criar novas gavetas e acessar as que já existem. Não há um limite de quantas gavetas você pode criar.</source>
         <translation>Pour créer de nouveaux tiroirs et accéder à ceux qui existent. Il n&apos;y a pas de limite au nombre de tiroirs que vous pouvez créer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="689"/>
+        <location filename="../src/HelpPanel.cpp" line="711"/>
         <source>Contador.</source>
         <translation>Compteur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="690"/>
+        <location filename="../src/HelpPanel.cpp" line="712"/>
         <source>Aqui você visualiza o seu contador de palavras e acessa o gerenciamento das suas metas de escrita.</source>
         <translation>Ici, vous voyez votre compteur de mots et gérez vos objectifs d&apos;écriture.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="691"/>
+        <location filename="../src/HelpPanel.cpp" line="704"/>
         <source>Documento em edição.</source>
         <translation>Document en cours d&apos;édition.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="692"/>
         <source>Exibe o documento que está sendo editado no momento.</source>
-        <translation>Affiche le document en cours d&apos;édition.</translation>
+        <translation type="vanished">Affiche le document en cours d&apos;édition.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="693"/>
         <source>Opções gerais.</source>
-        <translation>Options générales.</translation>
+        <translation type="vanished">Options générales.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="694"/>
         <source>Aqui, você consegue ativar o Editor Focado e o Modo Foco (que apesar dos nomes similares, são funções diferentes). O Editor Focado recua toda a UI e deixa somente a página em exibição. O Modo Foco esmaece o texto e foca somente no parágrafo que está sendo escrito.</source>
-        <translation>Ici, vous pouvez activer l&apos;Éditeur épuré et le Mode concentration (qui, malgré leurs noms proches, sont des fonctions différentes). L&apos;Éditeur épuré escamote toute l&apos;interface et n&apos;affiche que la page. Le Mode concentration estompe le texte et ne met en avant que le paragraphe en cours d&apos;écriture.</translation>
+        <translation type="vanished">Ici, vous pouvez activer l&apos;Éditeur épuré et le Mode concentration (qui, malgré leurs noms proches, sont des fonctions différentes). L&apos;Éditeur épuré escamote toute l&apos;interface et n&apos;affiche que la page. Le Mode concentration estompe le texte et ne met en avant que le paragraphe en cours d&apos;écriture.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="698"/>
         <source>Opções de Ambiente de Trabalho.</source>
-        <translation>Options de l&apos;Espace de travail.</translation>
+        <translation type="vanished">Options de l&apos;Espace de travail.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="699"/>
         <source>Acesso a função de Lembretes e Som Imersivo.</source>
-        <translation>Accès aux fonctions Rappels et Son immersif.</translation>
+        <translation type="vanished">Accès aux fonctions Rappels et Son immersif.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="700"/>
         <source>Opções de Referência e Criação.</source>
-        <translation>Options de Référence et de Création.</translation>
+        <translation type="vanished">Options de Référence et de Création.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="701"/>
         <source>Aqui, você pode acessar as ferramentas: Construtor, Pensário, Menu de Referência e Estatísticas.</source>
-        <translation>Ici, vous accédez aux outils&#xa0;: Constructeur, Pensarium, Menu de Référence et Statistiques.</translation>
+        <translation type="vanished">Ici, vous accédez aux outils&#xa0;: Constructeur, Pensarium, Menu de Référence et Statistiques.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="703"/>
         <source>Configurações do programa.</source>
-        <translation>Paramètres du programme.</translation>
+        <translation type="vanished">Paramètres du programme.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="704"/>
         <source>Alterar o Tema, configurar e ativar o modo tela cheia.</source>
-        <translation>Changer de Thème, configurer et activer le mode plein écran.</translation>
+        <translation type="vanished">Changer de Thème, configurer et activer le mode plein écran.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="715"/>
+        <location filename="../src/HelpPanel.cpp" line="729"/>
         <source>A UI básica do app é pensada para manter as opções fora do seu caminho e não lhe atrapalharem durante o processo de escrita. Pode parecer que são muitos botões, mas acredite, é fácil de se acostumar.</source>
         <translation>L&apos;interface de base de l&apos;application est pensée pour garder les options hors de votre chemin, afin qu&apos;elles ne vous gênent pas pendant l&apos;écriture. Cela peut sembler faire beaucoup de boutons, mais croyez-nous, on s&apos;y habitue vite.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="726"/>
+        <location filename="../src/HelpPanel.cpp" line="762"/>
+        <source>Clique com o botão direito na barra da esquerda (ou vá em Configurações → Aparência → Estilo da barra lateral). A Clássica é a de fábrica. Gavetas com cor põe as gavetas em ladrilhos coloridos, numa bandeja. A Barra com nomes fica larga, com tudo escrito, e as gavetas abrem como árvore ali mesmo. No Tambor de gavetas, as gavetas giram como um tambor e a do meio acende. Lê a cena acende as gavetas de quem aparece no capítulo aberto, com um numerinho.</source>
+        <translation>Faites un clic droit sur la barre de gauche (ou allez dans Paramètres → Apparence → Style de la barre latérale). Classique est celle par défaut. Tiroirs en couleur range les tiroirs en tuiles colorées, sur un plateau. Barre avec noms s&apos;élargit, tout est écrit, et les tiroirs s&apos;ouvrent en arborescence sur place. Dans Tambour de tiroirs, les tiroirs tournent comme un tambour et celui du milieu s&apos;allume. Lit la scène allume les tiroirs de ceux qui apparaissent dans le chapitre ouvert, avec un petit chiffre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="768"/>
+        <source>O Comprimento da barra lateral vale pra todos os estilos: De ponta a ponta, até o chão, ou Placa, só do tamanho do que a barra tem, deixando o fundo do tema livre embaixo.</source>
+        <translation>La Longueur de la barre latérale vaut pour tous les styles : D&apos;un bout à l&apos;autre, jusqu&apos;en bas, ou Plaque, juste à la taille de son contenu, ce qui laisse le fond du thème libre en dessous.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="797"/>
         <source>Bem-vindo à gaveta de Manuscrito — ou só Manuscrito.</source>
         <translation>Bienvenue dans le tiroir Manuscrit — ou simplement Manuscrit.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="727"/>
+        <location filename="../src/HelpPanel.cpp" line="798"/>
         <source>É aqui onde você gerencia os manuscritos do seu projeto.</source>
         <translation>C&apos;est ici que vous gérez les manuscrits de votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="728"/>
+        <location filename="../src/HelpPanel.cpp" line="799"/>
         <source>Não há um limite de quantos manuscritos você pode ter. Você pode escrever uma saga de 60 livros no mesmo projeto — em teoria pelo menos.</source>
         <translation>Il n&apos;y a pas de limite au nombre de manuscrits que vous pouvez avoir. Vous pourriez écrire une saga de 60 livres dans le même projet — en théorie, du moins.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="731"/>
+        <location filename="../src/HelpPanel.cpp" line="802"/>
         <source>A gaveta de Manuscrito é bem direta, então vamos aos detalhes.</source>
         <translation>Le tiroir Manuscrit est très simple, alors passons aux détails.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="743"/>
         <source>Barra do Manuscrito</source>
-        <translation>Barre du Manuscrit</translation>
+        <translation type="vanished">Barre du Manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="744"/>
         <source>É nessa barra que você escolhe o manuscrito aberto. Você também pode renomear e excluir manuscritos clicando com o botão direito nela quando o manuscrito que quiser renomear ou excluir esteja selecionado.</source>
-        <translation>C&apos;est dans cette barre que vous choisissez le manuscrit ouvert. Vous pouvez aussi renommer et supprimer des manuscrits en faisant un clic droit dessus lorsque le manuscrit à renommer ou à supprimer est sélectionné.</translation>
+        <translation type="vanished">C&apos;est dans cette barre que vous choisissez le manuscrit ouvert. Vous pouvez aussi renommer et supprimer des manuscrits en faisant un clic droit dessus lorsque le manuscrit à renommer ou à supprimer est sélectionné.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="753"/>
+        <location filename="../src/HelpPanel.cpp" line="829"/>
         <source>Criar novo capítulo</source>
         <translation>Créer un nouveau chapitre</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="754"/>
+        <location filename="../src/HelpPanel.cpp" line="830"/>
         <source>Nesse botão, você cria novos capítulos.</source>
         <translation>Ce bouton permet de créer de nouveaux chapitres.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="755"/>
+        <location filename="../src/HelpPanel.cpp" line="831"/>
         <source>É necessário que já haja um manuscrito para que capítulos sejam criados. Caso não tenha um, o app chamará a opção para criá-lo.</source>
         <translation>Un manuscrit doit déjà exister pour créer des chapitres. Si vous n&apos;en avez pas, l&apos;application vous proposera d&apos;en créer un.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="757"/>
+        <location filename="../src/HelpPanel.cpp" line="833"/>
         <source>Ao criar um novo capítulo, o app chamará uma janela pedindo duas informações: o nome do capítulo e quando ele se passa. Sobre quando ele se passa, essa informação é usada para organização da linha do tempo na Timeline, mas falaremos disso quando chegar a hora.</source>
         <translation>Lorsque vous créez un nouveau chapitre, l&apos;application ouvre une fenêtre qui demande deux informations&#xa0;: le nom du chapitre et le moment où il se déroule. Ce moment sert à organiser la ligne du temps dans la Chronologie, mais nous en parlerons le moment venu.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="763"/>
+        <location filename="../src/HelpPanel.cpp" line="861"/>
         <source>É através desse botão que você abre a gaveta de Manuscritos.</source>
         <translation>C&apos;est ce bouton qui ouvre le tiroir des Manuscrits.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="764"/>
+        <location filename="../src/HelpPanel.cpp" line="862"/>
         <source>Ele fica na barra à esquerda, acessível a qualquer momento.</source>
         <translation>Il se trouve dans la barre de gauche, accessible à tout moment.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="767"/>
+        <location filename="../src/HelpPanel.cpp" line="839"/>
         <source>Capítulos</source>
         <translation>Chapitres</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="768"/>
+        <location filename="../src/HelpPanel.cpp" line="840"/>
         <source>Os capítulos criados aparecem nessa lista. Para acessá-los no editor, é somente clicar. Você também pode usar o clique direito para acessar as opções dele (renomear, excluir, abrir no Menu de Referência, definir elementos presentes e etc).</source>
         <translation>Les chapitres créés apparaissent dans cette liste. Pour les ouvrir dans l&apos;éditeur, il suffit de cliquer dessus. Vous pouvez aussi faire un clic droit pour accéder à leurs options (renommer, supprimer, ouvrir dans le Menu de Référence, définir les éléments présents, etc.).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="778"/>
+        <location filename="../src/HelpPanel.cpp" line="849"/>
         <source>Cenas</source>
         <translation>Scènes</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="779"/>
         <source>As cenas dos capítulos são exibidas abaixo deles conforme a imagem. Ao usar o clique direito em uma, você também pode acessar as opções dela.</source>
-        <translation>Les scènes des chapitres s&apos;affichent en dessous, comme sur l&apos;image. Un clic droit sur l&apos;une d&apos;elles donne aussi accès à ses options.</translation>
+        <translation type="vanished">Les scènes des chapitres s&apos;affichent en dessous, comme sur l&apos;image. Un clic droit sur l&apos;une d&apos;elles donne aussi accès à ses options.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="781"/>
+        <location filename="../src/HelpPanel.cpp" line="850"/>
         <source>Para criar uma cena, digite quatro riscas em uma linha vazia e aperte Enter:</source>
         <translation>Pour créer une scène, tapez quatre tirets sur une ligne vide et appuyez sur Entrée&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="783"/>
+        <location filename="../src/HelpPanel.cpp" line="852"/>
         <source>Ao fazer isso, o app cria uma nova cena automaticamente. Com isso, você pode gerar novas cenas a qualquer momento no seu capítulo, sem atrapalhar o seu fluxo de escrita.</source>
         <translation>L&apos;application crée alors automatiquement une nouvelle scène. Vous pouvez ainsi créer de nouvelles scènes à tout moment dans votre chapitre, sans casser votre élan d&apos;écriture.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="788"/>
+        <location filename="../src/HelpPanel.cpp" line="857"/>
         <source>Criar Manuscrito</source>
         <translation>Créer un Manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="789"/>
+        <location filename="../src/HelpPanel.cpp" line="858"/>
         <source>Aperte nesse botão para criar novos Manuscritos.</source>
         <translation>Appuyez sur ce bouton pour créer de nouveaux Manuscrits.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="798"/>
+        <location filename="../src/HelpPanel.cpp" line="901"/>
         <source>As gavetas são uma parte fundamental da organização do seu projeto no app. Nelas, você pode dividir os seus documentos com base em contexto e função, mantendo cada coisa em seu devido lugar.</source>
         <translation>Les tiroirs sont un élément fondamental de l&apos;organisation de votre projet dans l&apos;application. Vous pouvez y répartir vos documents selon leur contexte et leur fonction, en gardant chaque chose à sa place.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="802"/>
+        <location filename="../src/HelpPanel.cpp" line="905"/>
         <source>Não há um limite de gavetas — você pode ter quantas o seu projeto precisar.</source>
         <translation>Il n&apos;y a pas de limite de tiroirs — vous pouvez en avoir autant que votre projet en a besoin.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="814"/>
+        <location filename="../src/HelpPanel.cpp" line="917"/>
         <source>Para criar uma gaveta, clique no botão de &quot;+&quot; que aparece na imagem acima (1). Ao clicar nele, surge um popup de criação (2).</source>
         <translation>Pour créer un tiroir, cliquez sur le bouton «&#xa0;+&#xa0;» visible sur l&apos;image ci-dessus (1). Une fenêtre contextuelle de création s&apos;ouvre alors (2).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="817"/>
+        <location filename="../src/HelpPanel.cpp" line="920"/>
         <source>Nesse popup, você tem as seguintes opções:</source>
         <translation>Dans cette fenêtre, vous disposez des options suivantes&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="820"/>
+        <location filename="../src/HelpPanel.cpp" line="923"/>
         <source>Ícone e cor da gaveta.</source>
         <translation>Icône et couleur du tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="821"/>
+        <location filename="../src/HelpPanel.cpp" line="924"/>
         <source>Você pode escolher qualquer ícone da lista e escolher uma cor na paleta de cores.</source>
         <translation>Vous pouvez choisir n&apos;importe quelle icône dans la liste et une couleur dans la palette.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="823"/>
+        <location filename="../src/HelpPanel.cpp" line="926"/>
         <source>Nome da gaveta.</source>
         <translation>Nom du tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="824"/>
+        <location filename="../src/HelpPanel.cpp" line="927"/>
         <source>Defina o nome da sua gaveta. Com base no nome, a gaveta pode receber elementos de forma automática.</source>
         <translation>Définissez le nom de votre tiroir. Selon ce nom, le tiroir peut recevoir des éléments automatiquement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="827"/>
+        <location filename="../src/HelpPanel.cpp" line="930"/>
         <source>Elemento das gavetas.</source>
         <translation>Élément des tiroirs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="828"/>
+        <location filename="../src/HelpPanel.cpp" line="931"/>
         <source>Os elementos definem o que aquela gaveta armazena. Atualmente, há três opções: Personagens, Cenários e Objetos. Gavetas com esses três elementos têm um padrão de exibição diferente e recebem opções adicionais com base no elemento dela — falaremos dessas opções abaixo.</source>
         <translation>Les éléments définissent ce que contient le tiroir. Il existe actuellement trois options&#xa0;: Personnages, Lieux et Objets. Les tiroirs dotés de l&apos;un de ces trois éléments ont un affichage différent et reçoivent des options supplémentaires selon leur élément — nous en parlerons plus bas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="833"/>
+        <location filename="../src/HelpPanel.cpp" line="936"/>
         <source>Após criar sua gaveta, você a encontrará na barra da esquerda e pode clicar para abri-la.</source>
         <translation>Après avoir créé votre tiroir, vous le trouverez dans la barre de gauche et pourrez cliquer dessus pour l&apos;ouvrir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="845"/>
+        <location filename="../src/HelpPanel.cpp" line="948"/>
         <source>Dentro da gaveta aberta, você tem as opções a seguir (seguindo as áreas numeradas da imagem acima).</source>
         <translation>Dans le tiroir ouvert, vous disposez des options suivantes (selon les zones numérotées de l&apos;image ci-dessus).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="850"/>
+        <location filename="../src/HelpPanel.cpp" line="953"/>
         <source>Fixar, alternar exibição entre listas e blocos, configurar o tamanho dos blocos e ordenar os itens da gaveta.</source>
         <translation>Épingler, basculer l&apos;affichage entre listes et blocs, régler la taille des blocs et trier les éléments du tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="852"/>
+        <location filename="../src/HelpPanel.cpp" line="955"/>
         <source>A ordenação inclui opções como A-Z e ordem de criação, entre outras.</source>
         <translation>Le tri propose notamment les options A-Z et ordre de création.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="854"/>
+        <location filename="../src/HelpPanel.cpp" line="957"/>
         <source>O botão grande e colorido.</source>
         <translation>Le grand bouton coloré.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="855"/>
+        <location filename="../src/HelpPanel.cpp" line="958"/>
         <source>Nele, você cria novos documentos dentro dessa gaveta. Nas opções abaixo dele, você consegue criar pastas dentro da gaveta e acessar pastas que já existam no projeto.</source>
         <translation>Il permet de créer de nouveaux documents dans ce tiroir. Dans les options situées en dessous, vous pouvez créer des dossiers dans le tiroir et accéder aux dossiers qui existent déjà dans le projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="859"/>
+        <location filename="../src/HelpPanel.cpp" line="962"/>
         <source>Algumas opções só existem em gavetas de elementos (como o tamanho dos blocos).</source>
         <translation>Certaines options n&apos;existent que dans les tiroirs d&apos;éléments (comme la taille des blocs).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="862"/>
+        <location filename="../src/HelpPanel.cpp" line="965"/>
         <source>Para os documentos e itens dentro das gavetas, você encontra as seguintes opções ao dar um clique direito neles:</source>
         <translation>Pour les documents et éléments contenus dans les tiroirs, un clic droit donne accès aux options suivantes&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="876"/>
+        <location filename="../src/HelpPanel.cpp" line="979"/>
         <source>Editar metadados...</source>
         <translation>Modifier les métadonnées...</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="877"/>
+        <location filename="../src/HelpPanel.cpp" line="980"/>
         <source>Altera nome, foto e demais opções. Para personagens, há opções adicionais, como definir apelido ou narrador.</source>
         <translation>Modifie le nom, la photo et d&apos;autres options. Pour les personnages, il existe des options supplémentaires, comme définir un surnom ou le narrateur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="880"/>
+        <location filename="../src/HelpPanel.cpp" line="983"/>
         <source>Remover elemento.</source>
         <translation>Retirer l&apos;élément.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="881"/>
+        <location filename="../src/HelpPanel.cpp" line="984"/>
         <source>Remove o elemento de um documento (torna um cenário um documento comum, por exemplo).</source>
         <translation>Retire l&apos;élément d&apos;un document (transforme par exemple un lieu en document ordinaire).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="884"/>
+        <location filename="../src/HelpPanel.cpp" line="987"/>
         <source>Adicionar ao grupo.</source>
         <translation>Ajouter au groupe.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="885"/>
+        <location filename="../src/HelpPanel.cpp" line="988"/>
         <source>Adiciona o documento a um grupo específico da função de Grupos (falaremos dela mais tarde).</source>
         <translation>Ajoute le document à un groupe précis de la fonction Groupes (nous en parlerons plus tard).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="888"/>
+        <location filename="../src/HelpPanel.cpp" line="991"/>
         <source>Abrir no Menu de Referência.</source>
         <translation>Ouvrir dans le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="889"/>
+        <location filename="../src/HelpPanel.cpp" line="992"/>
         <source>Abre o documento em questão no Menu de Referência.</source>
         <translation>Ouvre le document concerné dans le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="891"/>
+        <location filename="../src/HelpPanel.cpp" line="994"/>
         <source>Mover para.</source>
         <translation>Déplacer vers.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="892"/>
+        <location filename="../src/HelpPanel.cpp" line="995"/>
         <source>Move o documento para outra gaveta.</source>
         <translation>Déplace le document vers un autre tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="894"/>
+        <location filename="../src/HelpPanel.cpp" line="997"/>
         <source>Excluir.</source>
         <translation>Supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="895"/>
+        <location filename="../src/HelpPanel.cpp" line="998"/>
         <source>Exclui o documento (quem diria, hein?).</source>
         <translation>Supprime le document (qui l&apos;eût cru&#xa0;?).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="905"/>
+        <location filename="../src/HelpPanel.cpp" line="1007"/>
         <source>A exportação é onde você tira o que escreveu de dentro do app e transforma num arquivo de verdade, pronto pra ler em outro programa, mandar pra alguém ou até publicar.</source>
         <translation>L&apos;exportation, c&apos;est là que vous sortez ce que vous avez écrit de l&apos;application pour en faire un vrai fichier, prêt à être lu dans un autre programme, envoyé à quelqu&apos;un ou même publié.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="909"/>
         <source>Pra abrir, clique no botão &quot;Exportar&quot; na barra de ferramentas do topo do editor.</source>
-        <translation>Pour l&apos;ouvrir, cliquez sur le bouton «&#xa0;Exporter&#xa0;» dans la barre d&apos;outils en haut de l&apos;éditeur.</translation>
+        <translation type="vanished">Pour l&apos;ouvrir, cliquez sur le bouton «&#xa0;Exporter&#xa0;» dans la barre d&apos;outils en haut de l&apos;éditeur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="921"/>
         <source>Isso abre uma janela com três partes: uma árvore de seleção, as opções de formato/modo, e o botão de exportar.</source>
-        <translation>Une fenêtre en trois parties s&apos;ouvre&#xa0;: une arborescence de sélection, les options de format/mode et le bouton d&apos;exportation.</translation>
+        <translation type="vanished">Une fenêtre en trois parties s&apos;ouvre&#xa0;: une arborescence de sélection, les options de format/mode et le bouton d&apos;exportation.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="939"/>
         <source>Árvore de seleção.</source>
-        <translation>Arborescence de sélection.</translation>
+        <translation type="vanished">Arborescence de sélection.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="940"/>
         <source>Você escolhe exatamente o que quer exportar. Ela é dividida em duas seções:</source>
-        <translation>Vous choisissez exactement ce que vous voulez exporter. Elle est divisée en deux sections&#xa0;:</translation>
+        <translation type="vanished">Vous choisissez exactement ce que vous voulez exporter. Elle est divisée en deux sections&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="941"/>
         <source>Manuscritos: mostra cada manuscrito do projeto com seus capítulos dentro. Você pode marcar o manuscrito inteiro (marca todos os capítulos de uma vez) ou só capítulos específicos. Gavetas: mostra suas gavetas, com pastas e documentos dentro delas, do mesmo jeito.</source>
-        <translation>Manuscrits&#xa0;: affiche chaque manuscrit du projet avec ses chapitres. Vous pouvez cocher le manuscrit entier (tous ses chapitres sont cochés d&apos;un coup) ou seulement certains chapitres. Tiroirs&#xa0;: affiche vos tiroirs, avec les dossiers et documents qu&apos;ils contiennent, de la même manière.</translation>
+        <translation type="vanished">Manuscrits&#xa0;: affiche chaque manuscrit du projet avec ses chapitres. Vous pouvez cocher le manuscrit entier (tous ses chapitres sont cochés d&apos;un coup) ou seulement certains chapitres. Tiroirs&#xa0;: affiche vos tiroirs, avec les dossiers et documents qu&apos;ils contiennent, de la même manière.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="945"/>
         <source>Os botões &quot;Selecionar tudo&quot; e &quot;Desmarcar tudo&quot; no topo ajudam quando você quer exportar (quase) tudo de uma vez. O contador no canto (&quot;X / Y&quot;) mostra quantos itens estão marcados no momento.</source>
-        <translation>Les boutons «&#xa0;Tout sélectionner&#xa0;» et «&#xa0;Tout désélectionner&#xa0;» en haut sont utiles quand vous voulez exporter (presque) tout d&apos;un coup. Le compteur dans le coin («&#xa0;X / Y&#xa0;») indique combien d&apos;éléments sont cochés.</translation>
+        <translation type="vanished">Les boutons «&#xa0;Tout sélectionner&#xa0;» et «&#xa0;Tout désélectionner&#xa0;» en haut sont utiles quand vous voulez exporter (presque) tout d&apos;un coup. Le compteur dans le coin («&#xa0;X / Y&#xa0;») indique combien d&apos;éléments sont cochés.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="950"/>
+        <location filename="../src/HelpPanel.cpp" line="1028"/>
         <source>Formato.</source>
         <translation>Format.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="951"/>
         <source>Escolha entre ODT, PDF, EPUB ou DOCX, clicando no botão do formato desejado.</source>
-        <translation>Choisissez entre ODT, PDF, EPUB ou DOCX en cliquant sur le bouton du format souhaité.</translation>
+        <translation type="vanished">Choisissez entre ODT, PDF, EPUB ou DOCX en cliquant sur le bouton du format souhaité.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="958"/>
         <source>Modo do manuscrito.</source>
-        <translation>Mode du manuscrit.</translation>
+        <translation type="vanished">Mode du manuscrit.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="959"/>
         <source>Só importa se você marcou mais de um capítulo:</source>
-        <translation>Ne compte que si vous avez coché plus d&apos;un chapitre&#xa0;:</translation>
+        <translation type="vanished">Ne compte que si vous avez coché plus d&apos;un chapitre&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="960"/>
         <source>Documento único: junta todos os capítulos marcados num arquivo só, na ordem deles.</source>
-        <translation>Document unique&#xa0;: réunit tous les chapitres cochés dans un seul fichier, dans leur ordre.</translation>
+        <translation type="vanished">Document unique&#xa0;: réunit tous les chapitres cochés dans un seul fichier, dans leur ordre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="962"/>
         <source>Capítulos separados: gera um arquivo pra cada capítulo.</source>
-        <translation>Chapitres séparés&#xa0;: génère un fichier par chapitre.</translation>
+        <translation type="vanished">Chapitres séparés&#xa0;: génère un fichier par chapitre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="965"/>
         <source>Marcadores.</source>
-        <translation>Marqueurs.</translation>
+        <translation type="vanished">Marqueurs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="966"/>
         <source>Se você usa a função de Marcadores (marcações de texto tipo grifo) no seu texto, aqui você escolhe se eles aparecem no arquivo exportado ou são removidos.</source>
-        <translation>Si vous utilisez la fonction Marqueurs (des marques de texte façon surligneur), vous choisissez ici s&apos;ils apparaissent dans le fichier exporté ou s&apos;ils sont retirés.</translation>
+        <translation type="vanished">Si vous utilisez la fonction Marqueurs (des marques de texte façon surligneur), vous choisissez ici s&apos;ils apparaissent dans le fichier exporté ou s&apos;ils sont retirés.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="970"/>
         <source>Um aviso que já vem na própria janela: se uma cena tiver variações criadas, a exportação sempre usa a variação marcada como primária — as outras não entram no arquivo.</source>
-        <translation>Un avertissement figure déjà dans la fenêtre&#xa0;: si une scène a des variantes, l&apos;exportation utilise toujours la variante définie comme principale — les autres n&apos;entrent pas dans le fichier.</translation>
+        <translation type="vanished">Un avertissement figure déjà dans la fenêtre&#xa0;: si une scène a des variantes, l&apos;exportation utilise toujours la variante définie comme principale — les autres n&apos;entrent pas dans le fichier.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="979"/>
         <source>Depois de escolher tudo, clique em &quot;Exportar (N)&quot; — o número mostra quantos itens serão exportados. O app pergunta onde salvar:</source>
-        <translation>Une fois tout choisi, cliquez sur «&#xa0;Exporter (N)&#xa0;» — le nombre indique combien d&apos;éléments seront exportés. L&apos;application demande où enregistrer&#xa0;:</translation>
+        <translation type="vanished">Une fois tout choisi, cliquez sur «&#xa0;Exporter (N)&#xa0;» — le nombre indique combien d&apos;éléments seront exportés. L&apos;application demande où enregistrer&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="981"/>
         <source>Se for só 1 arquivo, ele pede direto o nome/local do arquivo.</source>
-        <translation>S&apos;il n&apos;y a qu&apos;un fichier, elle demande directement son nom et son emplacement.</translation>
+        <translation type="vanished">S&apos;il n&apos;y a qu&apos;un fichier, elle demande directement son nom et son emplacement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="982"/>
         <source>Se for mais de um (ex.: &quot;capítulos separados&quot; com vários marcados, ou capítulos + itens de gaveta juntos), o app empacota tudo num .zip e pergunta onde salvar esse zip.</source>
-        <translation>S&apos;il y en a plusieurs (ex.&#xa0;: «&#xa0;chapitres séparés&#xa0;» avec plusieurs chapitres cochés, ou chapitres + éléments de tiroirs ensemble), l&apos;application regroupe tout dans un .zip et demande où l&apos;enregistrer.</translation>
+        <translation type="vanished">S&apos;il y en a plusieurs (ex.&#xa0;: «&#xa0;chapitres séparés&#xa0;» avec plusieurs chapitres cochés, ou chapitres + éléments de tiroirs ensemble), l&apos;application regroupe tout dans un .zip et demande où l&apos;enregistrer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="986"/>
         <source>Durante a exportação (principalmente em PDF, que pode demorar um pouco mais), aparece um aviso na tela — é normal, só esperar terminar. No final, uma confirmação de sucesso aparece.</source>
-        <translation>Pendant l&apos;exportation (surtout en PDF, qui peut prendre un peu plus de temps), un avis s&apos;affiche à l&apos;écran — c&apos;est normal, il suffit d&apos;attendre la fin. Une confirmation de réussite apparaît ensuite.</translation>
+        <translation type="vanished">Pendant l&apos;exportation (surtout en PDF, qui peut prendre un peu plus de temps), un avis s&apos;affiche à l&apos;écran — c&apos;est normal, il suffit d&apos;attendre la fin. Une confirmation de réussite apparaît ensuite.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="999"/>
+        <location filename="../src/HelpPanel.cpp" line="1062"/>
         <source>O Editor é onde você realmente escreve — é a página em branco (ou não tão em branco assim) que ocupa o centro da tela. É a parte do app onde você passará mais tempo, então foi construída para ser confortável.</source>
         <translation>L&apos;Éditeur, c&apos;est là que vous écrivez vraiment — la page blanche (ou pas si blanche) qui occupe le centre de l&apos;écran. C&apos;est la partie de l&apos;application où vous passerez le plus de temps, elle a donc été conçue pour être confortable.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1005"/>
         <source>Formatação (barra de ferramentas do topo).</source>
-        <translation>Mise en forme (barre d&apos;outils du haut).</translation>
+        <translation type="vanished">Mise en forme (barre d&apos;outils du haut).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1014"/>
         <source>Você encontrará as opções de Fonte, Tamanho, Espaçamento, Indentação (&quot;¶&quot;), Alinhamento, Negrito/Itálico/Sublinhado/Tachado. Diferente de negrito/itálico.</source>
-        <translation>Vous y trouverez les options Police, Taille, Espacement, Retrait («&#xa0;¶&#xa0;»), Alignement, Gras/Italique/Souligné/Barré. Contrairement au gras et à l&apos;italique.</translation>
+        <translation type="vanished">Vous y trouverez les options Police, Taille, Espacement, Retrait («&#xa0;¶&#xa0;»), Alignement, Gras/Italique/Souligné/Barré. Contrairement au gras et à l&apos;italique.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1017"/>
         <source>Fonte/Tamanho/Espaçamento/Indentação não exigem seleção — valem pro documento inteiro que você está editando. O botão Espaçamento abre um popup com entre-linhas, espaço antes e depois do parágrafo.</source>
-        <translation>Police/Taille/Espacement/Retrait ne nécessitent pas de sélection — ils s&apos;appliquent à tout le document en cours d&apos;édition. Le bouton Espacement ouvre une fenêtre avec l&apos;interligne et l&apos;espace avant et après le paragraphe.</translation>
+        <translation type="vanished">Police/Taille/Espacement/Retrait ne nécessitent pas de sélection — ils s&apos;appliquent à tout le document en cours d&apos;édition. Le bouton Espacement ouvre une fenêtre avec l&apos;interligne et l&apos;espace avant et après le paragraphe.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1021"/>
         <source>O botão Alinhamento tem um extra: &quot;Aplicar em&quot; (só esse doc / todos / manuscrito / gavetas). Isso é diferente de Configurações → Escrita, que mexe no tamanho da folha e margens (visual do app, não do texto).</source>
-        <translation>Le bouton Alignement a un bonus&#xa0;: «&#xa0;Appliquer à&#xa0;» (ce document seulement / tous / manuscrit / tiroirs). C&apos;est différent de Paramètres → Écriture, qui règle la taille de la feuille et les marges (l&apos;apparence de l&apos;application, pas du texte).</translation>
+        <translation type="vanished">Le bouton Alignement a un bonus&#xa0;: «&#xa0;Appliquer à&#xa0;» (ce document seulement / tous / manuscrit / tiroirs). C&apos;est différent de Paramètres → Écriture, qui règle la taille de la feuille et les marges (l&apos;apparence de l&apos;application, pas du texte).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1027"/>
+        <location filename="../src/HelpPanel.cpp" line="1079"/>
         <source>Inserir imagem.</source>
         <translation>Insérer une image.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1028"/>
+        <location filename="../src/HelpPanel.cpp" line="1080"/>
         <source>Seletor de arquivo → diálogo com prévia, alinhamento e largura ajustável. Clicar na imagem depois de inserida abre um menu pra realinhar/redimensionar sem refazer tudo.</source>
         <translation>Sélecteur de fichier → fenêtre avec aperçu, alignement et largeur réglable. Un clic sur l&apos;image après son insertion ouvre un menu pour la réaligner ou la redimensionner sans tout refaire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1033"/>
+        <location filename="../src/HelpPanel.cpp" line="1085"/>
         <source>Selecionar um trecho.</source>
         <translation>Sélectionner un passage.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1034"/>
         <source>Um menu flutuante aparece acima da seleção: formatação, marcador, marcador com comentário, Glossário, criar documento, criar evento na timeline, adicionar à memória, alinhamento. Com essa opção, você mudar o alinhamento ou adicionar negrito em um trecho específico, por exemplo.</source>
-        <translation>Un menu flottant apparaît au-dessus de la sélection&#xa0;: mise en forme, marqueur, marqueur avec commentaire, Glossaire, créer un document, créer un événement dans la chronologie, ajouter aux mémoires, alignement. Vous pouvez ainsi, par exemple, changer l&apos;alignement ou mettre en gras un passage précis.</translation>
+        <translation type="vanished">Un menu flottant apparaît au-dessus de la sélection&#xa0;: mise en forme, marqueur, marqueur avec commentaire, Glossaire, créer un document, créer un événement dans la chronologie, ajouter aux mémoires, alignement. Vous pouvez ainsi, par exemple, changer l&apos;alignement ou mettre en gras un passage précis.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1047"/>
         <source>Falaremos das Memórias, Glossário e Timeline mais tarde.</source>
-        <translation>Nous parlerons des Mémoires, du Glossaire et de la Chronologie plus tard.</translation>
+        <translation type="vanished">Nous parlerons des Mémoires, du Glossaire et de la Chronologie plus tard.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1051"/>
+        <location filename="../src/HelpPanel.cpp" line="1097"/>
         <source>Editor Focado × Modo Foco.</source>
         <translation>Éditeur épuré × Mode concentration.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1060"/>
+        <location filename="../src/HelpPanel.cpp" line="1101"/>
         <source>Editor Focado recua toda a UI, deixa só a página (mouse no topo/esquerda traz de volta).</source>
         <translation>L&apos;Éditeur épuré escamote toute l&apos;interface et ne laisse que la page (approcher la souris du haut ou de la gauche la fait revenir).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1063"/>
+        <location filename="../src/HelpPanel.cpp" line="1104"/>
         <source>Modo Foco (Ctrl+F10) esmaece o texto todo menos o parágrafo atual (segurar Ctrl mostra tudo por um instante).</source>
         <translation>Le Mode concentration (Ctrl+F10) estompe tout le texte sauf le paragraphe en cours (maintenir Ctrl affiche tout un instant).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1074"/>
+        <location filename="../src/HelpPanel.cpp" line="1108"/>
         <source>Dá pra usar os dois juntos para um modo foco extremo.</source>
         <translation>Vous pouvez combiner les deux pour une concentration extrême.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1078"/>
         <source>Opções adicionais.</source>
-        <translation>Options supplémentaires.</translation>
+        <translation type="vanished">Options supplémentaires.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1079"/>
         <source>Além disso, você pode acessar as Configurações e definir a largura e altura da página.</source>
-        <translation>Vous pouvez aussi ouvrir les Paramètres et définir la largeur et la hauteur de la page.</translation>
+        <translation type="vanished">Vous pouvez aussi ouvrir les Paramètres et définir la largeur et la hauteur de la page.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1099"/>
+        <location filename="../src/HelpPanel.cpp" line="1134"/>
         <source>O Contador é o painel flutuante no canto inferior esquerdo da tela — aquele que mostra quantas palavras você já escreveu. Além de contar, ele também cuida da sua meta diária, de sprints de escrita e guarda um histórico completo do seu progresso.</source>
         <translation>Le Compteur est le panneau flottant dans le coin inférieur gauche de l&apos;écran — celui qui affiche combien de mots vous avez déjà écrits. En plus de compter, il gère votre objectif quotidien, les sprints d&apos;écriture et conserve un historique complet de votre progression.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1113"/>
+        <location filename="../src/HelpPanel.cpp" line="1148"/>
         <source>Ele tem dois modos de exibição:</source>
         <translation>Il a deux modes d&apos;affichage&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1114"/>
+        <location filename="../src/HelpPanel.cpp" line="1149"/>
         <source>Compacto: mostra dois cartões (por padrão, Palavras e Caracteres) e, se você quiser, uma barrinha fina de progresso da meta do dia. Você pode alternar o que é exibido nele usando o clique direito (palavras, tempo de sessão, páginas e etc).</source>
         <translation>Compact&#xa0;: affiche deux cartes (Mots et Caractères par défaut) et, si vous le souhaitez, une fine barre de progression de l&apos;objectif du jour. Vous pouvez changer ce qui s&apos;affiche par un clic droit (mots, temps de session, pages, etc.).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1118"/>
+        <location filename="../src/HelpPanel.cpp" line="1153"/>
         <source>Completo: abre o painel do contador completo — de onde contar, meta diária, sprint de escrita e o calendário. Tudo é acessível dentro dele.</source>
         <translation>Complet&#xa0;: ouvre le panneau complet du compteur — ce qu&apos;il faut compter, objectif quotidien, sprint d&apos;écriture et calendrier. Tout y est accessible.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1122"/>
+        <location filename="../src/HelpPanel.cpp" line="1157"/>
         <source>Clique no triângulo pra recolher/expandir o contador menor. Para exibir o painel completo, clique no corpo do contador pequeno. Pra reduzi-lo novamente, é o mesmo processo.</source>
         <translation>Cliquez sur le triangle pour replier/déplier le petit compteur. Pour afficher le panneau complet, cliquez sur le corps du petit compteur. Pour le réduire à nouveau, même procédé.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1136"/>
+        <location filename="../src/HelpPanel.cpp" line="1171"/>
         <source>No painel completo, você encontrará as seguintes opções:</source>
         <translation>Dans le panneau complet, vous trouverez les options suivantes&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1140"/>
+        <location filename="../src/HelpPanel.cpp" line="1175"/>
         <source>O contador minúsculo.</source>
         <translation>Le mini-compteur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1141"/>
+        <location filename="../src/HelpPanel.cpp" line="1176"/>
         <source>Ainda é exibido no modo completo. Para recuar do modo completo, basta clicar nele novamente.</source>
         <translation>Il reste affiché en mode complet. Pour quitter le mode complet, il suffit de cliquer à nouveau dessus.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1145"/>
+        <location filename="../src/HelpPanel.cpp" line="1180"/>
         <source>De onde contar.</source>
         <translation>Ce qu&apos;il faut compter.</translation>
     </message>
@@ -6781,7 +6730,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">En mode complet, vous choisissez ce que comptent les cartes&#xa0;: seulement les chapitres du manuscrit, seulement le document ouvert dans l&apos;éditeur, seulement les tiroirs, ou tout à la fois. Faites un clic droit sur les cartes pour choisir les indicateurs affichés (Mots, Caractères, Mots aujourd&apos;hui, Pages, entre autres).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1153"/>
+        <location filename="../src/HelpPanel.cpp" line="1188"/>
         <source>Meta diária.</source>
         <translation>Objectif quotidien.</translation>
     </message>
@@ -6794,12 +6743,12 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Il y a aussi une petite grille de statistiques juste à côté — série actuelle, record, objectif du jour atteint ou non, pages et votre moyenne de mots par jour.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1164"/>
+        <location filename="../src/HelpPanel.cpp" line="1199"/>
         <source>E existe um sistema de folgas: dependendo de quantos dias seguidos você bate a meta, o app libera dias de descanso que não quebram seu streak.</source>
         <translation>Et il existe un système de jours de repos&#xa0;: selon le nombre de jours d&apos;affilée où vous atteignez l&apos;objectif, l&apos;application débloque des jours de repos qui ne brisent pas votre série.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1169"/>
+        <location filename="../src/HelpPanel.cpp" line="1204"/>
         <source>Sprint de escrita.</source>
         <translation>Sprint d&apos;écriture.</translation>
     </message>
@@ -6808,7 +6757,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Un sprint est une course contre la montre&#xa0;: vous fixez une durée (25 minutes par défaut) et un objectif de mots (300 par défaut), appuyez sur «&#xa0;Lancer le sprint&#xa0;», et un compte à rebours apparaît avec le nombre de mots écrits depuis le début. À la fin (ou quand vous l&apos;arrêtez manuellement), l&apos;application vous indique si vous avez atteint l&apos;objectif du sprint.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1178"/>
+        <location filename="../src/HelpPanel.cpp" line="1213"/>
         <source>Calendário.</source>
         <translation>Calendrier.</translation>
     </message>
@@ -6817,32 +6766,32 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">En bas du mode complet, un bouton «&#xa0;Afficher le calendrier&#xa0;» ouvre un calendrier mensuel. Chaque jour affiche jusqu&apos;à 5 petites étoiles — plus vous avez atteint votre objectif quotidien ce jour-là, plus il y a d&apos;étoiles. Les jours de repos apparaissent avec une icône de lune. Un clic sur un jour affiche les détails&#xa0;: combien de mots vous avez écrits et combien de temps vous avez passé à écrire. Un clic droit permet de marquer ou démarquer ce jour comme repos, via le système de jours de repos (expliqué plus bas).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1196"/>
+        <location filename="../src/HelpPanel.cpp" line="1231"/>
         <source>Estatísticas.</source>
         <translation>Statistiques.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1197"/>
+        <location filename="../src/HelpPanel.cpp" line="1232"/>
         <source>Tudo que você faz no editor é contabilizado e salvo — e pode ser consultado.</source>
         <translation>Tout ce que vous faites dans l&apos;éditeur est comptabilisé et enregistré — et peut être consulté.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1207"/>
+        <location filename="../src/HelpPanel.cpp" line="1242"/>
         <source>No modo compacto ou completo, o botão &quot;Estatísticas&quot; abre um resumo de tudo que você já escreveu no projeto: dias com meta batida, streak atual e recorde, total de palavras e tempo de escrita, seu recorde diário, sua média por dia ativo, qual dia da semana você mais escreve, e qual documento você mais trabalhou.</source>
         <translation>En mode compact ou complet, le bouton «&#xa0;Statistiques&#xa0;» ouvre un récapitulatif de tout ce que vous avez écrit dans le projet&#xa0;: jours avec l&apos;objectif atteint, série actuelle et record, total de mots et de temps d&apos;écriture, votre record quotidien, votre moyenne par jour actif, le jour de la semaine où vous écrivez le plus et le document sur lequel vous avez le plus travaillé.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1213"/>
+        <location filename="../src/HelpPanel.cpp" line="1248"/>
         <source>Uma coisa importante: os cartões do topo mostram um total acumulado (de onde você escolheu contar), a barra da meta mostra seu progresso de hoje, e as Estatísticas mostram o histórico completo do projeto — são três números diferentes, cada um com seu propósito.</source>
         <translation>Un point important&#xa0;: les cartes du haut affichent un total cumulé (selon ce que vous avez choisi de compter), la barre d&apos;objectif montre votre progression du jour, et les Statistiques montrent l&apos;historique complet du projet — ce sont trois chiffres différents, chacun avec son rôle.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1220"/>
+        <location filename="../src/HelpPanel.cpp" line="1255"/>
         <source>O sistema de folgas.</source>
         <translation>Le système de jours de repos.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1229"/>
+        <location filename="../src/HelpPanel.cpp" line="1264"/>
         <source>O sistema de folgas é simples de entender e dinâmico.</source>
         <translation>Le système de jours de repos est simple à comprendre et dynamique.</translation>
     </message>
@@ -6855,742 +6804,791 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Vous pouvez marquer des jours de repos sur le calendrier par un clic droit sur le jour voulu. Vous pouvez aussi en mettre de côté et les prendre tous d&apos;un coup quand vous le souhaitez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1244"/>
+        <location filename="../src/HelpPanel.cpp" line="1279"/>
         <source>Nota do dev: por favor, ignore minhas metas e números nos prints acima. Como desenvolvedor, não tenho escrito muito, então meus números estão péssimos, mas vou voltar aos trilhos em breve, prometo.</source>
         <translation>Note du développeur&#xa0;: merci d&apos;ignorer mes objectifs et mes chiffres sur les captures ci-dessus. En tant que développeur, je n&apos;ai pas beaucoup écrit, alors mes chiffres sont catastrophiques, mais je vais vite me remettre sur les rails, promis.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1257"/>
+        <location filename="../src/HelpPanel.cpp" line="1292"/>
         <source>O Menu de Referência é um painel flutuante que deixa você consultar (ou até editar) outro documento do projeto sem sair do que está escrevendo agora. Quer conferir a ficha de um personagem, reler uma cena anterior ou dar uma olhada num nó do Construtor enquanto escreve? É pra isso que ele existe — o editor principal continua exatamente do jeito que você deixou.</source>
         <translation>Le Menu de Référence est un panneau flottant qui vous permet de consulter (voire modifier) un autre document du projet sans quitter ce que vous écrivez. Envie de vérifier la fiche d&apos;un personnage, de relire une scène précédente ou de jeter un œil à un nœud du Constructeur pendant l&apos;écriture&#xa0;? C&apos;est à ça qu&apos;il sert — l&apos;éditeur principal reste exactement tel que vous l&apos;avez laissé.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1263"/>
+        <location filename="../src/HelpPanel.cpp" line="1298"/>
         <source>Pra abrir, clique no botão de Menu de Referência na barra do topo, ou use o atalho F6.</source>
         <translation>Pour l&apos;ouvrir, cliquez sur le bouton Menu de Référence dans la barre du haut, ou utilisez le raccourci F6.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1276"/>
+        <location filename="../src/HelpPanel.cpp" line="1311"/>
         <source>Existem várias formas de abrir um documento dentro dele:</source>
         <translation>Il existe plusieurs façons d&apos;y ouvrir un document&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1278"/>
+        <location filename="../src/HelpPanel.cpp" line="1313"/>
         <source>Ctrl+clique em qualquer @menção no seu texto abre automaticamente aquilo que foi mencionado (uma ficha, um capítulo, uma cena).</source>
         <translation>Ctrl+clic sur n&apos;importe quelle @mention de votre texte ouvre automatiquement ce qui a été mentionné (une fiche, un chapitre, une scène).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1281"/>
+        <location filename="../src/HelpPanel.cpp" line="1316"/>
         <source>Clique direito num capítulo, cena ou item de gaveta e escolha &quot;Abrir no Menu de Referência&quot;.</source>
         <translation>Clic droit sur un chapitre, une scène ou un élément de tiroir, puis choisissez «&#xa0;Ouvrir dans le Menu de Référence&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1284"/>
+        <location filename="../src/HelpPanel.cpp" line="1319"/>
         <source>Dentro do próprio painel, use os seletores &quot;Manuscritos ▾&quot; e &quot;Gaveta ▾&quot; no topo pra navegar até o que você quer.</source>
         <translation>Dans le panneau lui-même, utilisez les sélecteurs «&#xa0;Manuscrits ▾&#xa0;» et «&#xa0;Tiroir ▾&#xa0;» en haut pour naviguer jusqu&apos;à ce que vous cherchez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1287"/>
+        <location filename="../src/HelpPanel.cpp" line="1322"/>
         <source>Use a busca (ícone de lupa, ou Ctrl+Alt+F) pra filtrar manuscritos, capítulos, cenas e gavetas de uma vez e pular direto pro resultado.</source>
         <translation>Utilisez la recherche (icône de loupe, ou Ctrl+Alt+F) pour filtrer manuscrits, chapitres, scènes et tiroirs d&apos;un coup et sauter directement au résultat.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1300"/>
+        <location filename="../src/HelpPanel.cpp" line="1335"/>
         <source>Dá pra editar o documento aberto ali? Sim, com algumas restrições. O botão de lápis no topo do painel liga o modo de edição. Capítulos inteiros e itens de gaveta (fichas de personagem, cenários, etc.) podem ser editados direto dali. Cenas individuais, por enquanto, são só leitura. E se o mesmo documento já estiver aberto no editor principal, a edição fica bloqueada no Menu de Referência — pra evitar você editar a mesma coisa em dois lugares ao mesmo tempo e perder alguma coisa.</source>
         <translation>Peut-on modifier le document ouvert là-dedans&#xa0;? Oui, avec quelques restrictions. Le bouton en forme de crayon en haut du panneau active le mode édition. Les chapitres entiers et les éléments de tiroirs (fiches de personnages, lieux, etc.) peuvent être modifiés directement depuis là. Les scènes individuelles sont pour l&apos;instant en lecture seule. Et si le même document est déjà ouvert dans l&apos;éditeur principal, l&apos;édition est bloquée dans le Menu de Référence — pour éviter de modifier la même chose à deux endroits en même temps et de perdre quelque chose.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1307"/>
+        <location filename="../src/HelpPanel.cpp" line="1342"/>
         <source>Uma vez ativado o modo edição, ela é feita diretamente na área de visualização do texto no Menu de Referência, conforme o print abaixo.</source>
         <translation>Une fois le mode édition activé, la modification se fait directement dans la zone d&apos;aperçu du texte du Menu de Référence, comme sur la capture ci-dessous.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1320"/>
+        <location filename="../src/HelpPanel.cpp" line="1355"/>
         <source>Outras coisas que você pode fazer no painel:</source>
         <translation>Autres choses possibles dans le panneau&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1322"/>
+        <location filename="../src/HelpPanel.cpp" line="1357"/>
         <source>Arrastar pela alcinha no topo pra mover, ou puxar as bordas pra redimensionar. Duplo clique na alcinha reseta a posição.</source>
         <translation>Faire glisser la petite poignée du haut pour le déplacer, ou tirer sur les bords pour le redimensionner. Un double-clic sur la poignée réinitialise sa position.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1325"/>
+        <location filename="../src/HelpPanel.cpp" line="1360"/>
         <source>Esconder a área de navegação e deixar só o preview visível, pra ganhar espaço de leitura.</source>
         <translation>Masquer la zone de navigation et ne laisser visible que l&apos;aperçu, pour gagner de l&apos;espace de lecture.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1328"/>
+        <location filename="../src/HelpPanel.cpp" line="1363"/>
         <source>Ajustar o tamanho da fonte do texto exibido (botão &quot;Aa&quot;).</source>
         <translation>Ajuster la taille de police du texte affiché (bouton «&#xa0;Aa&#xa0;»).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1330"/>
+        <location filename="../src/HelpPanel.cpp" line="1365"/>
         <source>Em gavetas de personagens/cenários/objetos, alternar entre visualização em grade (com foto) ou lista simples.</source>
         <translation>Dans les tiroirs de personnages/lieux/objets, basculer entre la vue en grille (avec photo) et une simple liste.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1333"/>
+        <location filename="../src/HelpPanel.cpp" line="1368"/>
         <source>Fechar com o &quot;✕&quot; ou apertando F6 de novo.</source>
         <translation>Le fermer avec la «&#xa0;✕&#xa0;» ou en appuyant de nouveau sur F6.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1335"/>
+        <location filename="../src/HelpPanel.cpp" line="1370"/>
         <source>Caso você use múltiplos monitores, o Menu de Referência pode ser arrastado para outro monitor.</source>
         <translation>Si vous utilisez plusieurs écrans, le Menu de Référence peut être déplacé sur un autre écran.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1339"/>
+        <location filename="../src/HelpPanel.cpp" line="1374"/>
         <source>O painel lembra onde você deixou (posição, tamanho, tamanho da fonte) na próxima vez que abrir o app.</source>
         <translation>Le panneau se souvient de l&apos;endroit où vous l&apos;avez laissé (position, taille, taille de police) la prochaine fois que vous ouvrez l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1351"/>
+        <location filename="../src/HelpPanel.cpp" line="1386"/>
         <source>Uma lista com todos os atalhos de teclado do Qenna Writer, separados por onde eles atuam. Os atalhos padrão de edição de texto (Ctrl+Z para desfazer, Ctrl+Y/Ctrl+Shift+Z para refazer, Ctrl+C/Ctrl+X/Ctrl+V para copiar/recortar/colar, Ctrl+A para selecionar tudo) também funcionam normalmente e não estão listados abaixo.</source>
         <translation>La liste de tous les raccourcis clavier de Qenna Writer, classés selon l&apos;endroit où ils agissent. Les raccourcis standard d&apos;édition de texte (Ctrl+Z pour annuler, Ctrl+Y/Ctrl+Shift+Z pour rétablir, Ctrl+C/Ctrl+X/Ctrl+V pour copier/couper/coller, Ctrl+A pour tout sélectionner) fonctionnent aussi normalement et ne sont pas listés ci-dessous.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1374"/>
+        <location filename="../src/HelpPanel.cpp" line="1409"/>
         <source>Painéis e navegação</source>
         <translation>Panneaux et navigation</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1376"/>
+        <location filename="../src/HelpPanel.cpp" line="1411"/>
         <source>Abrir a Lousa.</source>
         <translation>Ouvrir le Board.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1377"/>
+        <location filename="../src/HelpPanel.cpp" line="1412"/>
         <source>Abrir a Timeline.</source>
         <translation>Ouvrir la Chronologie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1378"/>
+        <location filename="../src/HelpPanel.cpp" line="1413"/>
         <source>Abrir/fechar o Pensário.</source>
         <translation>Ouvrir/fermer le Pensarium.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1379"/>
+        <location filename="../src/HelpPanel.cpp" line="1414"/>
         <source>Abrir o Mapa do Pensário.</source>
         <translation>Ouvrir la Carte du Pensarium.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1380"/>
+        <location filename="../src/HelpPanel.cpp" line="1415"/>
         <source>Abrir os Grupos.</source>
         <translation>Ouvrir les Groupes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1381"/>
+        <location filename="../src/HelpPanel.cpp" line="1416"/>
         <source>Abrir/fechar o Menu de Referência.</source>
         <translation>Ouvrir/fermer le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1382"/>
+        <location filename="../src/HelpPanel.cpp" line="1417"/>
         <source>Abrir/fechar os Lembretes.</source>
         <translation>Ouvrir/fermer les Rappels.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1383"/>
+        <location filename="../src/HelpPanel.cpp" line="1418"/>
         <source>Ativar/sair da tela cheia.</source>
         <translation>Activer/quitter le plein écran.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1384"/>
+        <location filename="../src/HelpPanel.cpp" line="1419"/>
         <source>Voltar ao Menu Principal.</source>
         <translation>Revenir au Menu principal.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1385"/>
+        <location filename="../src/HelpPanel.cpp" line="1420"/>
         <source>Ativar/desativar o Modo Foco.</source>
         <translation>Activer/désactiver le Mode concentration.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1388"/>
+        <location filename="../src/HelpPanel.cpp" line="1423"/>
         <source>Manuscrito e gavetas</source>
         <translation>Manuscrit et tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1390"/>
+        <location filename="../src/HelpPanel.cpp" line="1425"/>
         <source>Salvar o projeto.</source>
         <translation>Enregistrer le projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1391"/>
+        <location filename="../src/HelpPanel.cpp" line="1426"/>
         <source>Criar um novo capítulo no manuscrito ativo.</source>
         <translation>Créer un nouveau chapitre dans le manuscrit actif.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1392"/>
+        <location filename="../src/HelpPanel.cpp" line="1427"/>
         <source>Criar um novo item na gaveta aberta no momento.</source>
         <translation>Créer un nouvel élément dans le tiroir actuellement ouvert.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1393"/>
+        <location filename="../src/HelpPanel.cpp" line="1428"/>
         <source>Ir para o próximo capítulo (ou próximo item da gaveta aberta).</source>
         <translation>Aller au chapitre suivant (ou à l&apos;élément suivant du tiroir ouvert).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1395"/>
+        <location filename="../src/HelpPanel.cpp" line="1430"/>
         <source>Ir para o capítulo anterior (ou item anterior da gaveta aberta).</source>
         <translation>Aller au chapitre précédent (ou à l&apos;élément précédent du tiroir ouvert).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1397"/>
+        <location filename="../src/HelpPanel.cpp" line="1432"/>
         <source>Voltar ao documento que estava aberto antes, com o cursor onde você parou (os botões laterais do mouse também servem).</source>
         <translation>Revenir au document ouvert avant, avec le curseur là où vous l&apos;aviez laissé (les boutons latéraux de la souris marchent aussi).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1399"/>
+        <location filename="../src/HelpPanel.cpp" line="1434"/>
         <source>Avançar de novo pro documento de onde você voltou.</source>
         <translation>Avancer à nouveau vers le document d&apos;où vous êtes revenu.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1400"/>
+        <location filename="../src/HelpPanel.cpp" line="1435"/>
         <source>Mouse no canto ↘</source>
         <translation>Souris dans le coin ↘</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1400"/>
+        <location filename="../src/HelpPanel.cpp" line="1435"/>
         <source>Mostra as abas dos documentos abertos, no canto de baixo à direita. Clique numa pra trocar; o × (ou o botão do meio do mouse) fecha a aba, sem apagar nada.</source>
         <translation>Affiche les onglets des documents ouverts, dans le coin inférieur droit. Cliquez sur l&apos;un pour changer ; le × (ou le bouton du milieu de la souris) ferme l&apos;onglet sans rien supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1404"/>
+        <location filename="../src/HelpPanel.cpp" line="1439"/>
         <source>Busca</source>
         <translation>Recherche</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1406"/>
+        <location filename="../src/HelpPanel.cpp" line="1441"/>
         <source>Buscar dentro do documento aberto no editor (ou dentro da ficha, se ela estiver aberta na tela).</source>
         <translation>Rechercher dans le document ouvert dans l&apos;éditeur (ou dans la fiche, si elle est ouverte à l&apos;écran).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1409"/>
+        <location filename="../src/HelpPanel.cpp" line="1444"/>
         <source>Busca global — em todo o projeto.</source>
         <translation>Recherche globale — dans tout le projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1410"/>
+        <location filename="../src/HelpPanel.cpp" line="1445"/>
         <source>Buscar dentro do Menu de Referência.</source>
         <translation>Rechercher dans le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1411"/>
+        <location filename="../src/HelpPanel.cpp" line="1446"/>
         <source>Buscar dentro do preview do documento já aberto no Menu de Referência.</source>
         <translation>Rechercher dans l&apos;aperçu du document déjà ouvert dans le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1415"/>
+        <location filename="../src/HelpPanel.cpp" line="1450"/>
         <source>Formatação de texto</source>
         <translation>Mise en forme du texte</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1417"/>
+        <location filename="../src/HelpPanel.cpp" line="1452"/>
         <source>Negrito.</source>
         <translation>Gras.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1418"/>
+        <location filename="../src/HelpPanel.cpp" line="1453"/>
         <source>Itálico.</source>
         <translation>Italique.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1419"/>
+        <location filename="../src/HelpPanel.cpp" line="1454"/>
         <source>Sublinhado.</source>
         <translation>Souligné.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1420"/>
+        <location filename="../src/HelpPanel.cpp" line="1455"/>
         <source>Tachado.</source>
         <translation>Barré.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1421"/>
+        <location filename="../src/HelpPanel.cpp" line="1456"/>
         <source>Inserir um travessão (—) na posição do cursor.</source>
         <translation>Insérer un tiret cadratin (—) à la position du curseur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1431"/>
+        <location filename="../src/HelpPanel.cpp" line="1466"/>
         <source>Marcadores são grifos coloridos que você aplica sobre um trecho do texto — com ou sem um comentário junto. Servem pra sinalizar o que precisa de atenção (&quot;revisar esse diálogo&quot;, &quot;checar esse fato depois&quot;) sem interromper a escrita: o grifo fica ali, visível, esperando você voltar.</source>
         <translation>Les marqueurs sont des surlignages colorés que vous appliquez sur un passage — avec ou sans commentaire. Ils servent à signaler ce qui demande de l&apos;attention («&#xa0;revoir ce dialogue&#xa0;», «&#xa0;vérifier ce fait plus tard&#xa0;») sans interrompre l&apos;écriture&#xa0;: le surlignage reste là, visible, en attendant votre retour.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1437"/>
+        <location filename="../src/HelpPanel.cpp" line="1472"/>
         <source>Pra criar um, selecione o trecho — o menu flutuante de seleção tem duas opções:</source>
         <translation>Pour en créer un, sélectionnez le passage — le menu flottant de sélection propose deux options&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1440"/>
+        <location filename="../src/HelpPanel.cpp" line="1475"/>
         <source>Marcador</source>
         <translation>Marqueur</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1441"/>
+        <location filename="../src/HelpPanel.cpp" line="1476"/>
         <source>Só pinta o trecho com a cor escolhida, sem comentário.</source>
         <translation>Colore simplement le passage avec la couleur choisie, sans commentaire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1443"/>
+        <location filename="../src/HelpPanel.cpp" line="1478"/>
         <source>Marcador com comentário</source>
         <translation>Marqueur avec commentaire</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1444"/>
+        <location filename="../src/HelpPanel.cpp" line="1479"/>
         <source>Pinta o trecho e abre um campo de texto pra você escrever uma nota sobre ele.</source>
         <translation>Colore le passage et ouvre un champ de texte pour y écrire une note.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1455"/>
+        <location filename="../src/HelpPanel.cpp" line="1490"/>
         <source>Nos dois casos, um popup de cores aparece acima da seleção: oito cores prontas, mais um botão pra escolher qualquer cor customizada. No modo &quot;com comentário&quot; o popup também mostra a caixinha de texto pro comentário.</source>
         <translation>Dans les deux cas, une palette de couleurs apparaît au-dessus de la sélection&#xa0;: huit couleurs prêtes, plus un bouton pour choisir n&apos;importe quelle couleur personnalisée. En mode «&#xa0;avec commentaire&#xa0;», la fenêtre affiche aussi la zone de texte du commentaire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1474"/>
+        <location filename="../src/HelpPanel.cpp" line="1509"/>
         <source>Passando o mouse sobre um trecho marcado que tem comentário, um balão aparece mostrando o texto da nota, com botões pra editar (cor e/ou comentário) ou excluir o marcador.</source>
         <translation>Le survol d&apos;un passage marqué qui a un commentaire affiche une bulle avec le texte de la note, et des boutons pour modifier (couleur et/ou commentaire) ou supprimer le marqueur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1487"/>
+        <location filename="../src/HelpPanel.cpp" line="1522"/>
         <source>Marcadores sem comentário não têm esse balão — pra mudar a cor de um deles (ou pra removê-lo de vez), é só selecionar o trecho de novo: o popup de cores reabre, com um botão de lixeira ao lado de confirmar/cancelar.</source>
         <translation>Les marqueurs sans commentaire n&apos;ont pas cette bulle — pour changer leur couleur (ou les retirer pour de bon), il suffit de resélectionner le passage&#xa0;: la palette se rouvre, avec un bouton corbeille à côté de confirmer/annuler.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1500"/>
+        <location filename="../src/HelpPanel.cpp" line="1535"/>
         <source>Todos os seus marcadores comentados ficam reunidos numa lista só, dentro do Pensário, na aba &quot;Comentários&quot; — dá pra ordenar por data de criação ou agrupados na ordem do próprio manuscrito (por capítulo/cena), e clicar num deles leva direto pro trecho de origem. Mas o Pensário é um assunto diferente, falaremos dele quando chegar a hora.</source>
         <translation>Tous vos marqueurs commentés sont réunis dans une seule liste, dans le Pensarium, onglet «&#xa0;Commentaires&#xa0;» — vous pouvez les trier par date de création ou les regrouper dans l&apos;ordre du manuscrit (par chapitre/scène), et un clic sur l&apos;un d&apos;eux vous emmène directement au passage d&apos;origine. Mais le Pensarium est un autre sujet, nous en parlerons le moment venu.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1507"/>
+        <location filename="../src/HelpPanel.cpp" line="1542"/>
         <source>Na hora de exportar, você escolhe se os marcadores aparecem no arquivo final ou se são removidos — essa opção fica na própria janela de Exportação (já falamos dela lá atrás).</source>
         <translation>Au moment d&apos;exporter, vous choisissez si les marqueurs apparaissent dans le fichier final ou s&apos;ils sont retirés — cette option se trouve dans la fenêtre d&apos;Exportation (nous en avons déjà parlé).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1519"/>
+        <location filename="../src/HelpPanel.cpp" line="1554"/>
         <source>Memórias são trechos de texto que você guarda de lado pra consultar depois — uma fala marcante, uma descrição que você quer reaproveitar, um detalhe de lore que surgiu no meio de uma cena e você não quer perder. Diferente do Marcador (que fica grudado no texto original), a Memória vira um cartão avulso, guardado à parte.</source>
         <translation>Les mémoires sont des passages de texte que vous mettez de côté pour les consulter plus tard — une réplique marquante, une description à réutiliser, un détail de lore apparu au milieu d&apos;une scène et que vous ne voulez pas perdre. Contrairement au Marqueur (qui reste attaché au texte d&apos;origine), la Mémoire devient une carte indépendante, conservée à part.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1525"/>
+        <location filename="../src/HelpPanel.cpp" line="1560"/>
         <source>Pra criar uma, selecione o trecho no editor e escolha &quot;Adicionar à memória...&quot; no menu flutuante de seleção.</source>
         <translation>Pour en créer une, sélectionnez le passage dans l&apos;éditeur et choisissez «&#xa0;Ajouter aux mémoires...&#xa0;» dans le menu flottant de sélection.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1537"/>
+        <location filename="../src/HelpPanel.cpp" line="1572"/>
         <source>Um popup abre com:</source>
         <translation>Une fenêtre s&apos;ouvre avec&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1539"/>
+        <location filename="../src/HelpPanel.cpp" line="1574"/>
         <source>Destino.</source>
         <translation>Destination.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1540"/>
+        <location filename="../src/HelpPanel.cpp" line="1575"/>
         <source>Guardar como memória do Projeto (geral) ou de um Personagem específico — nesse caso, você escolhe qual, numa lista dos personagens já cadastrados no projeto.</source>
         <translation>L&apos;enregistrer comme mémoire du Projet (générale) ou d&apos;un Personnage précis — dans ce cas, vous choisissez lequel dans la liste des personnages déjà enregistrés dans le projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1544"/>
+        <location filename="../src/HelpPanel.cpp" line="1579"/>
         <source>Nome (opcional).</source>
         <translation>Nom (facultatif).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1545"/>
+        <location filename="../src/HelpPanel.cpp" line="1580"/>
         <source>Dê um título pra memória, se quiser. Se deixar em branco, ela aparece identificada pela fonte de onde veio (ex: &quot;Memória do Capítulo 3&quot;).</source>
         <translation>Donnez un titre à la mémoire, si vous le souhaitez. Si vous le laissez vide, elle est identifiée par sa source (ex.&#xa0;: «&#xa0;Mémoire du Chapitre 3&#xa0;»).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1548"/>
+        <location filename="../src/HelpPanel.cpp" line="1583"/>
         <source>Tags.</source>
         <translation>Tags.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1549"/>
+        <location filename="../src/HelpPanel.cpp" line="1584"/>
         <source>Marque uma ou mais etiquetas livres pra organizar suas memórias — o popup sugere as tags que você já usou antes no projeto, pra manter consistência.</source>
         <translation>Cochez un ou plusieurs tags libres pour organiser vos mémoires — la fenêtre suggère les tags déjà utilisés dans le projet, pour rester cohérent.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1560"/>
+        <location filename="../src/HelpPanel.cpp" line="1595"/>
         <source>A memória guarda também, automaticamente, de onde ela veio (o capítulo, a cena ou o documento de gaveta), então você sempre sabe o contexto original.</source>
         <translation>La mémoire conserve aussi automatiquement sa provenance (le chapitre, la scène ou le document de tiroir), vous connaissez donc toujours le contexte d&apos;origine.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1564"/>
+        <location filename="../src/HelpPanel.cpp" line="1599"/>
         <source>Pra consultar, abra o Pensário e vá na aba &quot;Memórias&quot;: lá você filtra entre memórias do Projeto ou de cada Personagem, e também por tag. Clicar num cartão leva você até o trecho de origem no editor; o &quot;×&quot; no canto do cartão exclui a memória.</source>
         <translation>Pour les consulter, ouvrez le Pensarium et allez dans l&apos;onglet «&#xa0;Mémoires&#xa0;»&#xa0;: vous pouvez y filtrer entre les mémoires du Projet ou de chaque Personnage, ainsi que par tag. Un clic sur une carte vous amène au passage d&apos;origine dans l&apos;éditeur&#xa0;; la «&#xa0;×&#xa0;» dans le coin de la carte supprime la mémoire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1584"/>
+        <location filename="../src/HelpPanel.cpp" line="1620"/>
         <source>A Timeline é a função responsável por organizar a linha do tempo da história. Ela gera ramificações, conexões, backstories e muito mais conforme você escreve o seu projeto.</source>
         <translation>La Chronologie est la fonction qui organise la ligne du temps de l&apos;histoire. Elle génère des embranchements, des connexions, des passés de personnages et bien plus encore au fil de l&apos;écriture de votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1587"/>
         <source>Porém, apesar do conceito brilhante, sou sincero: a Timeline pode ser confusa de se entender caso você não saiba o que está fazendo. Então, para que tudo flua de maneira boa e você não fique perdido, irei te ensinar a navegar nas águas traiçoeiras do tempo.</source>
-        <translation>Cela dit, aussi brillant que soit le concept, je vais être franc&#xa0;: la Chronologie peut être déroutante si vous ne savez pas ce que vous faites. Alors, pour que tout se passe bien et que vous ne vous perdiez pas, je vais vous apprendre à naviguer dans les eaux traîtresses du temps.</translation>
+        <translation type="vanished">Cela dit, aussi brillant que soit le concept, je vais être franc&#xa0;: la Chronologie peut être déroutante si vous ne savez pas ce que vous faites. Alors, pour que tout se passe bien et que vous ne vous perdiez pas, je vais vous apprendre à naviguer dans les eaux traîtresses du temps.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1591"/>
         <source>Vem comigo.</source>
-        <translation>Suivez-moi.</translation>
+        <translation type="vanished">Suivez-moi.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1593"/>
+        <location filename="../src/HelpPanel.cpp" line="1628"/>
         <source>Pra abrir, clique no botão de Timeline na barra lateral (ou use o atalho F3).</source>
         <translation>Pour l&apos;ouvrir, cliquez sur le bouton Chronologie dans la barre latérale (ou utilisez le raccourci F3).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1603"/>
         <source>Vamos começar.</source>
-        <translation>Commençons.</translation>
+        <translation type="vanished">Commençons.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1606"/>
+        <location filename="../src/HelpPanel.cpp" line="1633"/>
         <source>A data-base da sua história.</source>
         <translation>La date de référence de votre histoire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1607"/>
         <source>Quando você cria um manuscrito (ou edita um já existente), tem um campo opcional &quot;Quando a história se passa&quot;. Esse é o marco zero da sua Timeline — a partir dele, o app sabe distinguir o que é &quot;a história principal&quot; do que é &quot;flashback&quot;.</source>
-        <translation>Quand vous créez un manuscrit (ou modifiez un manuscrit existant), il y a un champ facultatif «&#xa0;Quand se déroule l&apos;histoire&#xa0;». C&apos;est le point zéro de votre Chronologie — à partir de lui, l&apos;application sait distinguer «&#xa0;l&apos;histoire principale&#xa0;» d&apos;un «&#xa0;flashback&#xa0;».</translation>
+        <translation type="vanished">Quand vous créez un manuscrit (ou modifiez un manuscrit existant), il y a un champ facultatif «&#xa0;Quand se déroule l&apos;histoire&#xa0;». C&apos;est le point zéro de votre Chronologie — à partir de lui, l&apos;application sait distinguer «&#xa0;l&apos;histoire principale&#xa0;» d&apos;un «&#xa0;flashback&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1619"/>
+        <location filename="../src/HelpPanel.cpp" line="1640"/>
         <source>O marco zero da história é importante. Tenha uma data boa em mente. Usando um marcador não convencional — como uma medição temporal fictícia, textos com números (ex: verão, 1988) e etc. — ela ainda deverá funcionar caso o marcador usado tenha lógica e o sistema consiga compreender o que se passa antes ou depois do marco zero, mas fica mais propenso a erros.</source>
         <translation>Le point zéro de l&apos;histoire est important. Ayez une bonne date en tête. Avec un repère non conventionnel — une mesure du temps fictive, du texte avec des chiffres (ex.&#xa0;: été, 1988), etc. — cela devrait fonctionner tant que le repère a une logique et que le système peut comprendre ce qui se passe avant ou après le point zéro, mais le risque d&apos;erreur augmente.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1625"/>
+        <location filename="../src/HelpPanel.cpp" line="1646"/>
         <source>Como dev, eu realmente recomendo que seja utilizado um formato de data convencional. Como Dia/Mês/Ano, Mês/Dia/Ano, Dia/Mês, Mês/Ano, e etc. O sistema funciona de forma MUITO mais precisa desse modo.</source>
         <translation>En tant que développeur, je recommande vraiment d&apos;utiliser un format de date conventionnel. Comme Jour/Mois/Année, Mois/Jour/Année, Jour/Mois, Mois/Année, etc. Le système est BEAUCOUP plus précis ainsi.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1631"/>
+        <location filename="../src/HelpPanel.cpp" line="1652"/>
         <source>Marcador e resumo do capítulo (e da cena).</source>
         <translation>Repère temporel et résumé du chapitre (et de la scène).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1632"/>
         <source>Ao criar ou editar um capítulo, você já viu os campos &quot;Quando se passa&quot; e &quot;Resumo&quot; — pois é, eles não são só enfeite. Preenchendo os dois, o app cria automaticamente um evento na Timeline pra aquele capítulo, usando o resumo como descrição do evento. Se um capítulo tiver cenas separadas (lembra do &quot;----&quot;?), cada cena pode ter seu próprio marcador e resumo — se você não preencher o da cena, ela simplesmente herda o do capítulo.</source>
-        <translation>En créant ou en modifiant un chapitre, vous avez déjà vu les champs «&#xa0;Quand se déroule-t-il&#xa0;» et «&#xa0;Résumé&#xa0;» — eh bien, ils ne sont pas là pour décorer. En remplissant les deux, l&apos;application crée automatiquement un événement dans la Chronologie pour ce chapitre, avec le résumé comme description. Si un chapitre a des scènes séparées (vous vous souvenez du «&#xa0;----&#xa0;»&#xa0;?), chaque scène peut avoir son propre repère et son propre résumé — si vous ne remplissez pas ceux de la scène, elle reprend simplement ceux du chapitre.</translation>
+        <translation type="vanished">En créant ou en modifiant un chapitre, vous avez déjà vu les champs «&#xa0;Quand se déroule-t-il&#xa0;» et «&#xa0;Résumé&#xa0;» — eh bien, ils ne sont pas là pour décorer. En remplissant les deux, l&apos;application crée automatiquement un événement dans la Chronologie pour ce chapitre, avec le résumé comme description. Si un chapitre a des scènes séparées (vous vous souvenez du «&#xa0;----&#xa0;»&#xa0;?), chaque scène peut avoir son propre repère et son propre résumé — si vous ne remplissez pas ceux de la scène, elle reprend simplement ceux du chapitre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1649"/>
+        <location filename="../src/HelpPanel.cpp" line="1664"/>
         <source>História × Flashback: a organização automática.</source>
         <translation>Histoire × Flashback&#xa0;: l&apos;organisation automatique.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1650"/>
+        <location filename="../src/HelpPanel.cpp" line="1665"/>
         <source>Aqui está o pulo do gato. Comparando o marcador de cada capítulo/cena com a data-base do manuscrito, o app decide sozinho onde aquele evento entra:</source>
         <translation>Voici l&apos;astuce. En comparant le repère de chaque chapitre/scène avec la date de référence du manuscrit, l&apos;application décide toute seule où placer l&apos;événement&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1653"/>
         <source>Se a data é igual ou depois da data-base → vai pra trilha &quot;Narrativa&quot; (a história andando pra frente).</source>
-        <translation>Si la date est égale ou postérieure à la date de référence → il va sur la piste «&#xa0;Narration&#xa0;» (l&apos;histoire qui avance).</translation>
+        <translation type="vanished">Si la date est égale ou postérieure à la date de référence → il va sur la piste «&#xa0;Narration&#xa0;» (l&apos;histoire qui avance).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1656"/>
         <source>Se a data é antes da data-base → vai automaticamente pra trilha &quot;Flashback&quot; (mostrada com um trilho tracejado).</source>
-        <translation>Si la date est antérieure à la date de référence → il va automatiquement sur la piste «&#xa0;Flashback&#xa0;» (affichée en pointillés).</translation>
+        <translation type="vanished">Si la date est antérieure à la date de référence → il va automatiquement sur la piste «&#xa0;Flashback&#xa0;» (affichée en pointillés).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1659"/>
+        <location filename="../src/HelpPanel.cpp" line="1672"/>
         <source>Você não precisa arrastar nada nem escolher trilha manualmente — só escrever a data certa no capítulo/cena.</source>
         <translation>Vous n&apos;avez rien à faire glisser ni de piste à choisir manuellement — il suffit d&apos;écrire la bonne date dans le chapitre ou la scène.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1664"/>
+        <location filename="../src/HelpPanel.cpp" line="1677"/>
         <source>Ramificações automáticas: quando a história se divide sozinha.</source>
         <translation>Embranchements automatiques&#xa0;: quand l&apos;histoire se divise toute seule.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1665"/>
+        <location filename="../src/HelpPanel.cpp" line="1678"/>
         <source>Dentro da trilha &quot;Narrativa&quot;, o app também percebe sozinho quando a sua história deixou de ser uma linha só. Três coisas disparam uma ramificação nova:</source>
         <translation>Sur la piste «&#xa0;Narration&#xa0;», l&apos;application remarque aussi toute seule quand votre histoire cesse d&apos;être une ligne unique. Trois choses déclenchent un nouvel embranchement&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1668"/>
+        <location filename="../src/HelpPanel.cpp" line="1681"/>
         <source>— Regressão cronológica: um capítulo/cena com marcador anterior ao do capítulo/cena que veio antes na leitura, sem virar Flashback (porque ainda está depois da data-base do manuscrito).</source>
         <translation>— Régression chronologique&#xa0;: un chapitre ou une scène dont le repère est antérieur à celui du chapitre ou de la scène qui précède dans l&apos;ordre de lecture, sans devenir un Flashback (parce qu&apos;il reste postérieur à la date de référence du manuscrit).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1672"/>
+        <location filename="../src/HelpPanel.cpp" line="1685"/>
         <source>— Elenco totalmente diferente: mesmo período de tempo, mas nenhum personagem em comum com o que estava presente até então — sinal de que você pulou pra outro grupo de personagens.</source>
         <translation>— Distribution entièrement différente&#xa0;: même période, mais aucun personnage en commun avec ceux présents jusque-là — signe que vous êtes passé à un autre groupe de personnages.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1676"/>
         <source>— POV marcado manualmente: ao editar um capítulo ou cena, um checkbox &quot;Não é do narrador / é de outro POV&quot; aparece se a sua obra já tem um narrador definido nas gavetas de personagem — marque-o pra forçar a ramificação mesmo sem os outros dois sinais.</source>
-        <translation>— Point de vue marqué manuellement&#xa0;: en modifiant un chapitre ou une scène, une case «&#xa0;Pas du narrateur / autre point de vue&#xa0;» apparaît si votre œuvre a déjà un narrateur défini dans les tiroirs de personnages — cochez-la pour forcer l&apos;embranchement même sans les deux autres signaux.</translation>
+        <translation type="vanished">— Point de vue marqué manuellement&#xa0;: en modifiant un chapitre ou une scène, une case «&#xa0;Pas du narrateur / autre point de vue&#xa0;» apparaît si votre œuvre a déjà un narrateur défini dans les tiroirs de personnages — cochez-la pour forcer l&apos;embranchement même sans les deux autres signaux.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1681"/>
+        <location filename="../src/HelpPanel.cpp" line="1693"/>
         <source>Uma anomalia isolada não é o bastante — o app espera confirmar o padrão (duas anomalias parecidas seguidas) antes de criar a ramificação de verdade, pra não reagir a um único capítulo fora de ordem. Quando as duas ramificações se reencontram (elenco em comum de novo), o app desenha uma conexão entre elas — nunca funde as linhas. Casos genuinamente ambíguos (empate entre continuar na linha atual ou retomar outra) abrem um popup discreto perguntando qual ramificação é a certa; sua escolha fica salva e não pergunta de novo pro mesmo evento.</source>
         <translation>Une anomalie isolée ne suffit pas — l&apos;application attend de confirmer le schéma (deux anomalies similaires d&apos;affilée) avant de créer vraiment l&apos;embranchement, pour ne pas réagir à un seul chapitre hors d&apos;ordre. Quand les deux embranchements se rejoignent (distribution à nouveau commune), l&apos;application trace une connexion entre eux — elle ne fusionne jamais les lignes. Les cas vraiment ambigus (égalité entre rester sur la ligne actuelle ou en reprendre une autre) ouvrent une petite fenêtre discrète demandant quel embranchement est le bon&#xa0;; votre choix est enregistré et la question ne revient pas pour ce même événement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1689"/>
+        <location filename="../src/HelpPanel.cpp" line="1701"/>
         <source>Cada ramificação nova ganha uma cor sorteada automaticamente, só pra ficar fácil distinguir uma da outra de relance.</source>
         <translation>Chaque nouvel embranchement reçoit automatiquement une couleur tirée au sort, pour les distinguer facilement d&apos;un coup d&apos;œil.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1693"/>
+        <location filename="../src/HelpPanel.cpp" line="1705"/>
         <source>E agora, vamos explorar o painel da Timeline de fato.</source>
         <translation>Et maintenant, explorons vraiment le panneau de la Chronologie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1697"/>
         <source>Alternando entre os eixos.</source>
-        <translation>Passer d&apos;un axe à l&apos;autre.</translation>
+        <translation type="vanished">Passer d&apos;un axe à l&apos;autre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1698"/>
         <source>Um botão na barra superior do painel alterna entre o eixo &quot;Narrativa&quot; e o eixo &quot;História&quot; (aparece como &quot;Backstory&quot; na tradução em inglês) — cada evento só aparece num dos dois, nunca nos dois ao mesmo tempo, então essa alternância é como você navega entre &quot;o que acontece na história&quot; e &quot;o que aconteceu antes&quot;.</source>
-        <translation>Un bouton dans la barre supérieure du panneau bascule entre l&apos;axe «&#xa0;Narration&#xa0;» et l&apos;axe «&#xa0;Passé&#xa0;» — chaque événement n&apos;apparaît que sur l&apos;un des deux, jamais sur les deux à la fois&#xa0;; ce bouton vous permet donc de naviguer entre «&#xa0;ce qui se passe dans l&apos;histoire&#xa0;» et «&#xa0;ce qui s&apos;est passé avant&#xa0;».</translation>
+        <translation type="vanished">Un bouton dans la barre supérieure du panneau bascule entre l&apos;axe «&#xa0;Narration&#xa0;» et l&apos;axe «&#xa0;Passé&#xa0;» — chaque événement n&apos;apparaît que sur l&apos;un des deux, jamais sur les deux à la fois&#xa0;; ce bouton vous permet donc de naviguer entre «&#xa0;ce qui se passe dans l&apos;histoire&#xa0;» et «&#xa0;ce qui s&apos;est passé avant&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1705"/>
         <source>Quem está na cena.</source>
-        <translation>Qui est dans la scène.</translation>
+        <translation type="vanished">Qui est dans la scène.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1706"/>
         <source>Se você já usa a detecção de personagens, os eventos da Timeline mostram automaticamente &quot;Presentes: Fulano, Beltrana&quot; — quem aparece naquele capítulo/cena. E tem um filtro &quot;Personagem: Todos ▾&quot; na barra do topo que deixa só os eventos daquele personagem em destaque, esmaecendo o resto.</source>
-        <translation>Si vous utilisez déjà la détection des personnages, les événements de la Chronologie affichent automatiquement «&#xa0;Présents&#xa0;: Untel, Unetelle&#xa0;» — qui apparaît dans ce chapitre ou cette scène. Et un filtre «&#xa0;Personnage&#xa0;: Tous ▾&#xa0;» dans la barre du haut met en avant uniquement les événements de ce personnage, en estompant le reste.</translation>
+        <translation type="vanished">Si vous utilisez déjà la détection des personnages, les événements de la Chronologie affichent automatiquement «&#xa0;Présents&#xa0;: Untel, Unetelle&#xa0;» — qui apparaît dans ce chapitre ou cette scène. Et un filtre «&#xa0;Personnage&#xa0;: Tous ▾&#xa0;» dans la barre du haut met en avant uniquement les événements de ce personnage, en estompant le reste.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1721"/>
+        <location filename="../src/HelpPanel.cpp" line="1740"/>
         <source>Criando e editando eventos e linhas do tempo manualmente.</source>
         <translation>Créer et modifier des événements et des lignes du temps manuellement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1722"/>
         <source>Nem tudo precisa vir do capítulo. Clicando no &quot;+&quot; flutuante no canto do painel (ou selecionando um trecho de texto no editor e usando o menu de seleção), você cria um evento manual.</source>
-        <translation>Tout ne doit pas venir du chapitre. En cliquant sur le «&#xa0;+&#xa0;» flottant dans le coin du panneau (ou en sélectionnant un passage dans l&apos;éditeur et en utilisant le menu de sélection), vous créez un événement manuel.</translation>
+        <translation type="vanished">Tout ne doit pas venir du chapitre. En cliquant sur le «&#xa0;+&#xa0;» flottant dans le coin du panneau (ou en sélectionnant un passage dans l&apos;éditeur et en utilisant le menu de sélection), vous créez un événement manuel.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1726"/>
         <source>Você também pode criar linhas do tempo próprias, definir a importância delas e nomeá-las.</source>
-        <translation>Vous pouvez aussi créer vos propres lignes du temps, définir leur importance et les nommer.</translation>
+        <translation type="vanished">Vous pouvez aussi créer vos propres lignes du temps, définir leur importance et les nommer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1729"/>
         <source>Linhas do tempo próprias não são alimentadas de forma automática como as linhas de narrativa e backstory, mas são boas para criação de lore e worldbuilding.</source>
-        <translation>Les lignes du temps personnalisées ne sont pas alimentées automatiquement comme les pistes de narration et de passé, mais elles sont idéales pour le lore et la construction d&apos;univers.</translation>
+        <translation type="vanished">Les lignes du temps personnalisées ne sont pas alimentées automatiquement comme les pistes de narration et de passé, mais elles sont idéales pour le lore et la construction d&apos;univers.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1732"/>
         <source>Pra apagar uma linha que você criou, clique com o botão direito na faixa dela (Modo Trilho) e escolha &quot;Excluir linha...&quot;. Linhas automáticas (Narrativa, Flashback, trilhas de personagem e as ramificações do item 4) não aparecem pra exclusão por ali — elas voltam sozinhas no próximo sync, então excluir não resolveria nada.</source>
-        <translation>Pour supprimer une ligne que vous avez créée, faites un clic droit sur sa bande (vue Piste) et choisissez «&#xa0;Supprimer la ligne...&#xa0;». Les lignes automatiques (Narration, Flashback, pistes de personnages et embranchements du point 4) ne peuvent pas être supprimées ainsi — elles reviennent d&apos;elles-mêmes à la synchronisation suivante, donc les supprimer ne résoudrait rien.</translation>
+        <translation type="vanished">Pour supprimer une ligne que vous avez créée, faites un clic droit sur sa bande (vue Piste) et choisissez «&#xa0;Supprimer la ligne...&#xa0;». Les lignes automatiques (Narration, Flashback, pistes de personnages et embranchements du point 4) ne peuvent pas être supprimées ainsi — elles reviennent d&apos;elles-mêmes à la synchronisation suivante, donc les supprimer ne résoudrait rien.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1753"/>
         <source>Formas de visualizar.</source>
-        <translation>Modes d&apos;affichage.</translation>
+        <translation type="vanished">Modes d&apos;affichage.</translation>
+    </message>
+    <message>
+        <source>Um botão alterna entre três modos: Trilho (linhas horizontais organizadas por faixa), Ramificações (constelação livre) e Espiral. É só estética/organização — os mesmos eventos aparecem nos três, só a disposição muda.</source>
+        <translation type="vanished">Un bouton bascule entre trois modes&#xa0;: Piste (lignes horizontales organisées par bande), Branches (constellation libre) et Spirale. C&apos;est purement esthétique/organisationnel — les mêmes événements apparaissent dans les trois, seule la disposition change.</translation>
+    </message>
+    <message>
+        <source>Foco.</source>
+        <translation type="vanished">Focus.</translation>
+    </message>
+    <message>
+        <source>Clicando em um evento (ou usando o menu de Foco), o resto do painel esmaece, destacando só aquela linha e o que está conectado a ela — útil quando o projeto cresce e a tela fica cheia de eventos.</source>
+        <translation type="vanished">En cliquant sur un événement (ou via le menu Focus), le reste du panneau s&apos;estompe pour ne mettre en avant que cette ligne et ce qui y est relié — utile quand le projet grandit et que l&apos;écran se remplit d&apos;événements.</translation>
+    </message>
+    <message>
+        <source>E sim, quanto mais a sua timeline cresce, especialmente se você usar linhas e eventos manuais que se conectam, isso fará toda a diferença, observe:</source>
+        <translation type="vanished">Et oui, plus votre chronologie grandit, surtout si vous utilisez des lignes et des événements manuels reliés entre eux, plus cela fera la différence, regardez&#xa0;:</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="1754"/>
-        <source>Um botão alterna entre três modos: Trilho (linhas horizontais organizadas por faixa), Ramificações (constelação livre) e Espiral. É só estética/organização — os mesmos eventos aparecem nos três, só a disposição muda.</source>
-        <translation>Un bouton bascule entre trois modes&#xa0;: Piste (lignes horizontales organisées par bande), Branches (constellation libre) et Spirale. C&apos;est purement esthétique/organisationnel — les mêmes événements apparaissent dans les trois, seule la disposition change.</translation>
-    </message>
-    <message>
-        <location filename="../src/HelpPanel.cpp" line="1781"/>
-        <source>Foco.</source>
-        <translation>Focus.</translation>
-    </message>
-    <message>
-        <location filename="../src/HelpPanel.cpp" line="1782"/>
-        <source>Clicando em um evento (ou usando o menu de Foco), o resto do painel esmaece, destacando só aquela linha e o que está conectado a ela — útil quando o projeto cresce e a tela fica cheia de eventos.</source>
-        <translation>En cliquant sur un événement (ou via le menu Focus), le reste du panneau s&apos;estompe pour ne mettre en avant que cette ligne et ce qui y est relié — utile quand le projet grandit et que l&apos;écran se remplit d&apos;événements.</translation>
-    </message>
-    <message>
-        <location filename="../src/HelpPanel.cpp" line="1786"/>
-        <source>E sim, quanto mais a sua timeline cresce, especialmente se você usar linhas e eventos manuais que se conectam, isso fará toda a diferença, observe:</source>
-        <translation>Et oui, plus votre chronologie grandit, surtout si vous utilisez des lignes et des événements manuels reliés entre eux, plus cela fera la différence, regardez&#xa0;:</translation>
-    </message>
-    <message>
-        <location filename="../src/HelpPanel.cpp" line="1799"/>
         <source>Preencher: colocando projetos antigos em dia.</source>
         <translation>Remplir&#xa0;: remettre à jour les anciens projets.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1805"/>
+        <location filename="../src/HelpPanel.cpp" line="1761"/>
         <source>O painel abre na direita, um capítulo por vez, mostrando como ele começa pra você lembrar quando acontece. Embaixo do marcador aparece o que o Qenna entendeu (&quot;→ dia 9&quot;, &quot;→ 20 anos antes · Flashback&quot;); em laranja, ele não reconheceu o marcador, e o capítulo segue a ordem de leitura. Cada campo grava sozinho quando você sai dele, e &quot;Salvar e próximo&quot; (Ctrl+Enter) anda a fila.</source>
         <translation>Le panneau s&apos;ouvre à droite, un chapitre à la fois, en montrant comment il commence pour que vous vous rappeliez quand il se passe. Sous le repère s&apos;affiche ce que Qenna a compris («&#xa0;→ jour 9&#xa0;», «&#xa0;→ 20 ans avant · Flashback&#xa0;»)&#xa0;; en orange, le repère n&apos;a pas été reconnu et le chapitre suit l&apos;ordre de lecture. Chaque champ s&apos;enregistre seul quand vous le quittez, et «&#xa0;Enregistrer et suivant&#xa0;» (Ctrl+Entrée) fait avancer la file.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1811"/>
+        <location filename="../src/HelpPanel.cpp" line="1767"/>
         <source>Quando a primeira frase do capítulo já diz o tempo (&quot;cinco dias depois&quot;, &quot;naquela mesma noite&quot;), aparece uma sugestão pronta; um clique aceita. &quot;igual&quot; copia o marcador do capítulo anterior (Ctrl+D) e &quot;+1 dia&quot; soma um dia a ele (Alt+↓). Capítulo com cenas é preenchido inteiro, e as cenas herdam; &quot;separar cenas&quot; dá um campo pra cada uma.</source>
         <translation>Quand la première phrase du chapitre dit déjà le moment («&#xa0;cinq jours plus tard&#xa0;», «&#xa0;cette même nuit&#xa0;»), une suggestion toute prête apparaît&#xa0;; un clic l&apos;accepte. «&#xa0;idem&#xa0;» copie le repère du chapitre précédent (Ctrl+D) et «&#xa0;+1 jour&#xa0;» lui ajoute un jour (Alt+↓). Un chapitre avec des scènes se remplit en entier, et les scènes en héritent&#xa0;; «&#xa0;séparer les scènes&#xa0;» donne un champ à chacune.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1840"/>
+        <location filename="../src/HelpPanel.cpp" line="1794"/>
         <source>A capa do seu livro é feita dentro do próprio Qenna, na capa rápida. Ela aparece em três lugares: na folha de Novo projeto, no Editar projeto e no &quot;Criar capa&quot; (clique com o botão direito no card do livro, no Menu Principal).</source>
         <translation>La couverture de votre livre se fait dans Qenna lui-même, avec la couverture rapide. Elle apparaît à trois endroits : dans la feuille Nouveau projet, dans Modifier le projet et dans « Créer une couverture » (clic droit sur la carte du livre, dans le Menu principal).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1844"/>
+        <location filename="../src/HelpPanel.cpp" line="1798"/>
         <source>Passe o mouse na capa da folha: ela se divide na diagonal. Em cima fica a CAPA RÁPIDA, pra montar a capa ali mesmo; embaixo, CARREGAR CAPA, pra usar uma capa pronta do seu computador do jeito que ela está.</source>
         <translation>Survolez la couverture de la feuille : elle se divise en diagonale. En haut, COUVERTURE RAPIDE, pour composer la couverture sur place ; en bas, CHARGER UNE COUVERTURE, pour utiliser telle quelle une couverture prête de votre ordinateur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1849"/>
+        <location filename="../src/HelpPanel.cpp" line="1803"/>
         <source>Na capa rápida, os campos da folha dão lugar a quatro abas:</source>
         <translation>Dans la couverture rapide, les champs de la feuille laissent la place à quatre onglets :</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1851"/>
+        <location filename="../src/HelpPanel.cpp" line="1805"/>
         <source>&lt;b&gt;Foto:&lt;/b&gt; qualquer uma das fotos dos temas do Qenna, uma imagem do seu computador (a pastinha) ou nenhuma foto, só uma cor.</source>
         <translation>&lt;b&gt;Photo :&lt;/b&gt; n&apos;importe quelle photo des thèmes de Qenna, une image de votre ordinateur (le petit dossier) ou aucune photo, juste une couleur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1854"/>
+        <location filename="../src/HelpPanel.cpp" line="1808"/>
         <source>&lt;b&gt;Degradê:&lt;/b&gt; embaixo, em cima, os dois ou vinheta, escuro ou claro, com força e tamanho. É o mesmo degradê do fundo dos temas.</source>
         <translation>&lt;b&gt;Dégradé :&lt;/b&gt; en bas, en haut, les deux ou vignette, sombre ou clair, avec intensité et taille. C&apos;est le même dégradé que le fond des thèmes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1857"/>
+        <location filename="../src/HelpPanel.cpp" line="1811"/>
         <source>&lt;b&gt;Grão:&lt;/b&gt; fino como película de cinema ou grande, virando mancha de pedra ou feltro.</source>
         <translation>&lt;b&gt;Grain :&lt;/b&gt; fin comme une pellicule de cinéma ou gros, jusqu&apos;à devenir une texture de pierre ou de feutre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1859"/>
+        <location filename="../src/HelpPanel.cpp" line="1813"/>
         <source>&lt;b&gt;Texto:&lt;/b&gt; clique num texto da capa pra escolher e arraste pra mover (no meio, ele trava no centro). Tem as fontes que vêm com o Qenna, com busca, negrito, itálico, sublinhado, tamanho e cor. &quot;+ texto&quot; põe uma linha a mais, como o nome da série ou uma frase de efeito.</source>
         <translation>&lt;b&gt;Texte :&lt;/b&gt; cliquez sur un texte de la couverture pour le choisir et faites-le glisser pour le déplacer (au milieu, il s&apos;aimante au centre). Vous avez les polices fournies avec Qenna, avec recherche, gras, italique, souligné, taille et couleur. « + texte » ajoute une ligne de plus, comme le nom de la série ou une accroche.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1865"/>
+        <location filename="../src/HelpPanel.cpp" line="1819"/>
         <source>O título e o autor da capa são os mesmos da folha: mudou num, muda no outro. Quer o nome em duas linhas na capa? Aperte Enter na caixa de texto da aba Texto. A quebra fica só na capa; o projeto continua com o nome inteiro numa linha.</source>
         <translation>Le titre et l&apos;auteur de la couverture sont les mêmes que ceux de la feuille : changez l&apos;un, l&apos;autre change aussi. Vous voulez le nom sur deux lignes sur la couverture ? Appuyez sur Entrée dans la zone de texte de l&apos;onglet Texte. Le retour à la ligne reste sur la couverture ; le projet garde le nom complet sur une ligne.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1869"/>
+        <location filename="../src/HelpPanel.cpp" line="1823"/>
         <source>&quot;Pronto&quot; volta pros campos da folha, e a capa é gravada quando você salva o projeto. Na próxima vez, a capa rápida abre de onde você parou. &quot;Salvar como imagem&quot; baixa a capa em PNG (1600×2400) pra usar fora do Qenna: as fotos e as fontes são livres de direitos.</source>
         <translation>« Terminé » ramène les champs de la feuille, et la couverture est enregistrée quand vous enregistrez le projet. La prochaine fois, la couverture rapide s&apos;ouvre là où vous l&apos;avez laissée. « Enregistrer en image » télécharge la couverture en PNG (1600×2400) pour l&apos;utiliser hors de Qenna : les photos et les polices sont libres de droits.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2370"/>
+        <location filename="../src/HelpPanel.cpp" line="1905"/>
+        <source>O Qenna Writer vem com mais de 500 temas prontos, e você ainda pode criar os seus. Pra abrir, vá na seção Ambiente da barra de cima e clique em Temas (ou em Configurações → Aparência → Tema).</source>
+        <translation>Qenna Writer propose plus de 500 thèmes prêts à l&apos;emploi, et vous pouvez aussi créer les vôtres. Pour les ouvrir, allez dans la section Ambiance de la barre du haut et cliquez sur Thèmes (ou dans Paramètres → Apparence → Thème).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1911"/>
+        <source>Categorias.</source>
+        <translation>Catégories.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1912"/>
+        <source>Na coluna da esquerda: Claros, Amarelados, Escuros, Coloridos, Estampados (com foto ou pintura de fundo) e Animados (com clima na mesa: chuva, neve, cidade, vela...). Embaixo ficam os Favoritos, os Meus temas e o Dia e noite. A busca no topo acha um tema pelo nome.</source>
+        <translation>Dans la colonne de gauche : Clairs, Jaunâtres, Sombres, Colorés, À motifs (avec une photo ou une peinture en fond) et Animés (avec la météo sur le bureau : pluie, neige, ville, bougie...). En dessous, Favoris, Mes thèmes et Jour et nuit. La recherche en haut trouve un thème par son nom.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1917"/>
+        <source>A grade.</source>
+        <translation>La grille.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1918"/>
+        <source>Em cima dela, Tudo, Novidades (os temas desta versão e da anterior) e Últimos usados, e a ordem: a do Qenna, os mais novos, os mais antigos ou pelo nome. Na ordem do Qenna, as recomendações de cada categoria vêm primeiro.</source>
+        <translation>Au-dessus : Tout, Nouveautés (les thèmes de cette version et de la précédente) et Utilisés récemment, ainsi que l&apos;ordre : celui de Qenna, les plus récents, les plus anciens ou par nom. Dans l&apos;ordre de Qenna, les recommandations de chaque catégorie passent en premier.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1923"/>
+        <source>O tema escolhido.</source>
+        <translation>Le thème choisi.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1924"/>
+        <source>À direita, o tema aparece vestindo o app de verdade, nas cenas Escrita, Gavetas e Editor. Arraste a linha da prévia pra comparar com o tema que você usa agora.</source>
+        <translation>À droite, le thème habille la vraie application, dans les scènes Écriture, Tiroirs et Éditeur. Faites glisser la ligne de l&apos;aperçu pour le comparer avec le thème que vous utilisez.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1927"/>
+        <source>Embaixo do nome vêm o autor do tema, quando ele tem um, e o crédito da foto de fundo (o nome abre a foto no site de origem). O selo &quot;Recomendação do desenvolvedor&quot; marca os favoritos do criador do Qenna. O coração guarda o tema nos Favoritos.</source>
+        <translation>Sous le nom figurent l&apos;auteur du thème, s&apos;il en a un, et le crédit de la photo de fond (le nom ouvre la photo sur son site d&apos;origine). Le badge « Recommandé par le développeur » signale les favoris du créateur de Qenna. Le cœur ajoute le thème aux Favoris.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1931"/>
+        <source>Contraste diz se o texto fica confortável de ler, e Parecidos com este sugere temas da mesma família. &quot;Aplicar&quot; usa o tema.</source>
+        <translation>Contraste indique si le texte est confortable à lire, et Thèmes similaires propose des thèmes de la même famille. « Appliquer » utilise le thème.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1936"/>
+        <source>Escolha um tema pra começar e clique em &quot;Personalizar&quot;. Abre o Criador de Temas:</source>
+        <translation>Choisissez un thème de départ et cliquez sur « Personnaliser ». Le Créateur de thèmes s&apos;ouvre :</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1939"/>
+        <source>O app ocupa quase o Criador inteiro, e a faixa embaixo guarda os controles. Clique em qualquer parte do app (fundo, painéis e barras, ícones, folha, título do capítulo, texto, destaque) e a faixa vira os controles daquilo; as pílulas da esquerda fazem o mesmo sem clicar. Um painel pode ter cor só dele.</source>
+        <translation>L&apos;application occupe presque tout le Créateur, et la bande du bas contient les réglages. Cliquez sur n&apos;importe quelle partie de l&apos;application (fond, panneaux et barres, icônes, feuille, titre du chapitre, texte, couleur d&apos;accent) et la bande affiche ses réglages ; les pastilles de gauche font la même chose sans cliquer. Un panneau peut avoir sa propre couleur.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1944"/>
+        <source>No Fundo, a aba &quot;Cor e foto&quot; põe uma imagem sua, e &quot;Degradê e grão&quot; escurece as bordas e dá textura. Com foto, todo seletor de cor abre com as cores tiradas da imagem, prontas pra clicar.</source>
+        <translation>Dans Arrière-plan, l&apos;onglet « Couleur et photo » ajoute une image à vous, et « Dégradé et grain » assombrit les bords et ajoute de la texture. Avec une photo, chaque sélecteur de couleur s&apos;ouvre avec les couleurs tirées de l&apos;image, prêtes à cliquer.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1947"/>
+        <source>&quot;Antes e depois&quot; compara com o tema de partida, e Desfazer volta um passo. Salvar grava o tema em Meus temas. Pelo &quot;…&quot; do lado de Personalizar, você exporta um tema seu pra mandar pra alguém, e &quot;Importar…&quot;, no pé do painel, traz o tema que alguém te mandou.</source>
+        <translation>« Avant et après » compare avec le thème de départ, et Annuler revient d&apos;un pas. Enregistrer range le thème dans Mes thèmes. Avec le « … » à côté de Personnaliser, vous exportez un de vos thèmes pour l&apos;envoyer à quelqu&apos;un, et « Importer… », en bas du panneau, ajoute un thème qu&apos;on vous a envoyé.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1953"/>
+        <source>Em Dia e noite, a troca automática alterna sozinha entre um tema diurno e um noturno, nos horários que você escolher. Se você aplicar um tema na mão com ela ligada, ela se desliga sozinha: o app não fica passando por cima de uma escolha sua.</source>
+        <translation>Dans Jour et nuit, le changement automatique alterne tout seul entre un thème de jour et un thème de nuit, aux heures que vous choisissez. Si vous appliquez un thème à la main pendant qu&apos;il est actif, il se désactive : l&apos;application ne passe pas outre votre choix.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2266"/>
         <source>O Mapa é onde o mundo da sua história ganha forma: continentes, serras, rios, climas, reinos, castelos, estradas e o nome de cada lugar. Ele gera um mundo inteiro a partir de uma semente, e você pode deixar como veio, mexer em tudo ou desenhar do zero. Não confunda com o Mapa-múndi do Pensário, que é a Terra de verdade: este aqui é o seu mundo.</source>
         <translation>La Carte est l&apos;endroit où le monde de votre histoire prend forme : continents, chaînes de montagnes, rivières, climats, royaumes, châteaux, routes et le nom de chaque lieu. Elle génère un monde entier à partir d&apos;une graine, et vous pouvez le laisser tel quel, tout changer ou dessiner à partir de rien. Ne la confondez pas avec la Mappemonde du Pensário, qui est la vraie Terre : celle-ci, c&apos;est votre monde.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2371"/>
+        <location filename="../src/HelpPanel.cpp" line="2267"/>
         <source>Parece muito na primeira vez, mas dá pra começar só arrastando pra mover e usando a rodinha pra chegar perto. O resto você pega quando precisar. Tudo se salva sozinho no projeto, e Ctrl+Z desfaz o que você desenha, constrói e nomeia no mapa.</source>
         <translation>Cela paraît beaucoup la première fois, mais vous pouvez commencer simplement en faisant glisser pour vous déplacer et en utilisant la molette pour vous approcher. Le reste viendra quand il le faudra. Tout s&apos;enregistre tout seul dans le projet, et Ctrl+Z annule ce que vous dessinez, construisez et nommez sur la carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2373"/>
+        <location filename="../src/HelpPanel.cpp" line="2269"/>
         <source>Criando um mapa.</source>
         <translation>Créer une carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2374"/>
+        <location filename="../src/HelpPanel.cpp" line="2270"/>
         <source>Clique no botão Mapa na barra lateral. No primeiro mapa do projeto, a janela Novo mapa já abre sozinha: dê um nome e escolha o tamanho, o estilo (Continente, Arquipélago, Oceânico ou Vazio, que é só mar pra desenhar à mão), o bioma dominante e quanto é oceano. A prévia acompanha, e a mesma semente sempre dá o mesmo mundo. &quot;Gerar territórios e locais&quot; já traz reinos, cidades, estradas e nomes; desmarcado, vem só o relevo e o resto é com você. A setinha ao lado do título troca de mapa, cria outro, regenera, renomeia ou exclui. Um projeto pode ter vários mapas. Se a sua história se passa no espaço, a chave Galáxia, no alto da janela, cria outro tipo de mapa (veja o tópico Galaxy Maps).</source>
         <translation>Cliquez sur le bouton Carte de la barre latérale. Pour la première carte du projet, la fenêtre Nouvelle carte s&apos;ouvre toute seule : donnez-lui un nom et choisissez la taille, le style (Continent, Archipel, Océanique ou Vide, qui n&apos;est que de la mer à dessiner à la main), le biome dominant et la part d&apos;océan. L&apos;aperçu suit, et la même graine donne toujours le même monde. « Générer territoires et lieux » apporte royaumes, villes, routes et noms ; décoché, vous n&apos;avez que le relief et le reste dépend de vous. La petite flèche à côté du titre change de carte, en crée une autre, régénère, renomme ou supprime. Un projet peut avoir plusieurs cartes. Si votre histoire se passe dans l&apos;espace, le sélecteur Galaxie, en haut de la fenêtre, crée un autre type de carte (voir le sujet Galaxy Maps).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2377"/>
+        <location filename="../src/HelpPanel.cpp" line="2273"/>
         <source>Já tem um mapa desenhado?</source>
         <translation>Vous avez déjà une carte dessinée ?</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2378"/>
+        <location filename="../src/HelpPanel.cpp" line="2274"/>
         <source>Na janela Novo mapa, escolha Imagem pronta na chave de cima e abra a imagem (PNG ou JPG), ou arraste o arquivo pra janela. Ela vira o chão do mapa: gira e inclina com a mesa, e dá pra pôr territórios, construções e nomes e usar o Explorar em cima dela. O Qenna acha o mar pela cor da borda da imagem e, na prévia, pinta de azul o que entendeu como mar, pra os territórios ficarem só na terra. Se pegou terra ou deixou mar de fora, ajuste o Mar. Quanto maior o tamanho, mais nítida a imagem fica de perto. Nesse mapa, Área, Pincel e Clima ficam desligados, porque o terreno é a imagem. Pra trocar a imagem ou ajustar o Mar depois, use Gerar: se o tamanho não mudar, os territórios, as construções e os nomes ficam.</source>
         <translation>Dans la fenêtre Nouvelle carte, choisissez Votre image dans le sélecteur du haut et ouvrez l&apos;image (PNG ou JPG), ou faites glisser le fichier sur la fenêtre. Elle devient le sol de la carte : elle tourne et s&apos;incline avec la table, et vous pouvez y placer des territoires, des constructions et des noms et utiliser Explorer par-dessus. Qenna trouve la mer par la couleur du bord de l&apos;image et, dans l&apos;aperçu, peint en bleu ce qu&apos;il a compris comme mer, pour que les territoires restent sur la terre. S&apos;il a pris de la terre ou laissé de la mer, ajustez Mer. Plus la taille est grande, plus l&apos;image est nette de près. Sur cette carte, Zone, Pinceau et Climat sont désactivés, car le terrain est l&apos;image. Pour changer l&apos;image ou ajuster la Mer plus tard, utilisez Générer : si la taille ne change pas, les territoires, les constructions et les noms restent.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2381"/>
+        <location filename="../src/HelpPanel.cpp" line="2277"/>
         <source>Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar. Arrastar com o botão direito gira e inclina, Q e E giram de 15 em 15 graus, e a tecla F enquadra o mapa inteiro de novo. Com um pincel ou outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo.</source>
         <translation>Faites glisser avec le bouton gauche pour vous déplacer et utilisez la molette pour vous approcher. Faire glisser avec le bouton droit pivote et incline, Q et E pivotent de 15 degrés à la fois, et la touche F recadre toute la carte. Avec un pinceau ou un autre outil en main, le bouton du milieu (ou Alt + glisser) déplace toujours.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2385"/>
+        <location filename="../src/HelpPanel.cpp" line="2281"/>
         <source>Um clique com o botão direito, sem arrastar, abre o anel: Mover, Gerar, Área, Pincel, Clima, Territórios, Construir, Nomes e Explorar. A pílula no canto de baixo mostra o que está na sua mão e abre o mesmo anel. Pelo teclado: H move, A área, B pincel, C clima, T territórios, K construir, N nomes, X explorar e R régua. Cada ferramenta leva o mapa pra vista em que ela funciona, e as opções aparecem numa doca que dá pra arrastar pelo título. Esc fecha uma coisa de cada vez e, no fim, volta pro Mover.</source>
         <translation>Un clic droit, sans glisser, ouvre l&apos;anneau : Déplacer, Générer, Zone, Pinceau, Climat, Territoires, Construire, Noms et Explorer. La pastille du coin inférieur montre ce que vous avez en main et ouvre le même anneau. Au clavier : H déplace, A zone, B pinceau, C climat, T territoires, K construire, N noms, X explorer et R règle. Chaque outil amène la carte à la vue où il fonctionne, et ses options apparaissent dans un panneau qu&apos;on fait glisser par le titre. Échap ferme une chose à la fois et, à la fin, revient à Déplacer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2389"/>
+        <location filename="../src/HelpPanel.cpp" line="2285"/>
         <source>O instrumento no canto de baixo junta o que muda o jeito de ver. No disco ficam as vistas: Completo (o terreno com tudo em cima), Atlas (cores lisas, cada reino com a sua), Terreno (só o chão, onde se desenha) e as seis de arte: Tinta, Pergaminho, Carta náutica, Topográfico, Aquarela e Planta de guerra. Clicar de novo na vista de arte abre a lista. O Completo abre quando o mapa tem um território, uma construção ou um nome. Arraste o meio pra girar, clique na agulha pro norte e use o arco da direita pra inclinar. Quem preferir botões pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita), onde também dá pra trocar o visual do terreno e esconder árvores, casas e castelos.</source>
         <translation>L&apos;instrument du coin inférieur réunit ce qui change votre façon de voir. Sur le disque se trouvent les vues : Complet (le terrain avec tout dessus), Atlas (couleurs unies, chaque royaume avec la sienne), Terrain (rien que le sol, où l&apos;on dessine) et les six vues artistiques : Encre, Parchemin, Carte marine, Topographique, Aquarelle et Plan de guerre. Un nouveau clic sur la vue artistique ouvre la liste. Complet s&apos;ouvre quand la carte a un territoire, une construction ou un nom. Faites glisser le centre pour pivoter, cliquez sur l&apos;aiguille pour le nord et utilisez l&apos;arc de droite pour incliner. Si vous préférez des boutons, passez au Cartouche dans les Réglages (l&apos;engrenage de la barre de droite), où vous pouvez aussi changer l&apos;aspect du terrain et masquer arbres, maisons et châteaux.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2392"/>
+        <location filename="../src/HelpPanel.cpp" line="1952"/>
+        <location filename="../src/HelpPanel.cpp" line="2288"/>
         <source>Dia e noite.</source>
         <translation>Jour et nuit.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2393"/>
+        <location filename="../src/HelpPanel.cpp" line="2289"/>
         <source>O sol anda pelo aro do Astrolábio: arraste pra mudar a hora, ou aperte P pra passar o dia sozinho. A hora muda a luz do relevo, e de noite as janelas, as tochas e os faróis acendem.</source>
         <translation>Le soleil parcourt le cercle de l&apos;Astrolabe : faites-le glisser pour changer l&apos;heure, ou appuyez sur P pour laisser passer la journée toute seule. L&apos;heure change la lumière sur le relief, et la nuit les fenêtres, les torches et les phares s&apos;allument.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2396"/>
+        <location filename="../src/HelpPanel.cpp" line="2292"/>
         <source>Desenhando o terreno.</source>
         <translation>Dessiner le terrain.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2397"/>
+        <location filename="../src/HelpPanel.cpp" line="2293"/>
         <source>Área: arraste um retângulo e nasce terra ali dentro. Pincel: Terra, Mar, Montanha, Suavizar e Rio mexem no relevo. Clima: mostra o mapa de clima por cima e dá os pincéis Úmido, Seco e Frio, que decidem o que a terra vira em cada lugar. Shift inverte o pincel (Terra vira Mar), [ e ] mudam o tamanho, e as teclas de 1 a 8 escolhem o pincel. Desenhar é sempre na vista Terreno, e a ferramenta leva você pra lá.</source>
         <translation>Zone : faites glisser un rectangle et la terre naît à l&apos;intérieur. Pinceau : Terre, Mer, Montagne, Adoucir et Rivière modifient le relief. Climat : affiche la carte du climat par-dessus et donne les pinceaux Humide, Sec et Froid, qui décident ce que devient la terre à chaque endroit. Maj inverse le pinceau (Terre devient Mer), [ et ] changent la taille, et les touches 1 à 8 choisissent le pinceau. On dessine toujours dans la vue Terrain, et l&apos;outil vous y amène.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2401"/>
+        <location filename="../src/HelpPanel.cpp" line="2297"/>
         <source>Com &quot;Gerar territórios e locais&quot;, os reinos nascem do terreno, e você edita do seu jeito. Semear: clique no mapa pra plantar o território selecionado, e ele cresce pelo terreno, com a fronteira caindo nas serras, nos vales e na costa; arraste a semente pra mover, e Shift+clique apaga. Pintar: pinte uma área pro território, e a borda continua seguindo o relevo. Neutro: pinte terra sem dono, que vira barreira. O Alcance controla até onde cada um chega. Na lista, você troca a cor e o nome ou apaga, e &quot;+ Novo território&quot; cria outro.</source>
         <translation>Avec « Générer territoires et lieux », les royaumes naissent du terrain, et vous les modifiez à votre façon. Semer : cliquez sur la carte pour planter le territoire sélectionné, et il grandit sur le terrain, la frontière tombant sur les chaînes, les vallées et la côte ; faites glisser la graine pour la déplacer, et Maj+clic la supprime. Peindre : peignez une zone pour le territoire, et le bord suit toujours le relief. Neutre : peignez une terre sans maître, qui devient une barrière. La Portée règle jusqu&apos;où chacun va. Dans la liste, vous changez la couleur et le nom ou supprimez, et « + Nouveau territoire » en crée un autre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2405"/>
         <source>Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai &quot;Pelo vale&quot;, achando o caminho entre dois cliques, ou &quot;À mão&quot;. A engrenagem tem a Escala das construções (o mesmo continente parece maior) e a opção de esconder as cidades e estradas sugeridas.</source>
-        <translation>Avec Construire, le catalogue s&apos;ouvre en bas : Châteaux (un style par peuple, de l&apos;humain à l&apos;elfique, au nain et au sombre), Uniques, Pinceaux (village, ville, culture, forêt, rochers, muraille, route et effacer), Plus, Légendes, Mer et Monuments. Choisissez une carte et cliquez sur la carte du monde. Avec la flèche, cliquez sur une construction pour la sélectionner : la pastille au-dessus donne le nom, la rotation, la taille et la suppression, et faire glisser la déplace. Q et E pivotent, [ et ] changent la taille, et Suppr efface. La route passe « Par la vallée », en trouvant le chemin entre deux clics, ou « À la main ». L&apos;engrenage contient l&apos;Échelle des constructions (le même continent paraît plus grand) et l&apos;option de masquer les villes et routes suggérées.</translation>
+        <translation type="vanished">Avec Construire, le catalogue s&apos;ouvre en bas : Châteaux (un style par peuple, de l&apos;humain à l&apos;elfique, au nain et au sombre), Uniques, Pinceaux (village, ville, culture, forêt, rochers, muraille, route et effacer), Plus, Légendes, Mer et Monuments. Choisissez une carte et cliquez sur la carte du monde. Avec la flèche, cliquez sur une construction pour la sélectionner : la pastille au-dessus donne le nom, la rotation, la taille et la suppression, et faire glisser la déplace. Q et E pivotent, [ et ] changent la taille, et Suppr efface. La route passe « Par la vallée », en trouvant le chemin entre deux clics, ou « À la main ». L&apos;engrenage contient l&apos;Échelle des constructions (le même continent paraît plus grand) et l&apos;option de masquer les villes et routes suggérées.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2408"/>
+        <location filename="../src/HelpPanel.cpp" line="2304"/>
         <source>Nomes.</source>
         <translation>Noms.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2409"/>
+        <location filename="../src/HelpPanel.cpp" line="2305"/>
         <source>O mapa sugere nomes pelo relevo: oceano, mares, serras, florestas, ilhas. Clique num nome pra trocar o texto ou o tamanho e arraste pra mover. &quot;Sugestão&quot; volta pro nome que o mapa deu, e Esconder tira ele do mapa. Clique num lugar vazio pra criar um nome seu; se arrastar enquanto clica, ele segue o traço, ótimo pra rio e serra. Dá pra escolher letras de terra ou de água e quantos nomes o mapa sugere.</source>
         <translation>La carte suggère des noms d&apos;après le relief : océan, mers, chaînes, forêts, îles. Cliquez sur un nom pour changer le texte ou la taille et faites-le glisser pour le déplacer. « Suggestion » revient au nom donné par la carte, et Masquer le retire de la carte. Cliquez sur un endroit vide pour créer votre propre nom ; si vous faites glisser en cliquant, il suit le tracé, idéal pour les rivières et les chaînes. Vous pouvez choisir des lettres de terre ou d&apos;eau et combien de noms la carte suggère.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2412"/>
+        <location filename="../src/HelpPanel.cpp" line="2308"/>
         <source>Explorar: os documentos no mapa.</source>
         <translation>Explorer : les documents sur la carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2413"/>
+        <location filename="../src/HelpPanel.cpp" line="2309"/>
         <source>Com Explorar (X), cada território vira um lugar da sua história. O cartão mostra uma árvore: o mapa, os territórios e, dentro deles, as construções que você batizou e os grupos que criar. Clicar no território leva o mapa até ele e mostra os documentos: &quot;Novo documento&quot; cria um numa gaveta ou no Criador de Mundos, e &quot;Adicionar existente&quot; traz um do projeto. Dá pra arrastar um documento pra outro grupo da árvore. &quot;Grupo dentro de…&quot; cria uma cidade ou uma família. &quot;Filtrar por tag&quot; mostra só o que tem aquela tag e onde está no mapa. Os territórios são os mesmos grupos da barra lateral.</source>
         <translation>Avec Explorer (X), chaque territoire devient un lieu de votre histoire. La fiche montre un arbre : la carte, les territoires et, à l&apos;intérieur, les constructions que vous avez baptisées et les groupes que vous créez. Cliquer sur le territoire y amène la carte et montre ses documents : « Nouveau document » en crée un dans un tiroir ou dans le Créateur de Mondes, et « Ajouter un existant » en apporte un du projet. Vous pouvez faire glisser un document vers un autre groupe de l&apos;arbre. « Groupe dans… » crée une ville ou une famille. « Filtrer par tag » montre seulement ce qui porte ce tag et où c&apos;est sur la carte. Les territoires sont les mêmes groupes que ceux de la barre latérale.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2416"/>
+        <location filename="../src/HelpPanel.cpp" line="2312"/>
         <source>O leitor e as conexões.</source>
         <translation>Le lecteur et les connexions.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2417"/>
+        <location filename="../src/HelpPanel.cpp" line="2313"/>
         <source>Clicar num documento abre o leitor ao lado do mapa, onde dá pra ler, editar, ampliar ou abrir no editor principal. O botão de conexões liga um território a outro: a ligação vira um arco no mapa, e clicar nela abre os dois lados e o texto da conexão lado a lado, bom pra guerras, tratados e rotas.</source>
         <translation>Cliquer sur un document ouvre le lecteur à côté de la carte, où vous pouvez lire, modifier, agrandir ou ouvrir dans l&apos;éditeur principal. Le bouton des connexions relie un territoire à un autre : le lien devient un arc sur la carte, et cliquer dessus ouvre les deux côtés et le texte de la connexion côte à côte, pratique pour les guerres, les traités et les routes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2420"/>
+        <location filename="../src/HelpPanel.cpp" line="2316"/>
         <source>Régua e imagem pro livro.</source>
         <translation>Règle et image pour le livre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2421"/>
+        <location filename="../src/HelpPanel.cpp" line="2317"/>
         <source>A régua (R) mede o caminho: clique pra marcar e dê um duplo clique pra terminar. Ela mostra a distância em léguas e quilômetros e quanto tempo leva a pé, a cavalo ou de barco. O botão de imagem, na barra da direita, exporta a vista de agora como PNG, sem os botões, em 1×, 2× ou 3×, com ou sem a Cartela. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation>La règle (R) mesure le chemin : cliquez pour marquer et double-cliquez pour terminer. Elle montre la distance en lieues et en kilomètres et le temps qu&apos;il faut à pied, à cheval ou en bateau. Le bouton image, sur la barre de droite, exporte la vue actuelle en PNG, sans les boutons, en 1×, 2× ou 3×, avec ou sans le Cartouche. Dans la vue Encre, elle devient la carte des premières pages du livre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2440"/>
+        <location filename="../src/HelpPanel.cpp" line="2336"/>
         <source>O Galaxy Maps é o mapa de quem escreve no espaço: uma galáxia inteira que você atravessa com a rodinha do mouse, do braço espiral até a lua de um planeta. Os planetas têm temperatura, ano e atmosfera calculados pela estrela deles, e cada lugar pode guardar os documentos da sua história.</source>
         <translation>Galaxy Maps est la carte de ceux qui écrivent dans l&apos;espace : une galaxie entière que vous traversez avec la molette, d&apos;un bras spiral jusqu&apos;à la lune d&apos;une planète. Les planètes ont leur température, leur année et leur atmosphère calculées d&apos;après leur étoile, et chaque lieu peut garder les documents de votre histoire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2441"/>
+        <location filename="../src/HelpPanel.cpp" line="2337"/>
         <source>Parece muito na primeira vez, mas dá pra começar só com duas coisas: arrastar pra mover e usar a rodinha pra chegar perto. O resto você pega quando precisar. Colocar, mover e apagar voltam com Ctrl+Z, e a galáxia se salva sozinha.</source>
         <translation>Cela paraît beaucoup la première fois, mais vous pouvez commencer avec deux choses seulement : faire glisser pour vous déplacer et utiliser la molette pour vous approcher. Le reste viendra quand il le faudra. Placer, déplacer et effacer s&apos;annulent avec Ctrl+Z, et la galaxie s&apos;enregistre toute seule.</translation>
     </message>
@@ -7607,7 +7605,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">L&apos;instrument du coin inférieur réunit tout ce qui change votre façon de voir. Sur le disque se trouvent les vues : Complet, Atlas, Ciel (rien que le ciel, sans noms ni orbites) et les six vues artistiques (Encre, Parchemin, Carte stellaire, Topographique, Aquarelle et Plan de guerre), qui s&apos;ouvrent en liste quand vous cliquez à nouveau. Faites glisser le centre pour pivoter, cliquez sur l&apos;aiguille pour revenir au nord, utilisez l&apos;arc de droite pour incliner et le repère du cercle pour avancer le temps. P met les planètes en pause. Si vous préférez des boutons à un instrument, passez au Cartouche dans les Réglages (l&apos;engrenage de la barre de droite).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2481"/>
+        <location filename="../src/HelpPanel.cpp" line="2377"/>
         <source>Conexões e personagens.</source>
         <translation>Connexions et personnages.</translation>
     </message>
@@ -7616,12 +7614,12 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Sur un territoire ou un système, « + Nouvelle connexion… » le relie à un autre : cliquez sur la carte ou choisissez dans la liste. La connexion devient un arc sur la carte et ouvre la vue côte à côte : les deux lieux aux extrémités et, au milieu, le texte de ce qui les unit, pratique pour les guerres, les traités et les routes. Dans n&apos;importe quel lieu, « + Personnage » amène une fiche dans Personnages d&apos;ici, comme quelqu&apos;un qui y vit ou y est né. Cela reste dans la fiche elle-même, dans Lieu actuel et Origine, et tout apparaît aussi dans le Créateur de Mondes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2490"/>
+        <location filename="../src/HelpPanel.cpp" line="2386"/>
         <source>Com Construir (K), o catálogo abre embaixo: astros, luas e cometas, estações, mundos e megaestruturas. Pegue uma peça e aproxime até um sistema abrir: a sombra da peça mostra onde ela vai cair, e a dica diz o que falta. Clique pra pôr. Perto de um planeta, a peça fica em volta dele; longe, em órbita da estrela. Anel orbital e elevador pedem um planeta, e a Esfera de Dyson vai na estrela. Sem peça na mão, clique pra selecionar e arraste pra mudar de órbita. Q e E giram, [ e ] mudam o tamanho e Delete apaga. Estrela nova pode ser posta em qualquer lugar da galáxia.</source>
         <translation>Avec Construire (K), le catalogue s&apos;ouvre en bas : astres, lunes et comètes, stations, mondes et mégastructures. Prenez une pièce et approchez-vous jusqu&apos;à ce qu&apos;un système s&apos;ouvre : l&apos;ombre de la pièce montre où elle tombera, et l&apos;indice dit ce qui manque. Cliquez pour la placer. Près d&apos;une planète, la pièce se met autour d&apos;elle ; plus loin, en orbite de l&apos;étoile. L&apos;anneau orbital et l&apos;ascenseur demandent une planète, et la Sphère de Dyson va sur l&apos;étoile. Sans pièce en main, cliquez pour sélectionner et faites glisser pour changer d&apos;orbite. Q et E pivotent, [ et ] changent la taille et Suppr efface. Une nouvelle étoile peut être placée n&apos;importe où dans la galaxie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1800"/>
+        <location filename="../src/HelpPanel.cpp" line="1755"/>
         <source>Se o seu projeto é de antes da Timeline orgânica existir, provavelmente boa parte dos seus capítulos e cenas não tem marcador nem resumo preenchido, e sem isso a bolinha fica vazada. Em vez de abrir capítulo por capítulo, clique em &quot;capítulos sem data · Preencher&quot; no rodapé da Timeline, ou em ⋯ → Preencher datas e resumos.</source>
         <translation>Si votre projet date d&apos;avant la Chronologie organique, beaucoup de vos chapitres et scènes n&apos;ont sans doute ni repère ni résumé, et sans eux le point reste creux. Au lieu d&apos;ouvrir les chapitres un par un, cliquez sur «&#xa0;chapitres sans date · Remplir&#xa0;» en bas de la Chronologie, ou sur ⋯ → Remplir dates et résumés.</translation>
     </message>
@@ -7638,19 +7636,17 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Il liste d&apos;un coup tous les chapitres et scènes d&apos;un manuscrit, avec un champ repère et un champ résumé par ligne, et enregistre tout en une fois quand vous cliquez sur «&#xa0;Tout enregistrer&#xa0;». Mêmes champs, même effet sur la Chronologie — simplement plus rapide pour remplir un manuscrit entier.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1817"/>
         <source>Por último: se você preferir o jeito antigo de acompanhar personagem por personagem (uma trilha dedicada por personagem, em vez do filtro), tem um botão &quot;Personagens (legado)&quot; que liga esse sistema de volta. Ele vem desligado por padrão porque o filtro + &quot;Presentes:&quot; cobre o mesmo uso de um jeito mais simples, mas a opção continua lá se você preferir.</source>
-        <translation>Enfin&#xa0;: si vous préférez l&apos;ancienne façon de suivre les personnages un par un (une piste dédiée par personnage, au lieu du filtre), un bouton «&#xa0;Personnages (ancien)&#xa0;» réactive ce système. Il est désactivé par défaut parce que le filtre + «&#xa0;Présents&#xa0;:&#xa0;» couvre le même besoin plus simplement, mais l&apos;option reste disponible si vous la préférez.</translation>
+        <translation type="vanished">Enfin&#xa0;: si vous préférez l&apos;ancienne façon de suivre les personnages un par un (une piste dédiée par personnage, au lieu du filtre), un bouton «&#xa0;Personnages (ancien)&#xa0;» réactive ce système. Il est désactivé par défaut parce que le filtre + «&#xa0;Présents&#xa0;:&#xa0;» couvre le même besoin plus simplement, mais l&apos;option reste disponible si vous la préférez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1825"/>
+        <location filename="../src/HelpPanel.cpp" line="1780"/>
         <source>Nota do dev:</source>
         <translation>Note du développeur&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1825"/>
         <source>A Timeline talvez seja a função que pareça mais complexa dentro do app. É UMA MINA DE OURO, mas tem uma leve curva de aprendizado para alcançar seu potencial máximo. Eu pretendo tentar simplificá-la um pouco em versões futuras, mas acredite, vale a pena tentar entendê-la. Especialmente se sua obra exige um bom planejamento cronológico e consistente.</source>
-        <translation>La Chronologie est peut-être la fonction qui paraît la plus complexe de l&apos;application. C&apos;est UNE MINE D&apos;OR, mais elle demande un petit temps d&apos;apprentissage pour atteindre son plein potentiel. J&apos;ai l&apos;intention de la simplifier un peu dans les prochaines versions, mais croyez-moi, cela vaut la peine de la comprendre. Surtout si votre œuvre exige une planification chronologique solide et cohérente.</translation>
+        <translation type="vanished">La Chronologie est peut-être la fonction qui paraît la plus complexe de l&apos;application. C&apos;est UNE MINE D&apos;OR, mais elle demande un petit temps d&apos;apprentissage pour atteindre son plein potentiel. J&apos;ai l&apos;intention de la simplifier un peu dans les prochaines versions, mais croyez-moi, cela vaut la peine de la comprendre. Surtout si votre œuvre exige une planification chronologique solide et cohérente.</translation>
     </message>
     <message>
         <source>O Qenna Writer vem com uma ferramenta separada pra criar a capa do seu livro — o Mira Cover. Ela abre numa janela própria, fora do editor.</source>
@@ -7709,442 +7705,839 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Le Cover Creator n&apos;est pas bien difficile à utiliser&#xa0;: si vous avez l&apos;habitude des éditeurs d&apos;images basiques, vous serez en terrain connu. Sinon, explorez-le. Vous ne le regretterez pas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1883"/>
+        <location filename="../src/HelpPanel.cpp" line="1837"/>
         <source>Às vezes você escreve algo no meio de um capítulo — uma descrição, uma fala marcante, um trecho de worldbuilding solto — e percebe depois que aquilo merece virar um documento próprio numa gaveta, em vez de ficar perdido no meio do texto. Pra isso, você não precisa copiar, colar e reescrever nada na mão: o app faz isso por você.</source>
         <translation>Il arrive que vous écriviez quelque chose au milieu d&apos;un chapitre — une description, une réplique marquante, un bout de construction d&apos;univers — et que vous réalisiez ensuite que cela mérite de devenir un document à part entière dans un tiroir, au lieu de rester perdu au milieu du texte. Pas besoin de copier, coller et réécrire quoi que ce soit à la main&#xa0;: l&apos;application s&apos;en charge.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1890"/>
+        <location filename="../src/HelpPanel.cpp" line="1844"/>
         <source>Selecione o trecho que quer transformar (pode ser uma frase, um parágrafo, ou vários parágrafos — com ou sem marcador/comentário aplicado neles, tanto faz) e escolha &quot;Criar documento disso...&quot; no menu flutuante de seleção.</source>
         <translation>Sélectionnez le passage à transformer (une phrase, un paragraphe ou plusieurs — avec ou sans marqueur/commentaire, peu importe) et choisissez «&#xa0;Créer un document à partir de ceci...&#xa0;» dans le menu flottant de sélection.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1903"/>
+        <location filename="../src/HelpPanel.cpp" line="1857"/>
         <source>É necessário ter pelo menos uma gaveta criada no projeto — se não tiver nenhuma, o app avisa e cancela a ação.</source>
         <translation>Il faut au moins un tiroir dans le projet — s&apos;il n&apos;y en a aucun, l&apos;application vous prévient et annule l&apos;action.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1907"/>
+        <location filename="../src/HelpPanel.cpp" line="1861"/>
         <source>Uma janela abre com:</source>
         <translation>Une fenêtre s&apos;ouvre avec&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1909"/>
+        <location filename="../src/HelpPanel.cpp" line="1863"/>
         <source>Nome do documento.</source>
         <translation>Nom du document.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1910"/>
+        <location filename="../src/HelpPanel.cpp" line="1864"/>
         <source>Já vem sugerido a partir das primeiras palavras do trecho selecionado (até 8 palavras ou ~48 caracteres), mas você pode mudar livremente.</source>
         <translation>Il est déjà suggéré à partir des premiers mots du passage sélectionné (jusqu&apos;à 8 mots ou ~48 caractères), mais vous pouvez le changer librement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1913"/>
+        <location filename="../src/HelpPanel.cpp" line="1867"/>
         <source>Gaveta de destino.</source>
         <translation>Tiroir de destination.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1914"/>
+        <location filename="../src/HelpPanel.cpp" line="1868"/>
         <source>Escolha em qual gaveta o novo documento vai entrar.</source>
         <translation>Choisissez dans quel tiroir ira le nouveau document.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1924"/>
+        <location filename="../src/HelpPanel.cpp" line="1878"/>
         <source>Se a gaveta escolhida for uma gaveta de elemento (Personagens, Cenários ou Objetos), ao confirmar o app abre em seguida o cadastro do elemento (foto, apelido/papel, conforme o tipo) antes de finalizar — o documento nasce já com a ficha certa.</source>
         <translation>Si le tiroir choisi est un tiroir d&apos;élément (Personnages, Lieux ou Objets), l&apos;application ouvre ensuite, à la confirmation, la fiche d&apos;enregistrement de l&apos;élément (photo, surnom/rôle, selon le type) avant de terminer — le document naît directement avec la bonne fiche.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1930"/>
+        <location filename="../src/HelpPanel.cpp" line="1884"/>
         <source>O texto selecionado vira o conteúdo do documento novo, com os parágrafos preservados (linhas separadas por quebra dupla viram parágrafos separados). O trecho original continua no capítulo de onde veio — criar o documento não remove nem corta nada do texto-fonte, só copia.</source>
         <translation>Le texte sélectionné devient le contenu du nouveau document, avec les paragraphes conservés (les lignes séparées par un double saut deviennent des paragraphes distincts). Le passage d&apos;origine reste dans son chapitre — créer le document ne retire ni ne coupe rien du texte source, il ne fait que le copier.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1936"/>
+        <location filename="../src/HelpPanel.cpp" line="1890"/>
         <source>Em resumo, essa é uma função inestimável para:</source>
         <translation>En résumé, c&apos;est une fonction précieuse pour&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1938"/>
+        <location filename="../src/HelpPanel.cpp" line="1892"/>
         <source>Criar personagens, cenários ou outros elementos diretamente do seu texto, sem sair do seu fluxo.</source>
         <translation>Créer des personnages, des lieux ou d&apos;autres éléments directement depuis votre texte, sans casser votre élan.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1941"/>
+        <location filename="../src/HelpPanel.cpp" line="1895"/>
         <source>Gerar documentos de trechos ou passagens importantes da história.</source>
         <translation>Générer des documents à partir de passages ou d&apos;extraits importants de l&apos;histoire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1951"/>
         <source>O Qenna Writer vem com mais de 140 temas prontos, além de deixar você criar os seus próprios do zero. Há várias opções de customização para o app e você pode deixá-lo com a aparência que quiser.</source>
-        <translation>Qenna Writer propose plus de 140 thèmes prêts à l&apos;emploi et vous permet aussi de créer les vôtres de A à Z. Les options de personnalisation sont nombreuses, et vous pouvez donner à l&apos;application l&apos;apparence que vous voulez.</translation>
+        <translation type="vanished">Qenna Writer propose plus de 140 thèmes prêts à l&apos;emploi et vous permet aussi de créer les vôtres de A à Z. Les options de personnalisation sont nombreuses, et vous pouvez donner à l&apos;application l&apos;apparence que vous voulez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1956"/>
         <source>Pra acessar, clique no botão de Temas na barra de ferramentas ou vá em Configurações → Aparência → Tema.</source>
-        <translation>Pour y accéder, cliquez sur le bouton Thèmes dans la barre d’outils ou allez dans Paramètres → Apparence → Thème.</translation>
+        <translation type="vanished">Pour y accéder, cliquez sur le bouton Thèmes dans la barre d’outils ou allez dans Paramètres → Apparence → Thème.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1967"/>
         <source>Busca e filtro.</source>
-        <translation>Recherche et filtre.</translation>
+        <translation type="vanished">Recherche et filtre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1968"/>
         <source>Um campo de busca filtra os temas pelo nome em tempo real. Um menu de categorias ao lado deixa você navegar por grupos.</source>
-        <translation>Un champ de recherche filtre les thèmes par nom en temps réel. Un menu de catégories à côté permet de parcourir les groupes.</translation>
+        <translation type="vanished">Un champ de recherche filtre les thèmes par nom en temps réel. Un menu de catégories à côté permet de parcourir les groupes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1971"/>
         <source>Os grupos principais são:</source>
-        <translation>Les principaux groupes sont&#xa0;:</translation>
+        <translation type="vanished">Les principaux groupes sont&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1973"/>
         <source>Claros — focados em tons brancos ou próximos de branco.</source>
-        <translation>Clairs — axés sur des tons blancs ou presque blancs.</translation>
+        <translation type="vanished">Clairs — axés sur des tons blancs ou presque blancs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1975"/>
         <source>Escuros — focados em tons escurecidos, próximos de cinza e preto.</source>
-        <translation>Sombres — axés sur des tons foncés, proches du gris et du noir.</translation>
+        <translation type="vanished">Sombres — axés sur des tons foncés, proches du gris et du noir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1977"/>
         <source>Amarelados — tons amarelados, amarronzados e quentes.</source>
-        <translation>Jaunâtres — tons jaunâtres, brunâtres et chauds.</translation>
+        <translation type="vanished">Jaunâtres — tons jaunâtres, brunâtres et chauds.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1979"/>
         <source>Coloridos — temas de cores destacadas e fortes.</source>
-        <translation>Colorés — thèmes aux couleurs vives et marquées.</translation>
+        <translation type="vanished">Colorés — thèmes aux couleurs vives et marquées.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1981"/>
         <source>Estampados — temas com imagens de fundo.</source>
-        <translation>À motifs — thèmes avec des images de fond.</translation>
+        <translation type="vanished">À motifs — thèmes avec des images de fond.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1983"/>
         <source>Também há a opção &quot;♥ Favoritos&quot;. Nela, você pode deixar salvos os temas que gosta mais.</source>
-        <translation>Il y a aussi l&apos;option «&#xa0;♥ Favoris&#xa0;». Vous pouvez y garder les thèmes que vous préférez.</translation>
+        <translation type="vanished">Il y a aussi l&apos;option «&#xa0;♥ Favoris&#xa0;». Vous pouvez y garder les thèmes que vous préférez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1986"/>
         <source>Para adicionar um tema aos favoritos, basta clicar no coração que fica no canto de seu card.</source>
-        <translation>Pour ajouter un thème aux favoris, il suffit de cliquer sur le cœur dans le coin de sa carte.</translation>
+        <translation type="vanished">Pour ajouter un thème aux favoris, il suffit de cliquer sur le cœur dans le coin de sa carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1999"/>
         <source>Selecionar e aplicar.</source>
-        <translation>Sélectionner et appliquer.</translation>
+        <translation type="vanished">Sélectionner et appliquer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2000"/>
         <source>Clique num card pra selecioná-lo, depois clique em &quot;Aplicar&quot; pra usar esse tema no app.</source>
-        <translation>Cliquez sur une carte pour la sélectionner, puis sur «&#xa0;Appliquer&#xa0;» pour utiliser ce thème dans l&apos;application.</translation>
+        <translation type="vanished">Cliquez sur une carte pour la sélectionner, puis sur «&#xa0;Appliquer&#xa0;» pour utiliser ce thème dans l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2003"/>
+        <location filename="../src/HelpPanel.cpp" line="1935"/>
         <source>Criar um tema seu.</source>
         <translation>Créer votre propre thème.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2004"/>
         <source>Selecione qualquer tema pronto como base e clique em &quot;Duplicar&quot;:</source>
-        <translation>Sélectionnez n&apos;importe quel thème prêt à l&apos;emploi comme base et cliquez sur «&#xa0;Dupliquer&#xa0;»&#xa0;:</translation>
+        <translation type="vanished">Sélectionnez n&apos;importe quel thème prêt à l&apos;emploi comme base et cliquez sur «&#xa0;Dupliquer&#xa0;»&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2015"/>
         <source>Uma vez feito isso, será aberta uma janela para que você edite o tema selecionado e crie o seu próprio partindo dele.</source>
-        <translation>Une fenêtre s&apos;ouvre alors pour modifier le thème sélectionné et créer le vôtre à partir de lui.</translation>
+        <translation type="vanished">Une fenêtre s&apos;ouvre alors pour modifier le thème sélectionné et créer le vôtre à partir de lui.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2027"/>
         <source>No Editor de Tema, você pode ajustar:</source>
-        <translation>Dans l&apos;Éditeur de thème, vous pouvez régler&#xa0;:</translation>
+        <translation type="vanished">Dans l&apos;Éditeur de thème, vous pouvez régler&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2029"/>
         <source>Nome do tema.</source>
-        <translation>Nom du thème.</translation>
+        <translation type="vanished">Nom du thème.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2030"/>
         <source>Cores principais: cor do texto do editor, fundo da página, texto da UI, texto secundário, cor de destaque.</source>
-        <translation>Couleurs principales&#xa0;: couleur du texte de l&apos;éditeur, fond de la page, texte de l&apos;interface, texte secondaire, couleur d&apos;accent.</translation>
+        <translation type="vanished">Couleurs principales&#xa0;: couleur du texte de l&apos;éditeur, fond de la page, texte de l&apos;interface, texte secondaire, couleur d&apos;accent.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2033"/>
         <source>Fundo da janela: cor do app, cor dos painéis, borda dos painéis — e, se quiser, uma imagem de fundo (com modo de exibição: Centralizar, Repetir, Esticar, Ajustar ou Preencher).</source>
-        <translation>Fond de fenêtre&#xa0;: couleur de l&apos;application, couleur des panneaux, bordure des panneaux — et, si vous le souhaitez, une image de fond (avec mode d&apos;affichage&#xa0;: Centrer, Répéter, Étirer, Ajuster ou Remplir).</translation>
+        <translation type="vanished">Fond de fenêtre&#xa0;: couleur de l&apos;application, couleur des panneaux, bordure des panneaux — et, si vous le souhaitez, une image de fond (avec mode d&apos;affichage&#xa0;: Centrer, Répéter, Étirer, Ajuster ou Remplir).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2037"/>
         <source>Página de texto: opacidade, e sombra projetada (ativar/desativar, cor, raio e deslocamento).</source>
-        <translation>Page de texte&#xa0;: opacité et ombre portée (activer/désactiver, couleur, rayon et décalage).</translation>
+        <translation type="vanished">Page de texte&#xa0;: opacité et ombre portée (activer/désactiver, couleur, rayon et décalage).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2040"/>
         <source>Uma pré-visualização ao lado mostra o resultado em tempo real enquanto você mexe. No final, &quot;Salvar&quot; grava seu tema personalizado na lista (ele aparece separado, com opção de editar de novo depois) ou &quot;Cancelar&quot; descarta.</source>
-        <translation>Un aperçu à côté montre le résultat en temps réel pendant vos réglages. À la fin, «&#xa0;Enregistrer&#xa0;» ajoute votre thème personnalisé à la liste (il apparaît à part, avec la possibilité de le modifier plus tard) ou «&#xa0;Annuler&#xa0;» l&apos;abandonne.</translation>
+        <translation type="vanished">Un aperçu à côté montre le résultat en temps réel pendant vos réglages. À la fin, «&#xa0;Enregistrer&#xa0;» ajoute votre thème personnalisé à la liste (il apparaît à part, avec la possibilité de le modifier plus tard) ou «&#xa0;Annuler&#xa0;» l&apos;abandonne.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2045"/>
         <source>Troca automática por horário.</source>
-        <translation>Changement automatique selon l&apos;heure.</translation>
+        <translation type="vanished">Changement automatique selon l&apos;heure.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2046"/>
         <source>Tem uma opção &quot;Troca automática por horário&quot; que alterna sozinho entre um tema diurno e um noturno, nos horários que você configurar. Pra usar, selecione um tema e marque se ele é o tema do &quot;Dia&quot; ou da &quot;Noite&quot;, depois defina os horários de troca. Se você aplicar um tema manualmente enquanto essa troca automática estiver ligada, ela se desliga sozinha — assim o app não fica sobrescrevendo uma escolha consciente sua.</source>
-        <translation>Une option «&#xa0;Changement automatique selon l&apos;heure&#xa0;» alterne toute seule entre un thème de jour et un thème de nuit, aux heures que vous définissez. Pour l&apos;utiliser, sélectionnez un thème et indiquez s&apos;il s&apos;agit du thème «&#xa0;Jour&#xa0;» ou «&#xa0;Nuit&#xa0;», puis définissez les heures de changement. Si vous appliquez un thème manuellement pendant que ce changement automatique est actif, il se désactive tout seul — ainsi l&apos;application n&apos;écrase pas un choix délibéré de votre part.</translation>
+        <translation type="vanished">Une option «&#xa0;Changement automatique selon l&apos;heure&#xa0;» alterne toute seule entre un thème de jour et un thème de nuit, aux heures que vous définissez. Pour l&apos;utiliser, sélectionnez un thème et indiquez s&apos;il s&apos;agit du thème «&#xa0;Jour&#xa0;» ou «&#xa0;Nuit&#xa0;», puis définissez les heures de changement. Si vous appliquez un thème manuellement pendant que ce changement automatique est actif, il se désactive tout seul — ainsi l&apos;application n&apos;écrase pas un choix délibéré de votre part.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2069"/>
+        <location filename="../src/HelpPanel.cpp" line="1965"/>
         <source>As gavetas documentam o seu mundo: personagens, cenários, lore solta. O Criador de Mundos é onde esse mundo vira uma enciclopédia: os lugares da história e os sistemas que mandam neles (a magia, a política, a religião), cada um como um verbete que você lê e escreve como texto corrido.</source>
         <translation>Les tiroirs documentent votre monde&#xa0;: personnages, décors, lore en vrac. Le Créateur de Mondes est l’endroit où ce monde devient une encyclopédie&#xa0;: les lieux de l’histoire et les systèmes qui les gouvernent (la magie, la politique, la religion), chacun sous forme d’article que vous lisez et écrivez comme un texte suivi.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2074"/>
+        <location filename="../src/HelpPanel.cpp" line="1970"/>
         <source>Pra abrir, clique no botão Construtor na barra superior do editor. A janela abre no modo que você usou por último.</source>
         <translation>Pour l’ouvrir, cliquez sur le bouton Constructeur dans la barre supérieure de l’éditeur. La fenêtre s’ouvre dans le mode que vous avez utilisé en dernier.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2078"/>
+        <location filename="../src/HelpPanel.cpp" line="1974"/>
         <source>Lugares e Sistemas.</source>
         <translation>Lieux et Systèmes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2079"/>
+        <location filename="../src/HelpPanel.cpp" line="1975"/>
         <source>No alto da janela, a chave Lugares | Sistemas troca o que aparece na lista da esquerda. Ao lado, a busca encontra lugares, sistemas, regras e documentos de uma vez só: clicar num resultado abre o verbete ali mesmo.</source>
         <translation>En haut de la fenêtre, le sélecteur Lieux | Systèmes change ce qu’affiche la liste de gauche. À côté, la recherche trouve lieux, systèmes, règles et documents d’un coup&#xa0;: cliquer sur un résultat ouvre l’article sur place.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2092"/>
+        <location filename="../src/HelpPanel.cpp" line="1988"/>
         <source>Clique em &quot;+ Novo sistema&quot; no pé da lista, dê um nome e escolha a categoria (Magia, Política, Religião, Social, Econômico, Militar, Tecnologia, Cosmologia, Organização/Facção, Linhagem, Mitologia ou Outro). Cada sistema pertence a uma categoria só.</source>
         <translation>Cliquez sur «&#xa0;+ Nouveau système&#xa0;» en bas de la liste, donnez-lui un nom et choisissez la catégorie (Magie, Politique, Religion, Social, Économique, Militaire, Technologie, Cosmologie, Organisation/Faction, Lignée, Mythologie ou Autre). Chaque système appartient à une seule catégorie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2097"/>
+        <location filename="../src/HelpPanel.cpp" line="1993"/>
         <source>O verbete.</source>
         <translation>L’article.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2098"/>
+        <location filename="../src/HelpPanel.cpp" line="1994"/>
         <source>No centro, o sistema se lê como um texto: o título, um resumo e, embaixo, as regras e as seções. Regras são as leis do sistema e ganham número (Art. 1, e as regras de dentro dela viram 1.1, 1.2); seções (§) guardam informação solta, mais perto de texto corrido. Use &quot;+ Regra&quot; e &quot;+ Seção&quot; no fim da página, e o ⋯ ao lado de cada título pra criar uma regra ou seção dentro dela, ou pra excluir. Cada trecho salva sozinho enquanto você escreve, e a barra no topo formata o trecho em que o cursor está (e liga o Modo foco).</source>
         <translation>Au centre, le système se lit comme un texte&#xa0;: le titre, un résumé et, en dessous, les règles et les sections. Les règles sont les lois du système et reçoivent un numéro (Art. 1, et les règles qu’elle contient deviennent 1.1, 1.2)&#xa0;; les sections (§) rassemblent des informations libres, plus proches d’un texte suivi. Utilisez «&#xa0;+ Règle&#xa0;» et «&#xa0;+ Section&#xa0;» en bas de la page, et le ⋯ à côté de chaque titre pour créer une règle ou une section à l’intérieur, ou pour la supprimer. Chaque passage s’enregistre tout seul pendant que vous écrivez, et la barre du haut met en forme le passage où se trouve le curseur (et active le Mode concentration).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2106"/>
+        <location filename="../src/HelpPanel.cpp" line="2002"/>
         <source>O espectro.</source>
         <translation>Le spectre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2107"/>
+        <location filename="../src/HelpPanel.cpp" line="2003"/>
         <source>Na margem direita, a barra do Espectro mostra onde o sistema fica na régua da categoria: em Magia, de Soft a Hard; em Política, de Anarquia a Totalitarismo. Clique num ponto da barra pra mudar. Embaixo aparecem o que aquele ponto FAVORECE e o que ele EXIGE da sua história, pra você escolher sabendo das consequências e não só pelo nome bonito. &quot;Ver todos&quot; abre a lista inteira.</source>
         <translation>Dans la marge de droite, la barre du Spectre montre où se situe le système sur l’échelle de sa catégorie&#xa0;: en Magie, de Soft à Hard&#xa0;; en Politique, d’Anarchie à Totalitarisme. Cliquez sur un point de la barre pour le changer. En dessous apparaît ce que ce point FAVORISE et ce qu’il EXIGE de votre histoire, pour choisir en connaissant les conséquences et pas seulement pour le joli nom. «&#xa0;Tout voir&#xa0;» ouvre la liste complète.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2113"/>
+        <location filename="../src/HelpPanel.cpp" line="2009"/>
         <source>Onde o sistema vale.</source>
         <translation>Où le système s’applique.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2114"/>
+        <location filename="../src/HelpPanel.cpp" line="2010"/>
         <source>Um sistema novo é global: vale no mundo inteiro. &quot;Escolher territórios&quot;, em Vale em, prende ele aos lugares que você marcar.</source>
         <translation>Un nouveau système est global&#xa0;: il s’applique au monde entier. «&#xa0;Choisir des territoires&#xa0;», sous S’applique à, le limite aux lieux que vous cochez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2117"/>
+        <location filename="../src/HelpPanel.cpp" line="2013"/>
         <source>No livro.</source>
         <translation>Dans le livre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2118"/>
+        <location filename="../src/HelpPanel.cpp" line="2014"/>
         <source>Selecione um trecho no editor e use &quot;Salvar como menção ao sistema...&quot; no menu de seleção; dá pra prender a menção a uma regra ou seção específica. Ela aparece na margem, em No livro, com o capítulo e a cena de onde veio. Clicar nela leva de volta ao trecho.</source>
         <translation>Sélectionnez un passage dans l’éditeur et utilisez «&#xa0;Enregistrer comme mention du système...&#xa0;» dans le menu de sélection&#xa0;; vous pouvez rattacher la mention à une règle ou à une section précise. Elle apparaît dans la marge, sous Dans le livre, avec le chapitre et la scène d’où elle vient. Cliquer dessus vous ramène au passage.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2131"/>
+        <location filename="../src/HelpPanel.cpp" line="2027"/>
         <source>Lugares.</source>
         <translation>Lieux.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2132"/>
+        <location filename="../src/HelpPanel.cpp" line="2028"/>
         <source>Em Lugares, cada território é um verbete com a lore dele e, embaixo, pastas e documentos (&quot;+ Pasta&quot;, &quot;+ Documento&quot;) pra ruas, prédios, história, o que precisar. A margem direita vira uma ficha: a imagem do lugar (clique nela pra trocar), os Vizinhos, a Gente daqui (personagens cuja ficha diz que nasceram ou moram ali), os sistemas que valem naquele lugar e os eventos da Timeline marcados nele. Menções funcionam igual aos sistemas, com &quot;Salvar como menção ao Território...&quot;.</source>
         <translation>Dans Lieux, chaque territoire est un article avec son lore et, en dessous, des dossiers et des documents («&#xa0;+ Dossier&#xa0;», «&#xa0;+ Document&#xa0;») pour les rues, les bâtiments, l’histoire, tout ce qu’il faut. La marge de droite devient une fiche&#xa0;: l’image du lieu (cliquez dessus pour la changer), les Voisins, les Gens d’ici (personnages dont la fiche dit qu’ils y sont nés ou y vivent), les systèmes qui s’y appliquent et les événements de la Timeline placés là. Les mentions fonctionnent comme pour les systèmes, avec «&#xa0;Enregistrer comme mention du Territoire...&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2140"/>
+        <location filename="../src/HelpPanel.cpp" line="2036"/>
         <source>Vizinhos.</source>
         <translation>Voisins.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2141"/>
+        <location filename="../src/HelpPanel.cpp" line="2037"/>
         <source>&quot;Vincular a…&quot; liga um território a outro. Cada vínculo tem uma página própria: &quot;Escrever o vínculo&quot; abre ela pra você contar como os dois lugares se relacionam (a estrada, a guerra, o rio no meio). Depois de escrito, o botão vira &quot;Ler o vínculo&quot;. O botão direito num território da lista também tem Trocar imagem…, Vincular a… e Excluir território.</source>
         <translation>«&#xa0;Lier à…&#xa0;» relie un territoire à un autre. Chaque lien a sa propre page&#xa0;: «&#xa0;Écrire le lien&#xa0;» l’ouvre pour raconter comment les deux lieux sont liés (la route, la guerre, la rivière entre eux). Une fois écrit, le bouton devient «&#xa0;Lire le lien&#xa0;». Le clic droit sur un territoire de la liste propose aussi Changer l’image…, Lier à… et Supprimer le territoire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2148"/>
+        <location filename="../src/HelpPanel.cpp" line="2044"/>
         <source>Digitando @ no meio do texto, você pode navegar até &quot;Construtor&quot;, escolher um sistema e uma regra dele pra mencionar; Ctrl+clique na menção abre o Criador de Mundos direto ali. O Menu de Referência também mostra territórios e sistemas enquanto você escreve.</source>
         <translation>En tapant @ au milieu du texte, vous pouvez naviguer jusqu’à «&#xa0;Constructeur&#xa0;», choisir un système et l’une de ses règles à mentionner&#xa0;; Ctrl+clic sur la mention ouvre le Créateur de Mondes directement à cet endroit. Le Menu de Référence affiche aussi les territoires et les systèmes pendant que vous écrivez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2204"/>
+        <location filename="../src/HelpPanel.cpp" line="2100"/>
         <source>Toda fala que você escreve com travessão, hífen, aspas ou « » é detectada alguns segundos depois que você para de digitar. O detector lê a cena como uma conversa: quando a tag diz o nome (&quot;— Não. — Klara disse.&quot;), a fala é daquele personagem; quando não diz, ele deduz por quem falou antes e por quem foi chamado pelo nome, e marca a fala como &quot;provável&quot;. Essa aba lista tudo, com um filtro &quot;Fala: Todos ▾&quot; e chips que deixam filtrar por quem mais fala na mesma cena.</source>
         <translation>Chaque réplique écrite avec un tiret, un trait d&apos;union, des guillemets ou « » est détectée quelques secondes après que vous arrêtez d&apos;écrire. Le détecteur lit la scène comme une conversation : quand l&apos;incise nomme quelqu&apos;un (« Non », dit Klara.), la réplique est à ce personnage ; sinon, il la déduit de qui a parlé avant et de qui a été appelé par son nom, et la marque comme « probable ». Cet onglet liste tout, avec un filtre « Parle : Tous ▾ » et des puces pour filtrer par qui d&apos;autre parle dans la même scène.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2211"/>
+        <location filename="../src/HelpPanel.cpp" line="2107"/>
         <source>Fala provável pode estar errada, principalmente em cena com três pessoas conversando. Clique direito no card pra confirmar ou trocar o locutor: o que você corrige nunca é desfeito. Fala de quem não está no elenco (&quot;o porteiro&quot;) fica em Figurantes; atribuir uma delas a um personagem pode transformar a tag em apelido dele. E o × tira uma linha que não é fala, sem ela voltar depois.</source>
         <translation>Une réplique probable peut être fausse, surtout dans une scène où trois personnes parlent. Clic droit sur la carte pour confirmer ou changer qui parle : ce que vous corrigez n&apos;est jamais défait. Les répliques de quelqu&apos;un hors distribution (« le portier ») vont dans Figurants ; en attribuer une à un personnage peut transformer l&apos;incise en alias. Et le × retire une ligne qui n&apos;est pas une réplique, sans qu&apos;elle revienne.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2442"/>
+        <location filename="../src/HelpPanel.cpp" line="2338"/>
         <source>O Galaxy Maps tem dois modos, e você escolhe um ao criar a galáxia: o Astrônomo, pra quem quer escrever, e o Navegador, pra quem quer explorar.</source>
         <translation>Galaxy Maps propose deux modes, et vous en choisissez un en créant la galaxie : Astronome, pour qui veut écrire, et Navigateur, pour qui veut explorer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2444"/>
+        <location filename="../src/HelpPanel.cpp" line="2340"/>
         <source>Criando uma galáxia.</source>
         <translation>Créer une galaxie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2380"/>
-        <location filename="../src/HelpPanel.cpp" line="2462"/>
+        <location filename="../src/HelpPanel.cpp" line="2276"/>
+        <location filename="../src/HelpPanel.cpp" line="2358"/>
         <source>Andando pelo mapa.</source>
         <translation>Se déplacer sur la carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2384"/>
-        <location filename="../src/HelpPanel.cpp" line="2465"/>
+        <location filename="../src/HelpPanel.cpp" line="2280"/>
+        <location filename="../src/HelpPanel.cpp" line="2361"/>
         <source>O anel de ferramentas.</source>
         <translation>L&apos;anneau d&apos;outils.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2466"/>
+        <location filename="../src/HelpPanel.cpp" line="2362"/>
         <source>Um clique com o botão direito, sem arrastar, abre o anel com as ferramentas: Mover, Territórios, Construir, Nomes, Explorar, Editar e Tráfego. A pílula no canto de baixo mostra qual está na sua mão e abre o mesmo anel. Se preferir o teclado: H move, T territórios, K construir, N nomes, X explorar, R régua e C o Caderno. Esc desfaz uma coisa de cada vez: fecha o que está aberto, solta a peça da mão e, no fim, volta pro Mover.</source>
         <translation>Un clic droit, sans glisser, ouvre l&apos;anneau avec les outils : Déplacer, Territoires, Construire, Noms, Explorer, Modifier et Trafic. La pastille du coin inférieur montre celui que vous avez en main et ouvre le même anneau. Si vous préférez le clavier : H déplace, T territoires, K construire, N noms, X explorer, R règle et C le Carnet. Échap défait une chose à la fois : ferme ce qui est ouvert, lâche la pièce en main et, à la fin, revient à Déplacer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2388"/>
-        <location filename="../src/HelpPanel.cpp" line="2469"/>
+        <location filename="../src/HelpPanel.cpp" line="2284"/>
+        <location filename="../src/HelpPanel.cpp" line="2365"/>
         <source>O Astrolábio e as vistas.</source>
         <translation>L&apos;Astrolabe et les vues.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1146"/>
+        <location filename="../src/HelpPanel.cpp" line="282"/>
+        <source>Personalizar as barras</source>
+        <translation>Personnaliser les barres</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="691"/>
+        <source>O Q.</source>
+        <translation>Le Q.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="692"/>
+        <source>O menu do arquivo: voltar ao Menu Principal, criar um projeto novo, abrir, salvar, exportar, a Ajuda e as Configurações.</source>
+        <translation>Le menu fichier : revenir au Menu principal, créer un projet, ouvrir, enregistrer, exporter, l&apos;Aide et les Paramètres.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="694"/>
+        <source>O rolo das seções.</source>
+        <translation>Le rouleau des sections.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="695"/>
+        <source>Editor, Revisão e Ambiente. Gire com a roda do mouse, com um clique ou arrastando, e as ferramentas do lado mudam junto, como um cadeado de segredo.</source>
+        <translation>Éditeur, Révision et Ambiance. Faites-le tourner avec la molette, un clic ou en le faisant glisser, et les outils à côté changent avec lui, comme un cadenas à code.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="697"/>
+        <source>As ferramentas da seção.</source>
+        <translation>Les outils de la section.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="698"/>
+        <source>No Editor: fonte, tamanho, negrito, itálico, sublinhado, tachado, alinhamento, entrelinha, recuo, Página, Imagem e Buscar. Na Revisão: Repetições e Ler em voz alta. No Ambiente: Editor Focado, Modo Foco, Som Imersivo, Temas e Tela cheia.</source>
+        <translation>Dans Éditeur : police, taille, gras, italique, souligné, barré, alignement, interligne, retrait, Page, Image et Rechercher. Dans Révision : Répétitions et Lire à voix haute. Dans Ambiance : Éditeur concentré, Mode concentration, Son immersif, Thèmes et Plein écran.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="701"/>
+        <source>Salvar e opções da barra.</source>
+        <translation>Enregistrer et options de la barre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="702"/>
+        <source>O disquete salva o projeto (Ctrl+S). O botão do lado troca o estilo da barra na hora: abas como no Word, a barra clássica e outros.</source>
+        <translation>La disquette enregistre le projet (Ctrl+S). Le bouton d&apos;à côté change le style de la barre sur-le-champ : onglets comme dans Word, la barre classique et d&apos;autres.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="705"/>
+        <source>Mostra o capítulo, a cena ou o documento aberto. Quando há pra onde ir, aparecem setinhas no canto pra voltar e avançar entre os documentos (Alt+← e Alt+→).</source>
+        <translation>Affiche le chapitre, la scène ou le document ouvert. Quand c&apos;est possible, de petites flèches apparaissent dans le coin pour revenir et avancer entre les documents (Alt+← et Alt+→).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="708"/>
+        <source>Informações da obra, Lousa, Timeline, Mapa, Manuscritos, Outline e Grupos.</source>
+        <translation>Infos du projet, Board, Timeline, Carte, Manuscrits, Outline et Groupes.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="713"/>
+        <location filename="../src/HelpPanel.cpp" line="772"/>
+        <source>A barra da direita.</source>
+        <translation>La barre de droite.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="714"/>
+        <source>As ferramentas do projeto, do outro lado da folha: Criador de Mundos, Menu de Referência, Pensário, Lembretes, Estatísticas e a assistente.</source>
+        <translation>Les outils du projet, de l&apos;autre côté de la feuille : Créateur de Mondes, Menu de Référence, Pensarium, Rappels, Statistiques et l&apos;assistante.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="716"/>
+        <source>A folha.</source>
+        <translation>La feuille.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="717"/>
+        <source>Onde você escreve. Os documentos que você abriu ficam em abinhas no canto de baixo à direita: elas sobem quando o mouse chega lá.</source>
+        <translation>Là où vous écrivez. Les documents que vous avez ouverts restent dans de petits onglets en bas à droite : ils montent quand la souris arrive là.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="733"/>
+        <source>E se o jeito de fábrica não for o seu, quase tudo aqui muda de cara: veja &quot;Personalizar as barras&quot;.</source>
+        <translation>Et si la disposition par défaut ne vous convient pas, presque tout ici peut changer d&apos;allure : voyez « Personnaliser les barres ».</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="742"/>
+        <source>As barras do Qenna mudam de jeito sem mudar de lugar: os mesmos botões, arrumados do modo que combina com você. Tudo fica em Configurações → Aparência, e várias escolhas também estão a um clique, na própria barra.</source>
+        <translation>Les barres de Qenna changent d&apos;allure sans changer de place : les mêmes boutons, disposés comme il vous plaît. Tout se trouve dans Paramètres → Apparence, et plusieurs choix sont aussi à un clic, sur la barre elle-même.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="747"/>
+        <source>A barra de cima.</source>
+        <translation>La barre du haut.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="749"/>
+        <source>São sete estilos. A Giratória é a de fábrica: o Q, um rolo com as seções e as ferramentas da seção do lado. A Clássica é a barra de sempre, com tudo à mostra. As Abas completas, simples, em cartão e de pasta funcionam como no Word: uma aba por seção (Editor, Revisão e Ambiente, mais Mundo quando a barra da direita está desligada). Em Só as abas, a faixa desce por cima do texto quando você clica numa aba e sobe quando volta a escrever.</source>
+        <translation>Il y a sept styles. Rotative est celle par défaut : le Q, un rouleau avec les sections et les outils de la section à côté. Classique est la barre de toujours, avec tout en vue. Onglets complets, simples, en carte et de dossier fonctionnent comme dans Word : un onglet par section (Éditeur, Révision et Ambiance, plus Monde quand la barre de droite est désactivée). En Onglets seuls, le ruban descend sur le texte quand vous cliquez sur un onglet et remonte quand vous reprenez l&apos;écriture.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="755"/>
+        <source>Troque pelo botão do lado do Salvar, ou em Configurações → Aparência → Estilo da barra. Ali também ficam a Posição da barra (de ponta a ponta, como o teto da janela, ou flutuando em cima da folha) e, com ela flutuando, a Largura da barra.</source>
+        <translation>Changez-le avec le bouton à côté d&apos;Enregistrer, ou dans Paramètres → Apparence → Style de la barre. Vous y trouverez aussi la Position de la barre (d&apos;un bout à l&apos;autre, comme le plafond de la fenêtre, ou flottante au-dessus de la feuille) et, quand elle flotte, la Largeur de la barre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="760"/>
+        <source>A barra lateral.</source>
+        <translation>La barre latérale.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="774"/>
+        <source>Uma plaquinha do outro lado da folha com as ferramentas do projeto: Criador de Mundos, Menu de Referência, Pensário, Lembretes, Estatísticas e a assistente. Vem ligada. Desligada (Configurações → Aparência → Barra da direita), esses botões voltam pra barra de cima.</source>
+        <translation>Une petite plaque de l&apos;autre côté de la feuille avec les outils du projet : Créateur de Mondes, Menu de Référence, Pensarium, Rappels, Statistiques et l&apos;assistante. Elle est activée par défaut. Désactivée (Paramètres → Apparence → Barre de droite), ces boutons reviennent dans la barre du haut.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="780"/>
+        <source>Barras em relevo.</source>
+        <translation>Barres en relief.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="781"/>
+        <source>Com essa opção ligada (Configurações → Aparência), as barras paradas perdem a caixa e os botões ficam gravados no fundo do tema. O mouse chega e a barra acorda; sai, e ela volta a dormir devagar. Os botões nunca saem do lugar.</source>
+        <translation>Avec cette option activée (Paramètres → Apparence), les barres au repos perdent leur cadre et les boutons semblent gravés dans le fond du thème. La souris arrive et la barre se réveille ; elle repart, et la barre se rendort doucement. Les boutons ne bougent jamais.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="786"/>
+        <source>Quando não cabe.</source>
+        <translation>Quand ça ne tient pas.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="787"/>
+        <source>Em janela estreita, nenhum botão some: a fileira da barra de cima gira como um carrossel, e as gavetas da barra lateral também, quando são muitas pra altura. A roda do mouse gira, e clicar num botão da ponta traz ele pro meio.</source>
+        <translation>Dans une fenêtre étroite, aucun bouton ne disparaît : la rangée de la barre du haut tourne comme un carrousel, et les tiroirs de la barre latérale aussi quand ils sont trop nombreux pour sa hauteur. La molette la fait tourner, et cliquer sur un bouton au bord l&apos;amène au centre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="814"/>
+        <source>O livro aberto.</source>
+        <translation>Le livre ouvert.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="815"/>
+        <source>A capa, o nome e a contagem do manuscrito aberto. Com mais de um manuscrito, as capas ficam na coluna da esquerda, e clicar numa abre aquele livro. Clique com o botão direito no livro pra renomear, abrir o manuscrito completo ou excluir.</source>
+        <translation>La couverture, le nom et le décompte du manuscrit ouvert. Avec plusieurs manuscrits, les couvertures sont dans la colonne de gauche, et cliquer sur l&apos;une ouvre ce livre. Faites un clic droit sur le livre pour le renommer, ouvrir le manuscrit complet ou le supprimer.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="820"/>
+        <source>Capítulo | Livro inteiro.</source>
+        <translation>Chapitre | Livre entier.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="821"/>
+        <source>Escolhe se o editor mostra um capítulo por vez ou o livro todo numa folha só. Veja &quot;Livro inteiro&quot;, mais abaixo.</source>
+        <translation>Choisit si l&apos;éditeur affiche un chapitre à la fois ou le livre entier sur une seule feuille. Voir « Livre entier » plus bas.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="864"/>
+        <source>Embaixo do botão de novo capítulo ficam a prévia de e-reader (o livro como o leitor vai ver) e as estatísticas do manuscrito. No fim da lista, &quot;Nova parte&quot; agrupa capítulos em partes. E o botão no canto do título da gaveta troca o jeito dela: são vários estilos, de lista a estante de capas.</source>
+        <translation>Sous le bouton de nouveau chapitre se trouvent l&apos;aperçu liseuse (le livre tel que le lecteur le verra) et les statistiques du manuscrit. En fin de liste, « Nouvelle partie » regroupe des chapitres en parties. Et le bouton dans le coin du titre du tiroir change son allure : il y a plusieurs styles, de la liste à l&apos;étagère de couvertures.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="869"/>
+        <source>Livro inteiro</source>
+        <translation>Livre entier</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="871"/>
+        <source>Vire a chave pra Livro inteiro (ou clique com o botão direito no livro e escolha &quot;Abrir manuscrito completo&quot;) e o livro todo abre numa folha só, capítulo atrás de capítulo. Cada capítulo começa numa abertura com o número e o título.</source>
+        <translation>Basculez sur Livre entier (ou faites un clic droit sur le livre et choisissez « Ouvrir le manuscrit complet ») et tout le livre s&apos;ouvre sur une seule feuille, chapitre après chapitre. Chaque chapitre commence par une ouverture avec son numéro et son titre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="875"/>
+        <source>Escrever, colar, apagar, buscar e desfazer valem no livro inteiro, e cada coisa volta pro capítulo certo. As aberturas são protegidas: Backspace no começo de um capítulo não junta ele com o anterior, e apagar um trecho que atravessa capítulos apaga o texto de cada um e deixa as aberturas.</source>
+        <translation>Écrire, coller, effacer, rechercher et annuler fonctionnent dans tout le livre, et chaque modification retourne dans le bon chapitre. Les ouvertures sont protégées : Retour arrière au début d&apos;un chapitre ne le fusionne pas avec le précédent, et effacer un passage qui traverse plusieurs chapitres efface le texte de chacun et laisse les ouvertures.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="879"/>
+        <source>Com o livro aberto, a gaveta vira o sumário: clicar num capítulo rola até ele. Shift+PgUp e Shift+PgDown pulam pro capítulo anterior e o seguinte. O corretor, os diálogos e a Timeline olham o capítulo onde está o cursor, o que deixa o livro leve mesmo quando ele é grande.</source>
+        <translation>Avec le livre ouvert, le tiroir devient la table des matières : cliquer sur un chapitre fait défiler jusqu&apos;à lui. Maj+PgPréc et Maj+PgSuiv passent au chapitre précédent et au suivant. Le correcteur, les dialogues et la Timeline regardent le chapitre où se trouve le curseur, ce qui garde le livre léger même quand il est gros.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="883"/>
+        <source>Voltar a chave pra Capítulo abre o capítulo do cursor, no mesmo ponto do texto. O livro inteiro volta aberto na próxima vez que o projeto abrir.</source>
+        <translation>Revenir sur Chapitre ouvre le chapitre du curseur, au même endroit du texte. Le livre entier se rouvre la prochaine fois que le projet s&apos;ouvre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="887"/>
+        <source>Abertura de capítulo</source>
+        <translation>Ouverture de chapitre</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="889"/>
+        <source>A abertura que começa cada capítulo tem seis estilos: Fios, Nó, Numeral, Romano, Margem e Fleurão. O mesmo nó aparece em miniatura na faixa do documento, em cima da folha. Escolha clicando com o botão direito na abertura ou no nome do documento, ou em Configurações → Escrita.</source>
+        <translation>L&apos;ouverture au début de chaque chapitre a six styles : Filets, Nœud, Chiffre, Romain, Marge et Fleuron. La même marque apparaît en miniature dans la bande du document, au-dessus de la feuille. Choisissez par un clic droit sur l&apos;ouverture ou sur le nom du document, ou dans Paramètres → Écriture.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1011"/>
+        <source>Pra abrir, clique no Q (ou em Arquivo, nas barras com abas) e em &quot;Exportar&quot;. Na barra clássica, é o botão de Exportar.</source>
+        <translation>Pour l&apos;ouvrir, cliquez sur le Q (ou sur Fichier, dans les barres à onglets) puis sur « Exporter ». Dans la barre classique, c&apos;est le bouton Exporter.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1016"/>
+        <source>O painel mostra, à esquerda, a folha do que vai sair, montada pelo próprio exportador. À direita ficam as escolhas.</source>
+        <translation>Le panneau montre, à gauche, la page qui va sortir, composée par l&apos;exportateur lui-même. Les choix sont à droite.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1022"/>
+        <source>A prévia.</source>
+        <translation>L&apos;aperçu.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1023"/>
+        <source>Muda na hora com cada opção. Folheie com as setinhas embaixo dela ou com a roda do mouse em cima da folha. O EPUB aparece numa tela de e-reader; o formato de editora mostra a página de rosto; com um arquivo por capítulo, você vê o primeiro.</source>
+        <translation>Il change aussitôt avec chaque option. Feuilletez-le avec les flèches en dessous ou avec la molette au-dessus de la feuille. L&apos;EPUB apparaît sur un écran de liseuse ; le format éditeur montre la page de titre ; avec un fichier par chapitre, vous voyez le premier.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1029"/>
+        <source>PDF, DOCX, EPUB ou ODT, nas abas do topo. Num roteiro, aparece também o Fountain. O formato escolhido fica lembrado pra próxima vez.</source>
+        <translation>PDF, DOCX, EPUB ou ODT, dans les onglets du haut. Pour un scénario, Fountain apparaît aussi. Le format choisi est mémorisé pour la prochaine fois.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1033"/>
+        <source>O que vai.</source>
+        <translation>Ce qui part.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1034"/>
+        <source>Já abre com o manuscrito inteiro marcado. Clique pra abrir a lista e marcar só alguns capítulos, outro manuscrito ou documentos das gavetas.</source>
+        <translation>Il s&apos;ouvre avec tout le manuscrit déjà coché. Cliquez pour ouvrir la liste et ne cocher que certains chapitres, un autre manuscrit ou des documents des tiroirs.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1038"/>
+        <source>Um arquivo ou um por capítulo.</source>
+        <translation>Un fichier ou un par chapitre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1039"/>
+        <source>Junta tudo num arquivo só, na ordem do livro, ou gera um arquivo pra cada capítulo. Logo embaixo, &quot;Levar os marcadores&quot; decide se os grifos dos Marcadores vão pro arquivo.</source>
+        <translation>Réunit tout dans un seul fichier, dans l&apos;ordre du livre, ou crée un fichier par chapitre. Juste en dessous, « Garder les surlignages » décide si les surlignages des Marqueurs vont dans le fichier.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1043"/>
+        <source>Formato de editora.</source>
+        <translation>Format éditeur.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1044"/>
+        <source>Courier, espaço duplo e uma página de rosto com o seu contato, do jeito que muitas editoras e agentes pedem. Num roteiro, essa chave vira &quot;Numerar as cenas&quot;.</source>
+        <translation>Courier, double interligne et une page de titre avec vos coordonnées, comme le demandent beaucoup d&apos;éditeurs et d&apos;agents. Pour un scénario, cet interrupteur devient « Numéroter les scènes ».</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1047"/>
+        <source>No pé do painel, o nome do que vai sair (&quot;Sai A Travessia.pdf&quot;, ou &quot;Saem 12 arquivos PDF num .zip&quot;), com a contagem de capítulos e palavras. Clique em Exportar e escolha onde salvar. Mais de um arquivo sai empacotado num .zip.</source>
+        <translation>En bas du panneau, le nom de ce qui va sortir (« Sort La Traversée.pdf », ou « Sortent 12 fichiers PDF dans un .zip »), avec le nombre de chapitres et de mots. Cliquez sur Exporter et choisissez où enregistrer. Plusieurs fichiers sortent regroupés dans un .zip.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1051"/>
+        <source>Se uma cena tiver variações, a exportação usa a variação marcada como primária. E o link &quot;Exportar a bíblia do universo…&quot;, no pé, junta o que você criou no Glossário, no Criador de Mundos e no Mapa-múndi num documento só.</source>
+        <translation>Si une scène a des variantes, l&apos;export utilise celle marquée comme principale. Et le lien « Exporter la bible de l&apos;univers… », en bas, rassemble ce que vous avez créé dans le Glossaire, le Créateur de Mondes et la Mappemonde en un seul document.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1068"/>
+        <source>Formatação (seção Editor da barra de cima).</source>
+        <translation>Mise en forme (section Éditeur de la barre du haut).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1070"/>
+        <source>Fonte, tamanho, negrito, itálico, sublinhado, tachado, alinhamento, entrelinha e recuo (&quot;¶&quot;). Fonte, tamanho, entrelinha e recuo não pedem seleção: valem pro documento inteiro que você está editando. A entrelinha também guarda o espaço antes e depois do parágrafo.</source>
+        <translation>Police, taille, gras, italique, souligné, barré, alignement, interligne et retrait (« ¶ »). Police, taille, interligne et retrait ne demandent pas de sélection : ils s&apos;appliquent à tout le document en cours. L&apos;interligne contient aussi l&apos;espace avant et après le paragraphe.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1074"/>
+        <source>O alinhamento tem um extra: a setinha do lado escolhe onde aplicar (só esse documento, todos, só o manuscrito ou só as gavetas).</source>
+        <translation>L&apos;alignement a un bonus : la petite flèche à côté choisit où l&apos;appliquer (ce document seulement, tous, seulement le manuscrit ou seulement les tiroirs).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1087"/>
+        <source>Um menu aparece junto da seleção: formatação, marcador, marcador com comentário, Glossário, criar documento, evento na Timeline, memória, alinhamento e mais. Ele é um carrossel: a fita de botões gira acompanhando o mouse (e com a roda), e os risquinhos embaixo mostram em que grupo você está.</source>
+        <translation>Un menu apparaît près de la sélection : mise en forme, marqueur, marqueur avec commentaire, Glossaire, créer un document, événement dans la Timeline, mémoire, alignement et plus. C&apos;est un carrousel : le ruban de boutons tourne en suivant la souris (et avec la molette), et les petits traits en dessous indiquent dans quel groupe vous êtes.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1092"/>
+        <source>Prefere que ela fique parada? Clique no ↔ da lingueta: o meio para pra você mirar e a fita só gira com o mouse nas pontas. A escolha vale também pra barra de cima e pras gavetas.</source>
+        <translation>Vous préférez qu&apos;il reste immobile ? Cliquez sur le ↔ de la languette : le centre s&apos;arrête pour que vous visiez, et le ruban ne tourne qu&apos;avec la souris aux bords. Le choix vaut aussi pour la barre du haut et les tiroirs.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1099"/>
+        <source>Os dois ficam na seção Ambiente da barra de cima.</source>
+        <translation>Les deux se trouvent dans la section Ambiance de la barre du haut.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1112"/>
+        <source>Página e margens.</source>
+        <translation>Page et marges.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1114"/>
+        <source>O botão Página, na seção Editor, junta o jeito da folha: o modo de página (folhas separadas, como no Word), a largura, o comprimento, as margens e o desenho da quebra de cena. As mesmas opções estão em Configurações → Escrita.</source>
+        <translation>Le bouton Page, dans la section Éditeur, réunit tout ce qui concerne la feuille : le mode page (feuilles séparées, comme dans Word), la largeur, la longueur, les marges et le dessin du changement de scène. Les mêmes options sont dans Paramètres → Écriture.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1120"/>
+        <source>Voltar, avançar e as abas.</source>
+        <translation>Retour, avance et onglets.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1121"/>
+        <source>Cada documento lembra onde o cursor e a rolagem estavam, até de um dia pro outro. Alt+← e Alt+→ (ou os botões laterais do mouse) voltam e avançam entre os documentos, como num navegador. Os documentos abertos ficam em abinhas no canto de baixo à direita, que sobem quando o mouse chega lá.</source>
+        <translation>Chaque document se souvient de la position du curseur et du défilement, même d&apos;un jour à l&apos;autre. Alt+← et Alt+→ (ou les boutons latéraux de la souris) reviennent et avancent entre les documents, comme dans un navigateur. Les documents ouverts restent dans de petits onglets en bas à droite, qui montent quand la souris arrive là.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1181"/>
         <source>Clique com o botão direito no contador. Em &quot;Contar em&quot; você escolhe o que ele conta: só os capítulos do manuscrito, só o documento que está aberto no editor agora, só as gavetas, ou tudo junto. No mesmo menu você escolhe quais métricas aparecem nele (Palavras, Caracteres, Palavras hoje, Páginas, entre outras), o estilo e o tamanho.</source>
         <translation>Faites un clic droit sur le compteur. Dans « Compter dans » vous choisissez ce qu&apos;il compte : seulement les chapitres du manuscrit, seulement le document ouvert dans l&apos;éditeur, seulement les tiroirs, ou tout ensemble. Dans le même menu vous choisissez les mesures affichées (Mots, Caractères, Mots aujourd&apos;hui, Pages, entre autres), le style et la taille.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1154"/>
+        <location filename="../src/HelpPanel.cpp" line="1189"/>
         <source>O modo completo tem três abas: Meta, Sprint e Mês. Na aba Meta você define uma meta — em palavras ou em tempo (minutos escrevendo) — e escolhe se ela conta só os capítulos, só as gavetas, ou tudo. Uma barra fina mostra quanto do dia já saiu, ao lado de quanto tempo falta pra meta reiniciar. Em &quot;Reset&quot;, no pé da aba, você escolhe o horário em que o dia vira ou zera o progresso de hoje, se precisar.</source>
         <translation>Le mode complet a trois onglets : Objectif, Sprint et Mois. Dans l&apos;onglet Objectif, vous définissez un objectif — en mots ou en temps (minutes d&apos;écriture) — et choisissez s&apos;il compte seulement les chapitres, seulement les tiroirs, ou tout. Une barre fine montre où vous en êtes dans la journée, à côté du temps restant avant la remise à zéro. Dans « Remise à zéro », en bas de l&apos;onglet, vous choisissez l&apos;heure à laquelle la journée change ou effacez la progression du jour, si besoin.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1160"/>
+        <location filename="../src/HelpPanel.cpp" line="1195"/>
         <source>Logo abaixo ficam quatro números (sequência atual, recorde, média de palavras e média de tempo por dia) e as barrinhas dos últimos 14 dias: quanto mais alta e mais forte a cor, mais da meta você fez naquele dia.</source>
         <translation>Juste en dessous, quatre chiffres (série actuelle, record, moyenne de mots et de temps par jour) et les barres des 14 derniers jours : plus la barre est haute et la couleur forte, plus vous avez avancé vers l&apos;objectif ce jour-là.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1170"/>
+        <location filename="../src/HelpPanel.cpp" line="1205"/>
         <source>Um sprint é uma corrida contra o tempo: na aba Sprint você define uma duração (padrão 25 minutos) e uma meta de palavras (padrão 300), aperta &quot;Iniciar sprint&quot;, e um cronômetro regressivo aparece junto com a contagem de palavras escritas desde que você começou. Se você trocar de aba, um pontinho na aba Sprint avisa que ele continua correndo. Ao final (ou quando você encerrar), o app mostra quantas palavras saíram e se você bateu a meta do sprint.</source>
         <translation>Un sprint est une course contre la montre : dans l&apos;onglet Sprint, vous définissez une durée (25 minutes par défaut) et un objectif de mots (300 par défaut), appuyez sur « Lancer le sprint », et un compte à rebours apparaît avec le nombre de mots écrits depuis le début. Si vous changez d&apos;onglet, un petit point sur l&apos;onglet Sprint rappelle qu&apos;il tourne toujours. À la fin (ou quand vous l&apos;arrêtez), l&apos;app affiche combien de mots vous avez écrits et si vous avez atteint l&apos;objectif du sprint.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1179"/>
+        <location filename="../src/HelpPanel.cpp" line="1214"/>
         <source>A aba Mês mostra um calendário mensal. A cor de cada dia esquenta conforme a meta, e cada dia mostra até 5 estrelinhas — quanto mais vezes você bateu sua meta diária naquele dia, mais estrelas. Dias de folga aparecem com um ícone de lua. Clicando num dia, você vê os detalhes: quantas palavras escreveu e quanto tempo passou escrevendo. Clicando com o botão direito, você pode marcar ou desmarcar aquele dia como folga, usando o sistema de folgas (explicado mais abaixo).</source>
         <translation>L&apos;onglet Mois affiche un calendrier mensuel. La couleur de chaque jour se réchauffe avec l&apos;objectif, et chaque jour affiche jusqu&apos;à 5 petites étoiles — plus vous avez atteint votre objectif quotidien ce jour-là, plus il y a d&apos;étoiles. Les jours de repos ont une icône de lune. Un clic sur un jour montre les détails : combien de mots vous avez écrits et combien de temps vous avez passé à écrire. Un clic droit permet de marquer ou démarquer ce jour comme jour de repos, avec le système de jours de repos (expliqué plus bas).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1231"/>
+        <location filename="../src/HelpPanel.cpp" line="1266"/>
         <source>Ele é desbloqueado após sua primeira semana completa (7 dias) batendo a meta diária — a partir daí você pode configurar o seu sistema de folgas no link &quot;Folgas&quot;, no pé da aba Meta. Ele funciona assim: cada vez que você bater sua meta diária ou manter sua streak pelo tempo configurado nele, você ganha direito a uma folga, que pode ser marcada no calendário. No dia de folga marcado, se nada for escrito, sua streak não é perdida — afinal foi uma folga.</source>
         <translation>Il se débloque après votre première semaine complète (7 jours) avec l&apos;objectif quotidien atteint — à partir de là, vous pouvez configurer votre système de jours de repos dans le lien « Jours de repos », en bas de l&apos;onglet Objectif. Ça marche ainsi : chaque fois que vous atteignez votre objectif quotidien ou gardez votre série pendant la durée définie, vous gagnez un jour de repos, que vous pouvez marquer dans le calendrier. Un jour de repos marqué, si rien n&apos;est écrit, votre série n&apos;est pas perdue — c&apos;était un jour de repos, après tout.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="1238"/>
+        <location filename="../src/HelpPanel.cpp" line="1273"/>
         <source>Você pode marcar folgas no calendário da aba Mês clicando com o botão direito no dia que deseja folgar. Também é possível guardar folgas e depois tirá-las todas de uma vez quando quiser.</source>
         <translation>Vous pouvez marquer des jours de repos dans le calendrier de l&apos;onglet Mois par un clic droit sur le jour voulu. Vous pouvez aussi mettre des jours de repos de côté et les prendre tous d&apos;un coup quand vous voulez.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2445"/>
+        <location filename="../src/HelpPanel.cpp" line="1623"/>
+        <source>Ela se alimenta sozinha do que você já preenche nos capítulos, e o painel mostra a história como uma mesa de som: cada linha da trama é uma pista, e o capítulo aberto no editor fica marcado. Vem comigo.</source>
+        <translation>Elle se nourrit toute seule de ce que vous remplissez déjà dans les chapitres, et le panneau montre l&apos;histoire comme une table de mixage : chaque ligne de l&apos;intrigue est une piste, et le chapitre ouvert dans l&apos;éditeur est signalé. Suivez-moi.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1634"/>
+        <source>Quando você cria um manuscrito (ou clica com o botão direito nele e escolhe renomear), a folha tem o campo opcional &quot;Quando a história começa&quot;. Esse é o marco zero da sua Timeline: a partir dele, o app sabe distinguir o que é &quot;a história principal&quot; do que é &quot;flashback&quot;. Embaixo do campo aparece o que o Qenna entendeu da data.</source>
+        <translation>Quand vous créez un manuscrit (ou faites un clic droit dessus et choisissez renommer), la feuille a le champ facultatif « Quand l&apos;histoire commence ». C&apos;est le point zéro de votre Timeline : à partir de lui, l&apos;application sait distinguer « l&apos;histoire principale » du « flashback ». Sous le champ apparaît ce que Qenna a compris de la date.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1653"/>
+        <source>Ao criar ou editar um capítulo, a folha tem &quot;Quando se passa&quot; e &quot;Resumo&quot;. Preenchendo os dois, o app cria sozinho o evento daquele capítulo na Timeline, com o resumo como descrição. Embaixo do marcador aparece o que o Qenna entendeu, e dois atalhos ajudam: um copia o marcador do capítulo anterior e o outro soma um dia a ele.</source>
+        <translation>Quand vous créez ou modifiez un chapitre, la feuille a « Quand ça se passe » et « Résumé ». En remplissant les deux, l&apos;application crée toute seule l&apos;événement de ce chapitre dans la Timeline, avec le résumé comme description. Sous le marqueur apparaît ce que Qenna a compris, et deux raccourcis aident : l&apos;un copie le marqueur du chapitre précédent et l&apos;autre lui ajoute un jour.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1659"/>
+        <source>Se um capítulo tiver cenas separadas (lembra do &quot;----&quot;?), cada cena pode ter seu próprio marcador e resumo. Se você não preencher o da cena, ela herda o do capítulo.</source>
+        <translation>Si un chapitre a des scènes séparées (vous vous souvenez du « ---- » ?), chaque scène peut avoir son propre marqueur et son résumé. Si vous ne remplissez pas ceux de la scène, elle hérite de ceux du chapitre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1668"/>
+        <source>Se a data é igual ou depois da data-base, vai pra linha &quot;Narrativa&quot; (a história andando pra frente).</source>
+        <translation>Si la date est égale ou postérieure à la date de base, elle va dans la ligne « Narration » (l&apos;histoire qui avance).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1670"/>
+        <source>Se a data é antes da data-base, vai sozinha pra linha &quot;Flashback&quot;.</source>
+        <translation>Si la date est antérieure à la date de base, elle va toute seule dans la ligne « Flashback ».</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1689"/>
+        <source>— Outro POV: na folha do capítulo ou da cena, &quot;Este capítulo é de outro POV (não do narrador)&quot; aparece quando a obra tem um narrador definido. Marque pra forçar a ramificação mesmo sem os outros dois sinais.</source>
+        <translation>— Un autre point de vue : sur la feuille du chapitre ou de la scène, « Ce chapitre est d&apos;un autre point de vue (pas le narrateur) » apparaît quand l&apos;œuvre a un narrateur défini. Cochez-le pour forcer la ramification même sans les deux autres signes.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1708"/>
+        <source>Os Trilhos.</source>
+        <translation>Les Pistes.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1709"/>
+        <source>É o modo de abertura. À esquerda ficam as linhas (clique numa pra focar nela e esmaecer o resto); em cima, a régua com os capítulos e cenas na ordem de leitura, e o capítulo aberto no editor marcado com um lápis. Cada evento é uma bolinha com a data e o título. Bolinha vazada é capítulo sem data. Quando a história pula muito tempo, o salto vem escrito no trilho.</source>
+        <translation>C&apos;est le mode d&apos;ouverture. Les lignes sont à gauche (cliquez sur l&apos;une pour la mettre en avant et estomper le reste) ; en haut, la règle avec les chapitres et les scènes dans l&apos;ordre de lecture, et le chapitre ouvert dans l&apos;éditeur marqué d&apos;un crayon. Chaque événement est une pastille avec sa date et son titre. Une pastille creuse est un chapitre sans date. Quand l&apos;histoire saute beaucoup de temps, le saut est écrit sur la piste.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1714"/>
+        <source>Embaixo, o Elenco: uma faixa por personagem, mostrando em que capítulos cada um aparece. A divisória entre as linhas e o Elenco se arrasta. Ctrl+roda do mouse (ou Pontos, Títulos e Resumos, no rodapé) muda quanto cada evento mostra.</source>
+        <translation>En dessous, la Distribution : une bande par personnage, qui montre dans quels chapitres chacun apparaît. Le séparateur entre les lignes et la Distribution se fait glisser. Ctrl+molette (ou Points, Titres et Résumés, en bas) change ce que montre chaque événement.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1719"/>
+        <source>O evento aberto.</source>
+        <translation>L&apos;événement ouvert.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1721"/>
+        <source>Clique num evento e o painel da direita abre com a data, o resumo, quem aparece e as ligações (o que vem antes e depois, de onde a linha se separou, onde ela reencontra outra). Dali você abre o capítulo no editor, edita o evento ou exporta ele como documento. Clique no vazio ou aperte Esc pra fechar.</source>
+        <translation>Cliquez sur un événement et le panneau de droite s&apos;ouvre avec la date, le résumé, qui apparaît et les liens (ce qui vient avant et après, d&apos;où la ligne s&apos;est séparée, où elle en retrouve une autre). De là, vous ouvrez le chapitre dans l&apos;éditeur, modifiez l&apos;événement ou l&apos;exportez comme document. Cliquez dans le vide ou appuyez sur Échap pour le fermer.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1727"/>
+        <source>A Trança.</source>
+        <translation>La Tresse.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1729"/>
+        <source>Em cima, a ordem de leitura (como o leitor encontra); embaixo, a ordem da história (quando aconteceu). Um fio liga cada capítulo às duas. Fio que cruza pra trás é flashback, e fios que caem no mesmo ponto acontecem no mesmo dia.</source>
+        <translation>En haut, l&apos;ordre de lecture (tel que le lecteur le découvre) ; en bas, l&apos;ordre de l&apos;histoire (quand c&apos;est arrivé). Un fil relie chaque chapitre aux deux. Un fil qui croise vers l&apos;arrière est un flashback, et les fils qui tombent au même point se passent le même jour.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1735"/>
+        <source>Busca e filtros.</source>
+        <translation>Recherche et filtres.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1736"/>
+        <source>A lupa, no topo, acha um evento pelo nome. Personagem e Lugar deixam em destaque só os eventos de quem você escolher, ou de onde eles aconteceram, e esmaecem o resto.</source>
+        <translation>La loupe, en haut, trouve un événement par son nom. Personnage et Lieu ne mettent en avant que les événements de la personne choisie, ou de l&apos;endroit où ils se sont passés, et estompent le reste.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1741"/>
+        <source>Nem tudo precisa vir do capítulo. Selecione um trecho no editor e use &quot;Criar evento da linha do tempo&quot; no menu de seleção: o evento entra sozinho no capítulo certo. O botão &quot;+ Evento&quot;, no topo, cria um evento sem lugar, que fica na faixa Soltos até você arrastá-lo pra uma linha, na altura do capítulo.</source>
+        <translation>Tout n&apos;a pas à venir du chapitre. Sélectionnez un passage dans l&apos;éditeur et utilisez « Créer un événement dans la chronologie » dans le menu de sélection : l&apos;événement se place tout seul dans le bon chapitre. Le bouton « + Événement », en haut, crée un événement sans place, qui reste dans la bande En vrac jusqu&apos;à ce que vous le fassiez glisser sur une ligne, à hauteur du chapitre.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1745"/>
+        <source>Qualquer evento pode ser arrastado pra outra linha. Sua escolha fica valendo (a detecção automática não desfaz), e o evento aberto mostra que você o moveu, com um Desfazer.</source>
+        <translation>N&apos;importe quel événement peut être glissé vers une autre ligne. Votre choix tient (la détection automatique ne le défait pas), et l&apos;événement ouvert indique que vous l&apos;avez déplacé, avec un Annuler.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1748"/>
+        <source>No ⋯, &quot;Nova linha manual&quot; cria uma linha sua, boa pra lore e worldbuilding. Clique com o botão direito numa linha pra mudar a cor, editar ou excluir. As linhas automáticas (Narrativa, Flashback e as ramificações) não se excluem: elas voltariam sozinhas.</source>
+        <translation>Dans le ⋯, « Nouvelle ligne manuelle » crée une ligne à vous, utile pour le lore et le worldbuilding. Faites un clic droit sur une ligne pour changer sa couleur, la modifier ou la supprimer. Les lignes automatiques (Narration, Flashback et les branches) ne se suppriment pas : elles reviendraient toutes seules.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1774"/>
+        <source>Outros modos e a Timeline antiga.</source>
+        <translation>Autres modes et l&apos;ancienne Timeline.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1775"/>
+        <source>No ⋯ também ficam Ramificações (uma constelação livre) e Espiral, os modos do motor antigo. E &quot;UI Legado&quot; traz de volta a Timeline anterior inteira, com as trilhas por personagem, pra quem prefere o jeito antigo. Um botão nela volta pra Timeline nova.</source>
+        <translation>Le ⋯ contient aussi Branches (une constellation libre) et Spirale, les modes de l&apos;ancien moteur. Et « Ancienne interface » ramène toute la Timeline précédente, avec les pistes par personnage, pour qui préfère l&apos;ancienne façon. Un bouton y ramène à la nouvelle Timeline.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="1780"/>
+        <source>A Timeline talvez seja a função que pareça mais complexa dentro do app. É UMA MINA DE OURO, mas tem uma leve curva de aprendizado para alcançar seu potencial máximo. Vale a pena tentar entendê-la, especialmente se sua obra exige um bom planejamento cronológico e consistente.</source>
+        <translation>La Timeline est peut-être la fonction qui paraît la plus complexe de l&apos;application. C&apos;EST UNE MINE D&apos;OR, mais elle demande un petit temps d&apos;apprentissage pour atteindre tout son potentiel. Ça vaut la peine d&apos;essayer de la comprendre, surtout si votre œuvre exige une planification chronologique solide et cohérente.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2301"/>
+        <source>Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai &quot;Pelo vale&quot;, achando o caminho entre dois cliques, ou &quot;À mão&quot;. A engrenagem tem a Escala do mundo (Normal, Menor, Pequena e Mínima: quanto menor, maior o mesmo continente parece) e a opção de esconder as cidades e estradas sugeridas.</source>
+        <translation>Avec Construire, le catalogue s&apos;ouvre en bas : Châteaux (un style par peuple, de l&apos;humain à l&apos;elfique, au nain et au sombre), Uniques, Pinceaux (village, ville, culture, forêt, rochers, muraille, route et effacer), Plus, Légendes, Mer et Monuments. Choisissez une carte et cliquez sur la carte du monde. Avec la flèche, cliquez sur une construction pour la sélectionner : la pastille au-dessus donne le nom, la rotation, la taille et la suppression, et faire glisser la déplace. Q et E pivotent, [ et ] changent la taille, et Suppr efface. La route passe « Par la vallée », en trouvant le chemin entre deux clics, ou « À la main ». L&apos;engrenage contient l&apos;Échelle du monde (Normale, Plus petit, Petite et Minimale : plus elle est petite, plus le même continent paraît grand) et l&apos;option de masquer les villes et routes suggérées.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2341"/>
         <source>Abra o Mapa na barra lateral, clique na setinha ao lado do título e em &quot;Novo mapa…&quot;. Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha) e depois o modo, nos dois cartões: passe o mouse em cima de um deles pra ver os prós e os contras. Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços e tamanho. No Navegador, você também define a quantidade de sistemas e a mistura de mundos, e pode marcar &quot;Definir o espaço de cada classe&quot; pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia.</source>
         <translation>Ouvrez la Carte dans la barre latérale, cliquez sur la petite flèche à côté du titre, puis sur &quot;Nouvelle carte…&quot;. Dans la fenêtre, choisissez Galaxie sur le sélecteur du haut (pour la première carte du projet, cette fenêtre s&apos;ouvre toute seule), puis le mode, sur les deux cartes : passez la souris sur l&apos;une d&apos;elles pour voir ses avantages et ses inconvénients. Dans Galaxie toute faite se trouvent la Voie lactée, avec le Système solaire à sa place, et d&apos;autres galaxies réelles ; ou inventez la vôtre avec le style, les bras et la taille. Dans le Navigateur, vous réglez aussi le nombre de systèmes et le mélange de mondes, et vous pouvez cocher &quot;Définir la place de chaque classe&quot; pour dire combien la galaxie aura de chaque classe de planète : faites glisser les séparateurs de la barre ou saisissez le pourcentage. L&apos;aperçu suit vos choix. La même graine donne toujours la même galaxie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2448"/>
+        <location filename="../src/HelpPanel.cpp" line="2344"/>
         <source>Os dois modos.</source>
         <translation>Les deux modes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2449"/>
+        <location filename="../src/HelpPanel.cpp" line="2345"/>
         <source>O Navegador já nasce com centenas de sistemas, planetas e luas, e tudo acontece em cima do mapa: você entra nos sistemas, constrói e escreve sobre o que encontrar. O Astrônomo nasce vazio e só existe o que você criar, na ordem que quiser; a tela é feita pra escrever, com o mapa a um clique. O modo é escolhido ao criar: a tela do Astrônomo só existe nas galáxias que nasceram nele. Os passos 3 a 5 são do Astrônomo e, do 6 em diante, do Navegador.</source>
         <translation>Le Navigateur naît avec des centaines de systèmes, de planètes et de lunes, et tout se passe sur la carte : vous entrez dans les systèmes, vous construisez et vous écrivez sur ce que vous trouvez. L&apos;Astronome naît vide et seul existe ce que vous créez, dans l&apos;ordre que vous voulez ; l&apos;écran est fait pour écrire, avec la carte à un clic. Le mode se choisit à la création : l&apos;écran de l&apos;Astronome n&apos;existe que dans les galaxies nées avec lui. Les étapes 3 à 5 concernent l&apos;Astronome et, à partir de la 6, le Navigateur.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2451"/>
+        <location filename="../src/HelpPanel.cpp" line="2347"/>
         <source>Astrônomo: criando.</source>
         <translation>Astronome : créer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2452"/>
+        <location filename="../src/HelpPanel.cpp" line="2348"/>
         <source>A coluna da esquerda guarda o que você criou: os territórios, com os mundos e sistemas de cada um, e os mundos soltos. &quot;+ Território&quot; cria um império, e o &quot;+&quot; abre a aba de planeta novo, colada na coluna: nome (o dado sorteia um), tipo e construções. Enter cria e Esc fecha. O botão direito em qualquer coisa mostra o que dá pra fazer com ela: renomear, trocar o tipo, mover, tornar capital, ver no mapa, excluir. O que você cria e muda aqui volta com Ctrl+Z.</source>
         <translation>La colonne de gauche garde ce que vous avez créé : les territoires, avec les mondes et systèmes de chacun, et les mondes en vrac. &quot;+ Territoire&quot; crée un empire, et le &quot;+&quot; ouvre l&apos;onglet de nouvelle planète, collé à la colonne : nom (le dé en tire un au sort), type et constructions. Entrée crée et Échap ferme. Le clic droit sur n&apos;importe quoi montre ce que vous pouvez en faire : renommer, changer le type, déplacer, en faire une capitale, voir sur la carte, supprimer. Ce que vous créez et modifiez ici s&apos;annule avec Ctrl+Z.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2455"/>
+        <location filename="../src/HelpPanel.cpp" line="2351"/>
         <source>Astrônomo: escrevendo.</source>
         <translation>Astronome : écrire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2456"/>
+        <location filename="../src/HelpPanel.cpp" line="2352"/>
         <source>Selecione um lugar e a folha dele abre no meio, com as fontes do app, formatação, corretor, Modo Foco, imagens e menções com @. A direita mostra onde você está e o planeta em 3D: arraste pra girar, use a rodinha pra aproximar e dê dois cliques pra voltar ao normal. &quot;+ Lua&quot; e &quot;+ Construção&quot; ficam ali mesmo, e &quot;Abrir ficha técnica completa&quot; mostra a aparência, a órbita e os outros dados. O app só gera o que você pedir: &quot;Gerar o que está vazio&quot;, na ficha completa, preenche os campos em branco, e você escolhe se fica com o resultado ou dispensa.</source>
         <translation>Sélectionnez un lieu et sa page s&apos;ouvre au centre, avec les polices de l&apos;appli, la mise en forme, le correcteur, le Mode Focus, les images et les mentions avec @. La droite montre où vous êtes et la planète en 3D : faites glisser pour la faire tourner, utilisez la molette pour zoomer et double-cliquez pour revenir à la normale. &quot;+ Lune&quot; et &quot;+ Construction&quot; sont juste là, et &quot;Ouvrir la fiche technique complète&quot; montre l&apos;apparence, l&apos;orbite et les autres données. L&apos;appli ne génère que ce que vous demandez : &quot;Générer ce qui est vide&quot;, sur la fiche complète, remplit les champs vides, et vous choisissez de garder le résultat ou de l&apos;écarter.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2459"/>
+        <location filename="../src/HelpPanel.cpp" line="2355"/>
         <source>Astrônomo: o mapa.</source>
         <translation>Astronome : la carte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2460"/>
+        <location filename="../src/HelpPanel.cpp" line="2356"/>
         <source>No pé da coluna da esquerda fica o minimapa, só com o que você criou: a rodinha aproxima, arrastar move, o botão direito (ou Ctrl) gira, e clicar num lugar leva até ele. &quot;Ver no mapa&quot; abre o mapa da galáxia inteira, o mesmo do Navegador; &quot;Voltar pro Astrônomo&quot;, ao lado do nome da galáxia, traz você de volta, e a tecla W faz o mesmo.</source>
         <translation>Au pied de la colonne de gauche se trouve la mini-carte, avec seulement ce que vous avez créé : la molette zoome, faire glisser déplace, le bouton droit (ou Ctrl) fait tourner, et cliquer sur un lieu vous y emmène. &quot;Voir sur la carte&quot; ouvre la carte de toute la galaxie, la même que celle du Navigateur ; &quot;Retour à Astronome&quot;, à côté du nom de la galaxie, vous ramène, et la touche W fait de même.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2470"/>
+        <location filename="../src/HelpPanel.cpp" line="2366"/>
         <source>O instrumento no canto de baixo junta tudo o que muda o jeito de ver. No disco ficam as vistas: Completo, Atlas, Céu (só o céu, sem nomes nem órbitas) e as de arte, que abrem numa lista quando você clica de novo. São oito nascidas do espaço (Holograma, Rotas, Domínios, Gravidade, Harmonia, Infravermelho, Raio-X e Chapa de vidro) e seis de papel, como as do Mapa (Tinta, Pergaminho, Carta estelar, Topográfico, Aquarela e Planta de guerra). Cada uma mostra uma coisa: Rotas, como se vai de um lugar a outro; Domínios, quem manda onde; Infravermelho, a temperatura de cada mundo; Raio-X, onde mora o perigo. Arraste o meio pra girar, clique na agulha pra voltar ao norte, use o arco da direita pra inclinar e o marcador do aro pra adiantar o tempo. P pausa os planetas. Quem preferir botões a um instrumento pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita).</source>
         <translation>L&apos;instrument du coin inférieur réunit tout ce qui change votre façon de voir. Sur le disque se trouvent les vues : Complet, Atlas, Ciel (rien que le ciel, sans noms ni orbites) et les vues artistiques, qui s&apos;ouvrent en liste quand vous cliquez à nouveau. Huit sont nées de l&apos;espace (Hologramme, Routes, Domaines, Gravité, Harmonie, Infrarouge, Rayons X et Plaque de verre) et six sont sur papier, comme celles de la Carte (Encre, Parchemin, Carte stellaire, Topographique, Aquarelle et Plan de guerre). Chacune montre une chose : Routes, comment aller d&apos;un lieu à un autre ; Domaines, qui commande où ; Infrarouge, la température de chaque monde ; Rayons X, où habite le danger. Faites glisser le centre pour pivoter, cliquez sur l&apos;aiguille pour revenir au nord, utilisez l&apos;arc de droite pour incliner et le repère du cercle pour avancer le temps. P met les planètes en pause. Si vous préférez des boutons à un instrument, passez au Cartouche dans les Réglages (l&apos;engrenage de la barre de droite).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2477"/>
+        <location filename="../src/HelpPanel.cpp" line="2373"/>
         <source>Escrevendo sobre um lugar.</source>
         <translation>Écrire sur un lieu.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2478"/>
+        <location filename="../src/HelpPanel.cpp" line="2374"/>
         <source>Com Explorar (X), clique em qualquer lugar: o painel abre com a foto, os dados e as abas Visão geral, Documentos, Aqui dentro e Dados. A busca no alto leva o mapa até um nome. &quot;Escrever sobre…&quot; abre um documento preso àquele lugar, e &quot;Salvar em&quot; escolhe onde ele mora: numa gaveta ou no Criador de Mundos, numa pasta com o caminho do lugar. Dá pra mudar depois sem perder o texto. &quot;Lugar aqui&quot; e &quot;Grupo social&quot; criam o que não está no mapa, como uma cidade ou uma família. O documento vazio não fica pra trás.</source>
         <translation>Avec Explorer (X), cliquez sur n&apos;importe quel lieu : le panneau s&apos;ouvre avec la photo, les données et les onglets Vue d&apos;ensemble, Documents, Ici dedans et Données. La recherche en haut amène la carte à un nom. « Écrire sur… » ouvre un document lié à ce lieu, et « Enregistrer dans » choisit où il vit : dans un tiroir ou dans le Créateur de Mondes, dans un dossier suivant le chemin du lieu. Vous pouvez changer plus tard sans perdre le texte. « Lieu ici » et « Groupe social » créent ce qui n&apos;est pas sur la carte, comme une ville ou une famille. Un document vide ne reste pas.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2400"/>
-        <location filename="../src/HelpPanel.cpp" line="2485"/>
+        <location filename="../src/HelpPanel.cpp" line="2296"/>
+        <location filename="../src/HelpPanel.cpp" line="2381"/>
         <source>Territórios.</source>
         <translation>Territoires.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2486"/>
+        <location filename="../src/HelpPanel.cpp" line="2382"/>
         <source>Com Territórios (T), crie um em &quot;+ Novo território&quot;, dê um nome e clique num sistema pra plantar: ele leva junto os vizinhos sem dono dentro do Alcance, e Shift+clique tira. Pintar passa o pincel e os sistemas embaixo entram no território; Neutro faz o contrário. Depois, em Explorar, clicar num território aproxima dele e desfoca o resto da galáxia; &quot;Sair do foco&quot; volta.</source>
         <translation>Avec Territoires (T), créez-en un dans « + Nouveau territoire », donnez-lui un nom et cliquez sur un système pour le planter : il emporte les voisins sans maître à portée, et Maj+clic retire. Peindre passe le pinceau et les systèmes dessous rejoignent le territoire ; Neutre fait l&apos;inverse. Ensuite, dans Explorer, cliquer sur un territoire s&apos;en approche et floute le reste de la galaxie ; « Quitter le focus » revient.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2404"/>
-        <location filename="../src/HelpPanel.cpp" line="2489"/>
+        <location filename="../src/HelpPanel.cpp" line="2300"/>
+        <location filename="../src/HelpPanel.cpp" line="2385"/>
         <source>Construindo.</source>
         <translation>Construire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="307"/>
+        <location filename="../src/HelpPanel.cpp" line="301"/>
         <source>Mapa</source>
         <translation>Carte</translation>
     </message>
@@ -8153,7 +8546,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Ouvrez la Carte dans la barre latérale, cliquez sur la petite flèche à côté du titre puis sur « Nouvelle carte… ». Dans la fenêtre, choisissez Galaxie avec le sélecteur du haut (pour la première carte du projet, cette fenêtre s&apos;ouvre toute seule). Dans Galaxie toute faite, vous trouverez la Voie lactée, avec le Système solaire à sa place, et d&apos;autres galaxies réelles ; ou inventez la vôtre avec le style, les bras, la taille, le nombre de systèmes et le mélange de mondes. Cochez « Définir la place de chaque classe » pour dire combien la galaxie aura de chaque classe de planète : faites glisser les séparateurs de la barre ou saisissez le pourcentage. L&apos;aperçu suit vos choix. La même graine donne toujours la même galaxie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2463"/>
+        <location filename="../src/HelpPanel.cpp" line="2359"/>
         <source>Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar: de longe cada sistema é um ponto, chegando perto ele abre em órbitas, e o planeta vira uma esfera girando; onde mora gente, as cidades acendem no lado da noite. Arrastar com o botão direito gira e inclina o mapa, e a tecla F enquadra tudo de novo. Com outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo. Passe o mouse em cima de um sistema, em Mover ou Explorar, e um card no canto mostra os planetas e os dados dele, sem precisar de zoom. Dá pra desligar nos Ajustes.</source>
         <translation>Faites glisser avec le bouton gauche pour vous déplacer et utilisez la molette pour vous approcher : de loin chaque système est un point, de près il s&apos;ouvre en orbites, et la planète devient une sphère qui tourne ; là où vivent des gens, les villes s&apos;allument du côté nuit. Faire glisser avec le bouton droit pivote et incline la carte, et la touche F recadre tout. Avec un autre outil en main, le bouton du milieu (ou Alt + glisser) déplace toujours. Survolez un système, dans Déplacer ou Explorer, et une fiche dans le coin montre ses planètes et ses données, sans zoom. Vous pouvez la désactiver dans les Réglages.</translation>
     </message>
@@ -8162,127 +8555,127 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">L&apos;instrument du coin inférieur réunit tout ce qui change votre façon de voir. Sur le disque se trouvent les vues : Complet, Atlas, Ciel (rien que le ciel, sans noms ni orbites) et les vues artistiques, qui s&apos;ouvrent en liste quand vous cliquez à nouveau. Neuf sont nées de l&apos;espace (Hologramme, Routes, Domaines, Gravité, Pulsar, Harmonie, Infrarouge, Rayons X et Plaque de verre) et six sont sur papier, comme celles de la Carte (Encre, Parchemin, Carte stellaire, Topographique, Aquarelle et Plan de guerre). Chacune montre une chose : Routes, comment aller d&apos;un lieu à un autre ; Domaines, qui commande où ; Infrarouge, la température de chaque monde ; Rayons X, où habite le danger. Faites glisser le centre pour pivoter, cliquez sur l&apos;aiguille pour revenir au nord, utilisez l&apos;arc de droite pour incliner et le repère du cercle pour avancer le temps. P met les planètes en pause. Si vous préférez des boutons à un instrument, passez au Cartouche dans les Réglages (l&apos;engrenage de la barre de droite).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2473"/>
+        <location filename="../src/HelpPanel.cpp" line="2369"/>
         <source>As classes de planeta.</source>
         <translation>Les classes de planète.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2474"/>
+        <location filename="../src/HelpPanel.cpp" line="2370"/>
         <source>Cada mundo tem uma classe, que diz quanto custa viver nele: I Éden, II Áspero, III Marginal, IV Hostil, V Letal e VI Sem chão. A conta sai da temperatura, da gravidade, do ar e da estrela. A tecla L (ou o botão na barra da direita) acende a vista: a galáxia escurece, cada sistema brilha na cor do melhor mundo que tem e, de perto, cada mundo ganha o selo da classe. Clique numa classe no cartão pra ver só ela. O painel e o Caderno mostram a classe e o porquê, e em Editar você escolhe a classe na mão ou marca que dá pra respirar o ar daquele mundo. A sua escolha fica, mesmo se a temperatura mudar depois.</source>
         <translation>Chaque monde a une classe, qui dit ce qu&apos;il en coûte d&apos;y vivre : I Éden, II Rude, III Marginal, IV Hostile, V Létal et VI Sans sol. Le calcul vient de la température, de la gravité, de l&apos;air et de l&apos;étoile. La touche L (ou le bouton de la barre de droite) allume la vue : la galaxie s&apos;assombrit, chaque système brille de la couleur de son meilleur monde et, de près, chaque monde reçoit le sceau de sa classe. Cliquez sur une classe dans la carte pour ne voir qu&apos;elle. Le panneau et le Carnet montrent la classe et la raison, et dans Modifier vous pouvez choisir la classe à la main ou indiquer que l&apos;air de ce monde est respirable. Votre choix reste, même si la température change ensuite.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2482"/>
+        <location filename="../src/HelpPanel.cpp" line="2378"/>
         <source>Num território ou sistema, &quot;+ Nova conexão…&quot; liga ele a outro: clique no mapa ou escolha na lista. A conexão vira um arco no mapa e abre o lado a lado: os dois lugares nas pontas e, no meio, o texto do que liga os dois, bom pra guerras, tratados e rotas. Em qualquer lugar, &quot;+ Personagem&quot; traz uma ficha pra Personagens daqui, como quem mora ali ou quem nasceu ali. Isso fica na própria ficha, em Origem e &quot;Está em&quot;, e tudo aparece também no Criador de Mundos.</source>
         <translation>Sur un territoire ou un système, « + Nouvelle connexion… » le relie à un autre : cliquez sur la carte ou choisissez dans la liste. La connexion devient un arc sur la carte et ouvre la vue côte à côte : les deux lieux aux extrémités et, au milieu, le texte de ce qui les unit, pratique pour les guerres, les traités et les routes. Dans n&apos;importe quel lieu, « + Personnage » amène une fiche dans Personnages d&apos;ici, comme quelqu&apos;un qui y vit ou y est né. Cela reste dans la fiche elle-même, dans Origine et « Se trouve à », et tout apparaît aussi dans le Créateur de Mondes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2493"/>
+        <location filename="../src/HelpPanel.cpp" line="2389"/>
         <source>Editando os dados.</source>
         <translation>Modifier les données.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2494"/>
+        <location filename="../src/HelpPanel.cpp" line="2390"/>
         <source>Editar fica no anel. Clique num planeta e a aba Editar deixa trocar o tipo, a temperatura, a água, a paisagem, a vegetação, as nuvens, a população, os anéis e as luas; num sistema, a estrela, e tudo em volta dela se recalcula. &quot;Gerar outro visual&quot; sorteia outra aparência sem mudar o resto.</source>
         <translation>Modifier se trouve sur l&apos;anneau. Cliquez sur une planète et l&apos;onglet Modifier permet de changer le type, la température, l&apos;eau, le paysage, la végétation, les nuages, la population, les anneaux et les lunes ; sur un système, l&apos;étoile, et tout autour est recalculé. « Générer un autre aspect » tire une nouvelle apparence sans changer le reste.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2497"/>
+        <location filename="../src/HelpPanel.cpp" line="2393"/>
         <source>O Caderno.</source>
         <translation>Le Carnet.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2498"/>
+        <location filename="../src/HelpPanel.cpp" line="2394"/>
         <source>A tecla C (ou o livrinho na barra da direita) abre a galáxia como um livro de consulta: a árvore de lugares à esquerda, a página do lugar no meio e, enquanto você escreve, a ficha técnica ao lado, pra não precisar sair do texto pra lembrar quanto dura o ano daquele planeta. &quot;Mostrar&quot; filtra a árvore por habitáveis, gasosos ou pelo que já tem nome ou documento. Esc sobe um nível, e &quot;Voltar pro mapa&quot; sai.</source>
         <translation>La touche C (ou le petit livre de la barre de droite) ouvre la galaxie comme un livre de référence : l&apos;arbre des lieux à gauche, la page du lieu au milieu et, pendant que vous écrivez, la fiche technique à côté, pour ne pas quitter le texte afin de vous rappeler la durée de l&apos;année de cette planète. « Afficher » filtre l&apos;arbre par habitables, gazeuses ou ce qui a déjà un nom ou un document. Échap remonte d&apos;un niveau, et « Retour à la carte » sort.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2501"/>
+        <location filename="../src/HelpPanel.cpp" line="2397"/>
         <source>Os detalhes.</source>
         <translation>Les détails.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2502"/>
+        <location filename="../src/HelpPanel.cpp" line="2398"/>
         <source>N põe e troca nomes: clique no vazio pra escrever um nome solto (o nome de um mar de estrelas, por exemplo) e Delete esconde um nome. R mede a distância em anos-luz: clique pra marcar o caminho e dê um duplo clique pra terminar. Tráfego, no anel, enche as rotas e os sistemas de naves. V troca o brilho da galáxia entre Cheio e Limpo, bom pra ler os nomes. E o quadradinho de imagem na barra da direita exporta um PNG da vista de agora, pronto pro livro.</source>
         <translation>N ajoute et change les noms : cliquez dans le vide pour écrire un nom libre (le nom d&apos;une mer d&apos;étoiles, par exemple) et Suppr masque un nom. R mesure la distance en années-lumière : cliquez pour marquer le chemin et double-cliquez pour terminer. Trafic, sur l&apos;anneau, remplit les routes et les systèmes de vaisseaux. V fait passer l&apos;éclat de la galaxie de Plein à Épuré, pratique pour lire les noms. Et le petit carré d&apos;image de la barre de droite exporte un PNG de la vue actuelle, prêt pour le livre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2510"/>
+        <location filename="../src/HelpPanel.cpp" line="2406"/>
         <source>O Glossário guarda as palavras que só existem no seu livro: siglas, facções, lugares, títulos, gírias. Ele mora numa aba própria do Pensário (F4 pra abrir), e alimenta o corretor ortográfico, a Mira e a Bíblia do universo.</source>
         <translation>Le Glossaire garde les mots qui n’existent que dans votre livre&#xa0;: sigles, factions, lieux, titres, argot. Il a son propre onglet dans le Pensarium (F4 pour l’ouvrir), et il alimente le correcteur orthographique, Mira et la Bible de l’univers.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2515"/>
+        <location filename="../src/HelpPanel.cpp" line="2411"/>
         <source>Adicionando pelo texto.</source>
         <translation>Ajouter depuis le texte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2516"/>
+        <location filename="../src/HelpPanel.cpp" line="2412"/>
         <source>Selecione a palavra no editor e use &quot;Adicionar ao Glossário&quot; no menu de seleção (o mesmo item aparece no botão direito de uma palavra que o corretor sublinhou). O popup já mostra a frase em que o termo aparece pela primeira vez no livro, quantas vezes ele aparece e em quantos capítulos; &quot;Ir até a primeira vez&quot; leva direto pra lá.</source>
         <translation>Sélectionnez le mot dans l’éditeur et utilisez «&#xa0;Ajouter au Glossaire&#xa0;» dans le menu de sélection (la même option apparaît au clic droit sur un mot souligné par le correcteur). Le popup montre déjà la phrase où le terme apparaît pour la première fois dans le livre, combien de fois il apparaît et dans combien de chapitres&#xa0;; «&#xa0;Aller à la première fois&#xa0;» vous y emmène directement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2529"/>
+        <location filename="../src/HelpPanel.cpp" line="2425"/>
         <source>Escolha um tipo (sigla, grupo, lugar, título, objeto ou gíria) e escreva a definição. Se o termo tem outras formas no texto, liste em &quot;Também escrito como&quot;, separadas por vírgula: &quot;CAL&quot; e &quot;Comando Alto Leste&quot; viram um termo só, e as contagens somam. Tudo além do termo é opcional. Selecionando uma palavra que já está no glossário (ou uma das outras grafias dela), o popup abre direto na edição.</source>
         <translation>Choisissez un type (sigle, groupe, lieu, titre, objet ou argot) et écrivez la définition. Si le terme a d’autres formes dans le texte, listez-les dans «&#xa0;Aussi écrit&#xa0;», séparées par des virgules&#xa0;: «&#xa0;RWG&#xa0;» et «&#xa0;River Weavers&apos; Guild&#xa0;» deviennent un seul terme, et leurs comptes s’additionnent. Tout sauf le terme est facultatif. Si vous sélectionnez un mot déjà présent dans le glossaire (ou l’une de ses autres graphies), le popup s’ouvre directement en modification.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2536"/>
+        <location filename="../src/HelpPanel.cpp" line="2432"/>
         <source>A aba Glossário.</source>
         <translation>L’onglet Glossaire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2537"/>
+        <location filename="../src/HelpPanel.cpp" line="2433"/>
         <source>Os termos ficam em ordem alfabética, com o alfabeto na borda direita pra pular de letra. Cada verbete mostra o tipo, as outras grafias, a definição e a primeira vez que o termo aparece. Clique num termo pra editar; o botão direito tem Editar, Ir até a primeira vez e Remover termo. A busca no topo procura nos termos, nas outras grafias e nas definições, e &quot;+ Novo termo&quot; cria um do zero.</source>
         <translation>Les termes sont classés par ordre alphabétique, avec l’alphabet sur le bord droit pour sauter d’une lettre à l’autre. Chaque article montre le type, les autres graphies, la définition et la première apparition du terme. Cliquez sur un terme pour le modifier&#xa0;; le clic droit propose Modifier, Aller à la première fois et Supprimer le terme. La recherche en haut fouille les termes, les autres graphies et les définitions, et «&#xa0;+ Nouveau terme&#xa0;» en crée un à partir de zéro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2551"/>
+        <location filename="../src/HelpPanel.cpp" line="2447"/>
         <source>Termo no texto.</source>
         <translation>Terme dans le texte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2552"/>
+        <location filename="../src/HelpPanel.cpp" line="2448"/>
         <source>No editor, os termos do glossário ganham um sublinhado pontilhado discreto. Pare o mouse em cima pra ver a ficha: tipo, definição, a primeira vez e quantas vezes aparece. &quot;1ª vez&quot; leva ao primeiro uso e &quot;Glossário&quot; abre o verbete na aba. Se preferir o texto limpo, desligue em Configurações › Corretor › Termos do glossário no texto.</source>
         <translation>Dans l’éditeur, les termes du glossaire reçoivent un soulignement pointillé discret. Passez la souris dessus pour voir leur fiche&#xa0;: type, définition, première apparition et nombre d’apparitions. «&#xa0;1re fois&#xa0;» mène au premier usage et «&#xa0;Glossaire&#xa0;» ouvre l’article dans l’onglet. Si vous préférez un texte épuré, désactivez-le dans Paramètres › Correcteur › Termes du glossaire dans le texte.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2565"/>
+        <location filename="../src/HelpPanel.cpp" line="2461"/>
         <source>Uma sigla toda em maiúsculas só é reconhecida em maiúsculas: ROTA é o termo, e &quot;rota&quot; continua sendo palavra comum. E o corretor para de marcar como erro cada termo e cada grafia dele, então vale cadastrar os nomes inventados nem que seja só por isso.</source>
         <translation>Un sigle tout en majuscules n’est reconnu qu’en majuscules&#xa0;: ROUTE est le terme, et «&#xa0;route&#xa0;» reste un mot ordinaire. Et le correcteur cesse de signaler comme faute chaque terme et chacune de ses graphies, donc ça vaut la peine d’enregistrer vos noms inventés rien que pour ça.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2694"/>
+        <location filename="../src/HelpPanel.cpp" line="2590"/>
         <source>Os sons ficam em seis cartões: Natureza, Chuva e mar, Lugares, Música calma, Aventura e Suspense. Abra um cartão e clique num som pra tocar. Dá pra misturar: uma música por vez (escolher outra troca a que está tocando) e até 3 sons junto com ela, como chuva, fogueira ou cidade. Clicar de novo num som tira ele da mistura.</source>
         <translation>Les sons sont rangés dans six cartes : Nature, Pluie et mer, Lieux, Musique calme, Aventure et Suspense. Ouvrez une carte et cliquez sur un son pour le lancer. Vous pouvez mélanger : une musique à la fois (en choisir une autre remplace celle en cours) et jusqu&apos;à 3 sons avec elle, comme la pluie, un feu de camp ou la ville. Cliquez à nouveau sur un son pour le retirer du mélange.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2699"/>
+        <location filename="../src/HelpPanel.cpp" line="2595"/>
         <source>Em Mesa você ajusta o volume de cada som e o volume geral, escolhe uma mistura pronta e pode pedir pro som desligar sozinho em 15, 30 ou 60 minutos. A mistura e os volumes ficam salvos pra próxima vez que você abrir o app.</source>
         <translation>Dans Mixage, vous réglez le volume de chaque son et le volume général, choisissez un mélange prêt et pouvez faire s&apos;arrêter le son tout seul au bout de 15, 30 ou 60 minutes. Le mélange et les volumes sont enregistrés pour la prochaine ouverture de l&apos;app.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2703"/>
+        <location filename="../src/HelpPanel.cpp" line="2599"/>
         <source>Gostou de uma combinação? Clique em Salvar esta mistura e dê um nome: ela vira uma pílula ao lado das prontas. Salvar com o mesmo nome atualiza a mistura; duplo clique na pílula renomeia, e o × dela exclui (com Desfazer logo em seguida).</source>
         <translation>Une combinaison vous plaît ? Cliquez sur Enregistrer ce mélange et donnez-lui un nom : il devient une pastille à côté des mélanges prêts. Enregistrer sous le même nom met le mélange à jour ; double-cliquez sur la pastille pour la renommer, et son × la supprime (avec Annuler juste après).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2707"/>
+        <location filename="../src/HelpPanel.cpp" line="2603"/>
         <source>Pra usar suas próprias músicas, coloque arquivos .mp3 ou .ogg na pasta de sons (botão Abrir pasta). Elas aparecem num cartão novo, Suas músicas.</source>
         <translation>Pour utiliser votre propre musique, placez des fichiers .mp3 ou .ogg dans le dossier des sons (bouton Ouvrir le dossier). Ils apparaissent dans une nouvelle carte, Votre musique.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2860"/>
+        <location filename="../src/HelpPanel.cpp" line="2756"/>
         <source>‹ ANTERIOR</source>
         <translation>‹ PRÉCÉDENT</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2861"/>
+        <location filename="../src/HelpPanel.cpp" line="2757"/>
         <source>PRÓXIMO ›</source>
         <translation>SUIVANT ›</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2879"/>
+        <location filename="../src/HelpPanel.cpp" line="2775"/>
         <source>NESTE TÓPICO</source>
         <translation>DANS CETTE RUBRIQUE</translation>
     </message>
@@ -8295,7 +8688,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Pour y accéder, ouvrez le Pensarium et cliquez sur l&apos;icône d&apos;engrenage (⚙) dans l&apos;en-tête. Le Constructeur s&apos;ouvre dans sa propre fenêtre, séparée du reste de l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2091"/>
+        <location filename="../src/HelpPanel.cpp" line="1987"/>
         <source>Criando um sistema.</source>
         <translation>Créer un système.</translation>
     </message>
@@ -8352,7 +8745,7 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Un champ de recherche en haut trouve à la fois systèmes et nœuds, avec un chemin du type «&#xa0;Système ▸ Nœud&#xa0;» — un clic sur un résultat vous y emmène directement.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2147"/>
+        <location filename="../src/HelpPanel.cpp" line="2043"/>
         <source>Referenciando de qualquer lugar.</source>
         <translation>Y faire référence depuis n&apos;importe où.</translation>
     </message>
@@ -8361,37 +8754,37 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">En tapant @ au milieu de votre texte (dans n&apos;importe quel chapitre, scène ou document de tiroir), vous pouvez naviguer jusqu&apos;à «&#xa0;Constructeur&#xa0;» et choisir un système, puis l&apos;un de ses nœuds, à mentionner — Ctrl+clic sur la mention ouvre le Constructeur directement sur ce nœud. Vous pouvez aussi le consulter (en lecture seule) via le Menu de Référence, en choisissant «&#xa0;Constructeur&#xa0;» dans le sélecteur de tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2160"/>
+        <location filename="../src/HelpPanel.cpp" line="2056"/>
         <source>O Pensário é um painel flutuante que reúne várias ferramentas de apoio à escrita num lugar só — pense nele como uma central de anotações e descobertas sobre o seu projeto. Pra abrir, use o atalho F4 (o mesmo fecha).</source>
         <translation>Le Pensarium est un panneau flottant qui réunit plusieurs outils d&apos;aide à l&apos;écriture au même endroit — voyez-le comme une centrale de notes et de découvertes sur votre projet. Pour l&apos;ouvrir, utilisez le raccourci F4 (le même le ferme).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2172"/>
+        <location filename="../src/HelpPanel.cpp" line="2068"/>
         <source>Ele é dividido em abas:</source>
         <translation>Il est divisé en onglets&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2175"/>
+        <location filename="../src/HelpPanel.cpp" line="2071"/>
         <source>Comentários e Memórias.</source>
         <translation>Commentaires et Mémoires.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2176"/>
+        <location filename="../src/HelpPanel.cpp" line="2072"/>
         <source>Essas duas já têm seção própria aqui no Help Panel — Comentários reúne os marcadores comentados do projeto inteiro, Memórias guarda os trechos que você salvou de lado. Dá uma olhada nas seções &quot;Marcadores e Comentários&quot; e &quot;Memórias&quot; se ainda não viu.</source>
         <translation>Ces deux-là ont déjà leur propre section ici, dans le Panneau d&apos;aide — Commentaires réunit les marqueurs commentés de tout le projet, Mémoires conserve les passages que vous avez mis de côté. Jetez un œil aux sections «&#xa0;Marqueurs et Commentaires&#xa0;» et «&#xa0;Mémoires&#xa0;» si ce n&apos;est pas déjà fait.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2181"/>
+        <location filename="../src/HelpPanel.cpp" line="2077"/>
         <source>Notas.</source>
         <translation>Notes.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2182"/>
+        <location filename="../src/HelpPanel.cpp" line="2078"/>
         <source>Notas são lembretes soltos, sem vínculo com nenhum trecho do texto — diferente de Memórias e Comentários, que sempre vêm de algum lugar do seu manuscrito. Clique em &quot;+ Nova nota&quot; pra criar uma, com cor e título opcionais.</source>
         <translation>Les notes sont des pense-bêtes indépendants, sans lien avec un passage du texte — contrairement aux Mémoires et aux Commentaires, qui viennent toujours d&apos;un endroit de votre manuscrit. Cliquez sur «&#xa0;+ Nouvelle note&#xa0;» pour en créer une, avec couleur et titre facultatifs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2203"/>
+        <location filename="../src/HelpPanel.cpp" line="2099"/>
         <source>Diálogos.</source>
         <translation>Dialogues.</translation>
     </message>
@@ -8404,62 +8797,62 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">L&apos;application enregistre une quantité massive de dialogues de votre projet, mais certains peuvent passer entre les mailles — surtout les répliques isolées sans indication directe de qui les prononce, «&#xa0;comme celle-ci.&#xa0;» Cela dit, la grande majorité est enregistrée.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2226"/>
+        <location filename="../src/HelpPanel.cpp" line="2122"/>
         <source>Nomes (o ✦ no canto).</source>
         <translation>Noms (le ✦ dans le coin).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2227"/>
+        <location filename="../src/HelpPanel.cpp" line="2123"/>
         <source>Um gerador de nomes pra quando a inspiração não vem: escolha a categoria (Personagens, Lugares ou Armas), um estilo (varia por categoria — inclui desde nomes reais, com opção de gênero, até estilos inventados), e clique em &quot;Gerar&quot;. Pra estilos gerados (não os de nomes reais), dá pra filtrar o resultado por &quot;Começa com...&quot; e &quot;Termina com...&quot;. Clicar num nome da lista copia ele pra área de transferência.</source>
         <translation>Un générateur de noms pour quand l&apos;inspiration ne vient pas&#xa0;: choisissez la catégorie (Personnages, Lieux ou Armes), un style (variable selon la catégorie — des noms réels, avec option de genre, jusqu&apos;aux styles inventés), puis cliquez sur «&#xa0;Générer&#xa0;». Pour les styles générés (pas les noms réels), vous pouvez filtrer le résultat avec «&#xa0;Commence par...&#xa0;» et «&#xa0;Finit par...&#xa0;». Un clic sur un nom de la liste le copie dans le presse-papiers.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2243"/>
+        <location filename="../src/HelpPanel.cpp" line="2139"/>
         <source>Glossário.</source>
         <translation>Glossaire.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2244"/>
+        <location filename="../src/HelpPanel.cpp" line="2140"/>
         <source>A aba Glossário guarda os termos do seu mundo: siglas, facções, gírias. Ela tem um tópico só dela aqui na Ajuda.</source>
         <translation>L’onglet Glossaire garde les termes de votre monde&#xa0;: sigles, factions, argot. Il a sa propre rubrique ici dans l’Aide.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2254"/>
+        <location filename="../src/HelpPanel.cpp" line="2150"/>
         <source>Dentro de uma gaveta de Personagens, passe o mouse sobre um card: um botãozinho aparece no canto superior direito dele.</source>
         <translation>Dans un tiroir de Personnages, survolez une carte&#xa0;: un petit bouton apparaît dans son coin supérieur droit.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2266"/>
+        <location filename="../src/HelpPanel.cpp" line="2162"/>
         <source>Arraste esse botão até outro personagem e solte. Se ainda não existir um vínculo entre os dois, abre a criação:</source>
         <translation>Faites glisser ce bouton sur un autre personnage et relâchez-le. S&apos;il n&apos;existe pas encore de lien entre les deux, la création s&apos;ouvre&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2278"/>
+        <location filename="../src/HelpPanel.cpp" line="2174"/>
         <source>Escolha um tipo (a lista já vem com várias opções prontas, organizadas por categoria — Família, Romântico, Social, Conflito e Poder — com alternância entre versão masculina/feminina, mas você também pode digitar um tipo personalizado), escreva uma descrição/histórico se quiser, e escolha a cor da linha. Note que essa opção só fica disponível quando a gaveta está exibindo os cards numa grade de até 2 colunas (grades mais densas não desenham vínculos).</source>
         <translation>Choisissez un type (la liste propose déjà plusieurs options prêtes, organisées par catégorie — Famille, Romantique, Social, Conflit et Pouvoir — avec une bascule entre version masculine et féminine, mais vous pouvez aussi saisir un type personnalisé), écrivez une description ou un historique si vous le souhaitez, et choisissez la couleur de la ligne. Notez que cette option n&apos;est disponible que lorsque le tiroir affiche les cartes en grille de 2 colonnes maximum (les grilles plus denses ne dessinent pas les liens).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2286"/>
+        <location filename="../src/HelpPanel.cpp" line="2182"/>
         <source>Feito isso, uma linha conectando os dois cards aparece na gaveta. Passe o mouse sobre a linha pra ver o tipo do vínculo, ou clique nela pra abrir a visão de leitura:</source>
         <translation>Une fois cela fait, une ligne reliant les deux cartes apparaît dans le tiroir. Survolez la ligne pour voir le type de lien, ou cliquez dessus pour ouvrir la vue de lecture&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2298"/>
+        <location filename="../src/HelpPanel.cpp" line="2194"/>
         <source>Nessa visão, você pode editar o vínculo (lápis), criar um documento a partir dele — já sugerindo o nome &quot;Fulano ↔ Beltrana&quot; e pedindo a gaveta de destino —, excluir ou fechar. Excluir um personagem remove automaticamente todos os vínculos que ele tinha.</source>
         <translation>Dans cette vue, vous pouvez modifier le lien (crayon), créer un document à partir de lui — avec le nom «&#xa0;Untel ↔ Unetelle&#xa0;» déjà suggéré et le choix du tiroir de destination —, le supprimer ou fermer. Supprimer un personnage retire automatiquement tous ses liens.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2310"/>
+        <location filename="../src/HelpPanel.cpp" line="2206"/>
         <source>Pra acessar, abra o Pensário (F4) e clique no ícone de mapa no cabeçalho dele. Ele abre num painel próprio, flutuante e redimensionável.</source>
         <translation>Pour y accéder, ouvrez le Pensarium (F4) et cliquez sur l&apos;icône de carte dans son en-tête. Elle s&apos;ouvre dans son propre panneau, flottant et redimensionnable.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2322"/>
+        <location filename="../src/HelpPanel.cpp" line="2218"/>
         <source>Você pode navegar por &quot;Ir para local&quot;, escolhendo País, Estado e Cidade em sequência, ou buscar direto pelo nome (a busca sugere países, estados e cidades conforme você digita). Clicar em qualquer lugar do mapa mostra um card com informações dele (capital e população, no caso de países; população, no caso de cidades). Também há uma régua pra medir distância entre dois pontos, e botões pra alternar entre mapa simples ou texturizado, e entre projeção plana ou globo 3D.</source>
         <translation>Vous pouvez naviguer via «&#xa0;Aller à un lieu&#xa0;», en choisissant Pays, État et Ville à la suite, ou chercher directement par nom (la recherche suggère pays, États et villes pendant la saisie). Un clic n&apos;importe où sur la carte affiche une fiche d&apos;informations (capitale et population pour les pays&#xa0;; population pour les villes). Il y a aussi une règle pour mesurer la distance entre deux points, et des boutons pour basculer entre carte simple ou texturée, et entre projection plane ou globe 3D.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2338"/>
+        <location filename="../src/HelpPanel.cpp" line="2234"/>
         <source>Pra fixar um marcador de referência (pin) num local, use o botão de fixar pin na barra de navegação e clique no mapa. O popup do pin pede um nome, uma nota opcional, e permite vincular esse pin a qualquer elemento das suas gavetas (um personagem, por exemplo) — ou deixar sem vínculo. Clicar num pin já existente reabre esse popup pra editar.</source>
         <translation>Pour poser une épingle de référence sur un lieu, utilisez le bouton épingle de la barre de navigation et cliquez sur la carte. La fenêtre de l&apos;épingle demande un nom, une note facultative, et permet de la lier à n&apos;importe quel élément de vos tiroirs (un personnage, par exemple) — ou de la laisser sans lien. Un clic sur une épingle existante rouvre cette fenêtre pour la modifier.</translation>
     </message>
@@ -8476,87 +8869,87 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">Un détail pas évident&#xa0;: les termes du Glossaire ne sont pas mis en évidence dans le texte, mais le correcteur orthographique cesse de les souligner comme des fautes — cela vaut donc la peine d&apos;enregistrer les noms ou termes inventés rien que pour cet avantage, même si vous ne rouvrez jamais le panneau.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2578"/>
+        <location filename="../src/HelpPanel.cpp" line="2474"/>
         <source>O botão de Estatísticas fica na barra superior do editor, junto dos botões de Construtor, Pensário e Menu de Referência. Clique nele pra abrir o painel.</source>
         <translation>Le bouton Statistiques se trouve dans la barre supérieure de l&apos;éditeur, avec les boutons Constructeur, Pensarium et Menu de Référence. Cliquez dessus pour ouvrir le panneau.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2590"/>
+        <location filename="../src/HelpPanel.cpp" line="2486"/>
         <source>O painel tem duas partes: uma visão geral do projeto, e um mergulho fundo em cada personagem.</source>
         <translation>Le panneau comporte deux parties&#xa0;: une vue d&apos;ensemble du projet et une plongée détaillée dans chaque personnage.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2595"/>
+        <location filename="../src/HelpPanel.cpp" line="2491"/>
         <source>Visão geral.</source>
         <translation>Vue d&apos;ensemble.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2596"/>
+        <location filename="../src/HelpPanel.cpp" line="2492"/>
         <source>Logo no topo, uma fileira com a foto de todos os personagens do projeto. Clicar em qualquer um deles abre a página individual dele (item 2 abaixo).</source>
         <translation>Tout en haut, une rangée avec la photo de tous les personnages du projet. Un clic sur l&apos;un d&apos;eux ouvre sa page individuelle (point 2 ci-dessous).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2599"/>
+        <location filename="../src/HelpPanel.cpp" line="2495"/>
         <source>Embaixo da fileira, um gráfico de barrinhas mostra a &quot;Participação&quot; de cada personagem — a porcentagem de cenas do projeto em que ele aparece (mesma detecção automática por nome que já existia).</source>
         <translation>Sous la rangée, un petit graphique à barres montre la «&#xa0;Participation&#xa0;» de chaque personnage — le pourcentage de scènes du projet où il apparaît (la même détection automatique par nom qu&apos;avant).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2603"/>
+        <location filename="../src/HelpPanel.cpp" line="2499"/>
         <source>Mais embaixo, &quot;Manuscrito, por capítulo&quot; — um gráfico de barras com um capítulo por coluna, numerados na ordem da obra. Um menu no canto (&quot;Palavras ▾&quot;) deixa escolher a métrica: palavras por capítulo, ou % de diálogo em relação à narração. Clicar numa barra abre as estatísticas daquele capítulo específico (a mesma janela que já existe no Manuscrito).</source>
         <translation>Plus bas, «&#xa0;Manuscrit, par chapitre&#xa0;» — un graphique à barres avec un chapitre par colonne, numérotés dans l&apos;ordre de l&apos;œuvre. Un menu dans le coin («&#xa0;Mots ▾&#xa0;») permet de choisir l&apos;indicateur&#xa0;: mots par chapitre, ou % de dialogue par rapport à la narration. Un clic sur une barre ouvre les statistiques de ce chapitre (la même fenêtre qui existe déjà dans le Manuscrit).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2609"/>
+        <location filename="../src/HelpPanel.cpp" line="2505"/>
         <source>Por fim, &quot;Resumo do projeto&quot;: total de palavras, quantos capítulos e cenas tem o manuscrito atual, qual foi o maior e o menor capítulo (em palavras), quantos Vínculos existem por tipo, e um resumo da sua sequência de escrita (streak atual, recorde, páginas estimadas).</source>
         <translation>Enfin, «&#xa0;Résumé du projet&#xa0;»&#xa0;: total de mots, nombre de chapitres et de scènes du manuscrit actuel, chapitre le plus long et le plus court (en mots), nombre de Liens par type, et un résumé de votre série d&apos;écriture (série actuelle, record, pages estimées).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2624"/>
+        <location filename="../src/HelpPanel.cpp" line="2520"/>
         <source>Por personagem.</source>
         <translation>Par personnage.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2625"/>
+        <location filename="../src/HelpPanel.cpp" line="2521"/>
         <source>Clicando numa foto na fileira, você entra na página daquele personagem. Um botão de voltar (←) no cabeçalho do painel te traz de volta pra visão geral.</source>
         <translation>Un clic sur une photo de la rangée vous amène sur la page de ce personnage. Un bouton retour (←) dans l&apos;en-tête du panneau vous ramène à la vue d&apos;ensemble.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2628"/>
+        <location filename="../src/HelpPanel.cpp" line="2524"/>
         <source>Aqui você encontra: a foto e o nome, um resumo de presença (em quantas cenas/capítulos ele aparece), quantas falas e palavras faladas o Detector de Diálogos já achou pra ele, e dois botões — Status e Local — que fazem exatamente o que faziam no antigo Modo Consistência (que não existe mais — tudo que ele fazia foi pra cá). Se o personagem estiver marcado como Morto ou Desaparecido mas ainda aparecer em alguma cena depois disso, um aviso chama atenção pra essa inconsistência.</source>
         <translation>Vous y trouverez&#xa0;: la photo et le nom, un résumé de présence (dans combien de scènes/chapitres il apparaît), combien de répliques et de mots prononcés le Détecteur de dialogues a déjà trouvés pour lui, et deux boutons — Statut et Lieu — qui font exactement ce qu&apos;ils faisaient dans l&apos;ancien Mode Cohérence (qui n&apos;existe plus — tout ce qu&apos;il faisait a été déplacé ici). Si le personnage est marqué Mort ou Disparu mais apparaît encore dans une scène ultérieure, un avertissement signale l&apos;incohérence.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2635"/>
+        <location filename="../src/HelpPanel.cpp" line="2531"/>
         <source>Logo abaixo, a lista de Vínculos daquele personagem (mesmos vínculos que você já cria arrastando um personagem em cima do outro na gaveta) — aqui é só consulta, criar/editar vínculo continua sendo na gaveta mesmo.</source>
         <translation>Juste en dessous, la liste des Liens de ce personnage (les mêmes liens que vous créez en faisant glisser un personnage sur un autre dans le tiroir) — ici, c&apos;est en consultation seulement&#xa0;; la création et la modification des liens se font toujours dans le tiroir.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2649"/>
+        <location filename="../src/HelpPanel.cpp" line="2545"/>
         <source>Química.</source>
         <translation>Alchimie.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2650"/>
+        <location filename="../src/HelpPanel.cpp" line="2546"/>
         <source>Essa é nova: uma lista mostrando com quem aquele personagem mais &quot;contracenou&quot; — quantas cenas, capítulos e falas cruzadas ele tem com cada outro personagem do elenco. Um menu deixa escolher qual dessas três métricas ordena a lista.</source>
         <translation>Celle-ci est nouvelle&#xa0;: une liste qui montre avec qui ce personnage a le plus «&#xa0;partagé l&apos;affiche&#xa0;» — combien de scènes, de chapitres et de répliques croisées il partage avec chaque autre personnage de la distribution. Un menu permet de choisir lequel de ces trois indicateurs trie la liste.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2654"/>
+        <location filename="../src/HelpPanel.cpp" line="2550"/>
         <source>Clicando num nome da lista, abre um popup só com os diálogos entre aquele par de personagens, com um menu no topo pra pular direto pra um capítulo específico. O popup pode ser arrastado pelo título, pra tirar ele do meio do caminho.</source>
         <translation>Un clic sur un nom de la liste ouvre une fenêtre avec uniquement les dialogues entre ces deux personnages, avec un menu en haut pour sauter directement à un chapitre précis. La fenêtre peut être déplacée par son titre pour la mettre de côté.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2668"/>
+        <location filename="../src/HelpPanel.cpp" line="2564"/>
         <source>Ficha / documento.</source>
         <translation>Fiche / document.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2669"/>
+        <location filename="../src/HelpPanel.cpp" line="2565"/>
         <source>Por último, o conteúdo real da ficha (ou do documento livre, se o personagem não usa ficha estruturada) daquele personagem, exibido ali mesmo — sem precisar abrir a gaveta. Só o texto: fotos que estejam dentro da ficha/doc não aparecem aqui (a foto do personagem já está lá em cima). A área tem altura limitada e rola por dentro se o conteúdo for grande.</source>
         <translation>Enfin, le contenu réel de la fiche (ou du document libre, si le personnage n&apos;utilise pas de fiche structurée) de ce personnage, affiché sur place — sans avoir à ouvrir le tiroir. Texte uniquement&#xa0;: les photos contenues dans la fiche ou le document n&apos;apparaissent pas ici (la photo du personnage est déjà en haut). La zone a une hauteur limitée et défile si le contenu est long.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2683"/>
+        <location filename="../src/HelpPanel.cpp" line="2579"/>
         <source>Fica na barra superior, ao lado do botão de Lembretes.</source>
         <translation>Il se trouve dans la barre supérieure, à côté du bouton Rappels.</translation>
     </message>
@@ -8565,52 +8958,52 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <translation type="vanished">L&apos;application parcourt un dossier de sons sur votre ordinateur et liste les fichiers audio qu&apos;elle y trouve. Une seule piste joue à la fois (en choisir une nouvelle remplace celle en cours), en boucle continue, avec un seul réglage de volume pour toutes. La piste et le volume choisis sont enregistrés et reviennent à l&apos;identique la prochaine fois que vous ouvrez l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2718"/>
+        <location filename="../src/HelpPanel.cpp" line="2614"/>
         <source>Fica na barra superior, ao lado do Som Imersivo. Um aviso vermelho aparece no botão quando você tem lembretes ativos.</source>
         <translation>Il se trouve dans la barre supérieure, à côté de Son immersif. Un indicateur rouge apparaît sur le bouton quand vous avez des rappels actifs.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2730"/>
+        <location filename="../src/HelpPanel.cpp" line="2626"/>
         <source>Digite o texto do lembrete e aperte Enter (ou o &quot;+&quot;) pra criá-lo. Se marcar &quot;Notificar às&quot;, escolha um horário do dia — ao chegar nesse horário, um aviso aparece dentro do próprio app (não é uma notificação do Windows). Lembretes não têm data específica (só horário), nem prioridade, nem vínculo com capítulos ou documentos — são só lembretes de texto livre mesmo.</source>
         <translation>Saisissez le texte du rappel et appuyez sur Entrée (ou sur le «&#xa0;+&#xa0;») pour le créer. Si vous cochez «&#xa0;Notifier à&#xa0;», choisissez une heure de la journée — à cette heure-là, une alerte s&apos;affiche dans l&apos;application (ce n&apos;est pas une notification Windows). Les rappels n&apos;ont ni date précise (seulement une heure), ni priorité, ni lien avec des chapitres ou documents — ce sont de simples rappels en texte libre.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2745"/>
+        <location filename="../src/HelpPanel.cpp" line="2641"/>
         <source>Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de &quot;Concluídos&quot; que pode ser expandida ou escondida, com opção de limpar tudo de uma vez.</source>
         <translation>Cochez la case d&apos;un rappel pour le terminer&#xa0;; il passe dans une liste «&#xa0;Terminés&#xa0;» qui peut être dépliée ou masquée, avec une option pour tout effacer d&apos;un coup.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2756"/>
+        <location filename="../src/HelpPanel.cpp" line="2652"/>
         <source>Caso você tenha escrito uma cena, gostou dela, mas por algum motivo quer reescrevê-la, dá pra fazer isso sem perder a cena que já escreveu — e é mais simples do que parece.</source>
         <translation>Si vous avez écrit une scène qui vous plaît, mais que pour une raison ou une autre vous voulez la réécrire, vous pouvez le faire sans perdre la scène déjà écrite — et c&apos;est plus simple qu&apos;il n&apos;y paraît.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2760"/>
+        <location filename="../src/HelpPanel.cpp" line="2656"/>
         <source>No painel de Manuscrito, acesse a sua cena diretamente — essa opção não é acessível em capítulos completos, só em cenas isoladas. Então você precisa abrir a cena sozinha no editor, não o capítulo inteiro.</source>
         <translation>Dans le panneau Manuscrit, ouvrez directement votre scène — cette option n&apos;est pas disponible pour les chapitres entiers, seulement pour les scènes isolées. Il faut donc ouvrir la scène seule dans l&apos;éditeur, pas le chapitre entier.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2773"/>
+        <location filename="../src/HelpPanel.cpp" line="2669"/>
         <source>Quando a cena abrir sozinha, aparece um botão discreto ao lado do nome dela, na barra superior. Clique nele — sim, ele é bem pequeno e discreto mesmo, é de propósito.</source>
         <translation>Quand la scène s&apos;ouvre seule, un bouton discret apparaît à côté de son nom, dans la barre supérieure. Cliquez dessus — oui, il est vraiment petit et discret, c&apos;est voulu.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2785"/>
+        <location filename="../src/HelpPanel.cpp" line="2681"/>
         <source>Ao clicar, aparecem três opções: nova, primária e apagar.</source>
         <translation>Un clic affiche trois options&#xa0;: nouvelle, principale et supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2796"/>
+        <location filename="../src/HelpPanel.cpp" line="2692"/>
         <source>&lt;b&gt;+ nova&lt;/b&gt; cria outra variação da cena: um popup pede um nome pra ela e, ao confirmar, a variação já abre em branco no editor, pronta pra escrever.</source>
         <translation>&lt;b&gt;+ nouvelle&lt;/b&gt; crée une autre variante de la scène&#xa0;: une fenêtre demande un nom et, une fois confirmé, la variante s&apos;ouvre vide dans l&apos;éditeur, prête à être écrite.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2799"/>
+        <location filename="../src/HelpPanel.cpp" line="2695"/>
         <source>&lt;b&gt;★ primária&lt;/b&gt; define qual variação é a principal — é ela que aparece quando o capítulo inteiro é aberto de uma vez e também a que sai na exportação.</source>
         <translation>&lt;b&gt;★ principale&lt;/b&gt; définit quelle variante est la principale — c&apos;est elle qui s&apos;affiche quand le chapitre entier est ouvert d&apos;un coup, et c&apos;est aussi elle qui est exportée.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2802"/>
+        <location filename="../src/HelpPanel.cpp" line="2698"/>
         <source>&lt;b&gt;✕ apagar&lt;/b&gt; exclui a variação que está aberta no momento.</source>
         <translation>&lt;b&gt;✕ supprimer&lt;/b&gt; supprime la variante actuellement ouverte.</translation>
     </message>
@@ -32128,7 +32521,7 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Choisir…</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1265"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1335"/>
         <source>Remover</source>
         <translation>Retirer</translation>
     </message>
@@ -32153,7 +32546,7 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Fond de la page</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="764"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="825"/>
         <source>Texto da UI</source>
         <translation>Texte de l&apos;interface</translation>
     </message>
@@ -32170,7 +32563,7 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Fond de la fenêtre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="761"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="822"/>
         <source>Cor do app</source>
         <translation>Couleur de l&apos;application</translation>
     </message>
@@ -32191,28 +32584,28 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Mode&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1164"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1225"/>
         <source>Centralizar</source>
         <translation>Centrer</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1165"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1282"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1226"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1352"/>
         <source>Repetir</source>
         <translation>Répéter</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1166"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1227"/>
         <source>Esticar</source>
         <translation>Étirer</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1167"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1228"/>
         <source>Ajustar</source>
         <translation>Ajuster</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1168"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1229"/>
         <source>Preencher</source>
         <translation>Remplir</translation>
     </message>
@@ -32336,21 +32729,21 @@ Cette action est irréversible.</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="762"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="823"/>
         <source>Painéis</source>
         <translation>Panneaux</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="621"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="770"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="831"/>
         <source>Ícones</source>
         <translation>Icônes</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="622"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="767"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="828"/>
         <source>Folha</source>
         <translation>Page</translation>
     </message>
@@ -32362,15 +32755,15 @@ Cette action est irréversible.</translation>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="584"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="624"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="768"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1012"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="829"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1073"/>
         <source>Texto</source>
         <translation>Texte</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="584"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="625"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="766"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="827"/>
         <source>Destaque</source>
         <translation>Accent</translation>
     </message>
@@ -32400,240 +32793,255 @@ Cette action est irréversible.</translation>
         <translation>Compteur</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="642"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="637"/>
+        <source>Barra da direita</source>
+        <translation>Barre de droite</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="643"/>
         <source>Só a barra de cima</source>
         <translation>Seulement la barre du haut</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="643"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="644"/>
         <source>Só a barra lateral</source>
         <translation>Seulement la barre latérale</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="644"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="645"/>
         <source>Só a Referência</source>
         <translation>Seulement la Référence</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="645"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="646"/>
         <source>Só o contador</source>
         <translation>Seulement le compteur</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="646"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="647"/>
         <source>Só as gavetas</source>
         <translation>Seulement les tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="763"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="774"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="648"/>
+        <source>Só a barra da direita</source>
+        <translation>Seulement la barre de droite</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="824"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="835"/>
         <source>Borda</source>
         <translation>Bordure</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="765"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1013"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="826"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1074"/>
         <source>Texto apagado</source>
         <translation>Texte atténué</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="769"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1310"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="830"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1380"/>
         <source>Sombra</source>
         <translation>Ombre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="771"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="832"/>
         <source>Cor do título</source>
         <translation>Couleur du titre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="772"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="833"/>
         <source>Cor do degradê</source>
         <translation>Couleur du dégradé</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="773"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="920"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1328"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="834"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="981"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1398"/>
         <source>Cor</source>
         <translation>Couleur</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="808"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="869"/>
         <source>Da foto</source>
         <translation>De la photo</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="886"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="947"/>
         <source>Degradê</source>
         <translation>Dégradé</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="955"/>
         <source>Nenhum</source>
         <translation>Aucun</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="955"/>
         <source>Embaixo</source>
         <translation>En bas</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="955"/>
         <source>Em cima</source>
         <translation>En haut</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="895"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="956"/>
         <source>Os dois</source>
         <translation>Les deux</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="895"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="956"/>
         <source>Vinheta</source>
         <translation>Vignette</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="927"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="988"/>
         <source>Tamanho</source>
         <translation>Taille</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="935"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="996"/>
         <source>Grão</source>
         <translation>Grain</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="936"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="997"/>
         <source>Tamanho do grão</source>
         <translation>Taille du grain</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1009"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1070"/>
         <source>Contraste com a folha</source>
         <translation>Contraste avec la page</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1029"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1090"/>
         <source>Cores da foto → &lt;b&gt;%1&lt;/b&gt;</source>
         <translation>Couleurs de la photo → &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1057"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1118"/>
         <source>Imagem…</source>
         <translation>Image…</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1057"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1118"/>
         <source>Trocar foto</source>
         <translation>Changer de photo</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1091"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1152"/>
         <source>Imagem na folha…</source>
         <translation>Image sur la page…</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1094"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1155"/>
         <source>Trocar imagem</source>
         <translation>Changer l&apos;image</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1131"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1192"/>
         <source>Cor e foto</source>
         <translation>Couleur et photo</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1131"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1192"/>
         <source>Degradê e grão</source>
         <translation>Dégradé et grain</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1295"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1302"/>
+        <source>Arredondamento, opacidade e vidro continuam valendo pra todos. &quot;Todos os painéis&quot; faz a barra da direita voltar a acompanhar a barra lateral.</source>
+        <translation>L&apos;arrondi, l&apos;opacité et le verre restent valables pour tous. « Tous les panneaux » fait de nouveau suivre la barre latérale à la barre de droite.</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1365"/>
         <source>Parada</source>
         <translation>Fixe</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1296"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1366"/>
         <source>Fica parada ao rolar o texto (senão rola junto)</source>
         <translation>Reste fixe pendant le défilement du texte (sinon elle défile avec)</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1092"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1262"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1153"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1332"/>
         <source>Uma imagem por cima da cor da folha, em todo documento. Capítulo, cena ou livro com fundo próprio passam na frente.</source>
         <translation>Une image par-dessus la couleur de la page, dans tous les documents. Un chapitre, une scène ou un livre avec son propre fond passe devant.</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1147"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1208"/>
         <source>Remover foto</source>
         <translation>Retirer la photo</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1161"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1222"/>
         <source>Modo da foto</source>
         <translation>Mode de la photo</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1193"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1254"/>
         <source>Vale pra</source>
         <translation>S’applique à</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1198"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1259"/>
         <source>Todos os painéis</source>
         <translation>Tous les panneaux</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1233"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1303"/>
         <source>Arredondamento, opacidade e vidro continuam valendo pra todos. &quot;Todos os painéis&quot; devolve este painel pra cor global.</source>
         <translation>L’arrondi, l’opacité et le verre restent valables pour tous. « Tous les panneaux » remet ce panneau sur la couleur globale.</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1238"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1308"/>
         <source>Arredondamento</source>
         <translation>Arrondi</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1238"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1240"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1272"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1322"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1323"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1308"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1310"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1342"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1392"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1393"/>
         <source>px</source>
         <translation>px</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="925"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1239"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1271"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1308"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="986"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1309"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1341"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1378"/>
         <source>Opacidade</source>
         <translation>Opacité</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1240"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1310"/>
         <source>Vidro</source>
         <translation>Verre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1247"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1317"/>
         <source>Voltar pra cor do texto apagado</source>
         <translation>Revenir à la couleur du texte atténué</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1253"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1323"/>
         <source>Barra de cima (inclusive os botões de fonte, tamanho e entrelinha), barra lateral e os botões dos painéis. As gavetas mantêm a cor que você deu a cada uma.</source>
         <translation>Barre du haut (y compris les boutons de police, taille et interligne), barre latérale et boutons des panneaux. Les tiroirs gardent la couleur que vous leur avez donnée.</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1257"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1327"/>
         <source>Cor e sombra</source>
         <translation>Couleur et ombre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1257"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1327"/>
         <source>Imagem</source>
         <translation>Image</translation>
     </message>
@@ -32642,22 +33050,22 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Retirer l&apos;image</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1272"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1342"/>
         <source>Desfoque</source>
         <translation>Flou</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1278"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1348"/>
         <source>Ocupa</source>
         <translation>Couvre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1281"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1351"/>
         <source>Folha toda</source>
         <translation>Toute la page</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1283"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1353"/>
         <source>Só no topo</source>
         <translation>En haut seulement</translation>
     </message>
@@ -32666,52 +33074,52 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Fixe au défilement</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1322"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1392"/>
         <source>Raio</source>
         <translation>Rayon</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1323"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1393"/>
         <source>Desloc. Y</source>
         <translation>Décal. Y</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1333"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1403"/>
         <source>Fonte</source>
         <translation>Police</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1355"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1425"/>
         <source>Voltar pro padrão</source>
         <translation>Revenir au défaut</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1362"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1432"/>
         <source>O título no alto da folha. Padrão: a cor do texto, em Lora.</source>
         <translation>Le titre en haut de la page. Par défaut : la couleur du texte, en Lora.</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1378"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1448"/>
         <source>Cores das gavetas</source>
         <translation>Couleurs des tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1383"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1453"/>
         <source>Usar a cor da própria gaveta</source>
         <translation>Utiliser la couleur de chaque tiroir</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1384"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1454"/>
         <source>Usar a cor do tema</source>
         <translation>Utiliser la couleur du thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1411"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1481"/>
         <source>Aparece no anel do contador, no item aberto da barra e, dentro das gavetas, no botão de criar, nas etiquetas e nas barrinhas.</source>
         <translation>Apparaît dans l’anneau du compteur, l’élément ouvert de la barre et, dans les tiroirs, le bouton de création, les étiquettes et les petites barres.</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1412"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1482"/>
         <source>Aparece no anel do contador e no item aberto da barra. Dentro das gavetas vale a cor que você deu a cada uma (veja em Gavetas).</source>
         <translation>Apparaît dans l’anneau du compteur et l’élément ouvert de la barre. Dans les tiroirs, c’est la couleur donnée à chacun qui compte (voir Tiroirs).</translation>
     </message>
@@ -32728,12 +33136,12 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Couleur de l&apos;ombre</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1069"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1130"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.webp *.tiff)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.webp *.tiff)</translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1070"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1131"/>
         <source>Escolher imagem de fundo</source>
         <translation>Choisir une image de fond</translation>
     </message>
@@ -32910,106 +33318,106 @@ Cette action est irréversible.</translation>
 <context>
     <name>ThemeScene</name>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="513"/>
-        <location filename="../src/ThemeScene.cpp" line="808"/>
+        <location filename="../src/ThemeScene.cpp" line="921"/>
+        <location filename="../src/ThemeScene.cpp" line="1216"/>
         <source>Capítulo 3</source>
         <translation>Chapitre 3</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="550"/>
+        <location filename="../src/ThemeScene.cpp" line="958"/>
         <source>Referência</source>
         <translation>Référence</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="581"/>
+        <location filename="../src/ThemeScene.cpp" line="989"/>
         <source>Capítulo 2 · A meada</source>
         <translation>Chapitre 2 · L&apos;écheveau</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="584"/>
+        <location filename="../src/ThemeScene.cpp" line="992"/>
         <source>Tudo</source>
         <translation>Tout</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="629"/>
+        <location filename="../src/ThemeScene.cpp" line="1037"/>
         <source>Contador</source>
         <translation>Compteur</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="632"/>
+        <location filename="../src/ThemeScene.cpp" line="1040"/>
         <source>Estatísticas ›</source>
         <translation>Statistiques ›</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="645"/>
+        <location filename="../src/ThemeScene.cpp" line="1053"/>
         <source>da meta</source>
         <translation>de l&apos;objectif</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="648"/>
+        <location filename="../src/ThemeScene.cpp" line="1056"/>
         <source>Palavras</source>
         <translation>Mots</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="649"/>
+        <location filename="../src/ThemeScene.cpp" line="1057"/>
         <source>Hoje</source>
         <translation>Aujourd&apos;hui</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="656"/>
+        <location filename="../src/ThemeScene.cpp" line="1064"/>
         <source>Meta batida!</source>
         <translation>Objectif atteint !</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="695"/>
+        <location filename="../src/ThemeScene.cpp" line="1103"/>
         <source>Personagens</source>
         <translation>Personnages</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="722"/>
+        <location filename="../src/ThemeScene.cpp" line="1130"/>
         <source>Criar novo personagem</source>
         <translation>Créer un personnage</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="729"/>
+        <location filename="../src/ThemeScene.cpp" line="1137"/>
         <source>+ Pasta</source>
         <translation>+ Dossier</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="663"/>
-        <location filename="../src/ThemeScene.cpp" line="664"/>
+        <location filename="../src/ThemeScene.cpp" line="1071"/>
+        <location filename="../src/ThemeScene.cpp" line="1072"/>
         <source>protagonista</source>
         <translation>protagoniste</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="665"/>
-        <location filename="../src/ThemeScene.cpp" line="666"/>
-        <location filename="../src/ThemeScene.cpp" line="668"/>
+        <location filename="../src/ThemeScene.cpp" line="1073"/>
+        <location filename="../src/ThemeScene.cpp" line="1074"/>
+        <location filename="../src/ThemeScene.cpp" line="1076"/>
         <source>coadjuvante</source>
         <translation>second rôle</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="667"/>
+        <location filename="../src/ThemeScene.cpp" line="1075"/>
         <source>O Coletor</source>
         <translation>Le Collecteur</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="667"/>
+        <location filename="../src/ThemeScene.cpp" line="1075"/>
         <source>antagonista</source>
         <translation>antagoniste</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="778"/>
+        <location filename="../src/ThemeScene.cpp" line="1186"/>
         <source>1 vínculo</source>
         <translation>1 lien</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="778"/>
+        <location filename="../src/ThemeScene.cpp" line="1186"/>
         <source>sem vínculos</source>
         <translation>aucun lien</translation>
     </message>
     <message>
-        <location filename="../src/ThemeScene.cpp" line="811"/>
+        <location filename="../src/ThemeScene.cpp" line="1219"/>
         <source>Cena 1</source>
         <translation>Scène 1</translation>
     </message>
@@ -33017,13 +33425,13 @@ Cette action est irréversible.</translation>
 <context>
     <name>ThemesPanel</name>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="838"/>
-        <location filename="../src/ThemesPanel.cpp" line="917"/>
+        <location filename="../src/ThemesPanel.cpp" line="841"/>
+        <location filename="../src/ThemesPanel.cpp" line="920"/>
         <source>Temas</source>
         <translation>Thèmes</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1042"/>
+        <location filename="../src/ThemesPanel.cpp" line="1045"/>
         <source>Padrão</source>
         <translation>Par défaut</translation>
     </message>
@@ -33040,17 +33448,17 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Dupliquer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1658"/>
+        <location filename="../src/ThemesPanel.cpp" line="1661"/>
         <source>Editar</source>
         <translation>Modifier</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1763"/>
+        <location filename="../src/ThemesPanel.cpp" line="1766"/>
         <source>Excluir</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1755"/>
+        <location filename="../src/ThemesPanel.cpp" line="1758"/>
         <source>Exportar</source>
         <translation>Exporter</translation>
     </message>
@@ -33059,44 +33467,44 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Enregistrer ce thème dans un fichier à donner à quelqu&apos;un d&apos;autre.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1964"/>
+        <location filename="../src/ThemesPanel.cpp" line="1967"/>
         <source>Importar</source>
         <translation>Importer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1406"/>
+        <location filename="../src/ThemesPanel.cpp" line="1409"/>
         <source>Abrir um tema que você recebeu de outra pessoa.</source>
         <translation>Ouvrir un thème reçu de quelqu&apos;un d&apos;autre.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1407"/>
+        <location filename="../src/ThemesPanel.cpp" line="1410"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1360"/>
-        <location filename="../src/ThemesPanel.cpp" line="1657"/>
+        <location filename="../src/ThemesPanel.cpp" line="1363"/>
+        <location filename="../src/ThemesPanel.cpp" line="1660"/>
         <source>Aplicar</source>
         <translation>Appliquer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1148"/>
+        <location filename="../src/ThemesPanel.cpp" line="1151"/>
         <source>Troca automática por horário</source>
         <translation>Changement automatique selon l&apos;heure</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1142"/>
-        <location filename="../src/ThemesPanel.cpp" line="1151"/>
+        <location filename="../src/ThemesPanel.cpp" line="1145"/>
+        <location filename="../src/ThemesPanel.cpp" line="1154"/>
         <source>Alterna sozinho entre um tema diurno e um noturno, nos horários que você definir.</source>
         <translation>Alterne tout seul entre un thème de jour et un thème de nuit, aux heures que vous définissez.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1160"/>
+        <location filename="../src/ThemesPanel.cpp" line="1163"/>
         <source>Diurno</source>
         <translation>Jour</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1167"/>
+        <location filename="../src/ThemesPanel.cpp" line="1170"/>
         <source>Noturno</source>
         <translation>Nuit</translation>
     </message>
@@ -33105,17 +33513,17 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Sélectionnez un thème dans la grille ci-dessus et cochez ici pour le définir.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1180"/>
+        <location filename="../src/ThemesPanel.cpp" line="1183"/>
         <source>Trocar pro diurno às</source>
         <translation>Passer au thème de jour à</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1187"/>
+        <location filename="../src/ThemesPanel.cpp" line="1190"/>
         <source>Trocar pro noturno às</source>
         <translation>Passer au thème de nuit à</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1657"/>
+        <location filename="../src/ThemesPanel.cpp" line="1660"/>
         <source>Em uso</source>
         <translation>Utilisé</translation>
     </message>
@@ -33132,7 +33540,7 @@ Cette action est irréversible.</translation>
         <translation type="vanished">Rechercher un thème par nom…</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="936"/>
+        <location filename="../src/ThemesPanel.cpp" line="939"/>
         <source>Todos</source>
         <translation>Tous</translation>
     </message>
@@ -33141,37 +33549,37 @@ Cette action est irréversible.</translation>
         <translation type="vanished">♥ Favoris</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="938"/>
+        <location filename="../src/ThemesPanel.cpp" line="941"/>
         <source>Claros</source>
         <translation>Clairs</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="939"/>
+        <location filename="../src/ThemesPanel.cpp" line="942"/>
         <source>Amarelados</source>
         <translation>Jaunâtres</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="940"/>
+        <location filename="../src/ThemesPanel.cpp" line="943"/>
         <source>Escuros</source>
         <translation>Sombres</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="941"/>
+        <location filename="../src/ThemesPanel.cpp" line="944"/>
         <source>Coloridos</source>
         <translation>Colorés</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="942"/>
+        <location filename="../src/ThemesPanel.cpp" line="945"/>
         <source>Estampados</source>
         <translation>À motifs</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1544"/>
+        <location filename="../src/ThemesPanel.cpp" line="1547"/>
         <source>Nenhum tema encontrado.</source>
         <translation>Aucun thème trouvé.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1494"/>
+        <location filename="../src/ThemesPanel.cpp" line="1497"/>
         <source>Nenhum favorito ainda.
 Clique no coração de um tema pra marcá-lo.</source>
         <translation>Aucun favori pour l&apos;instant.
@@ -33184,33 +33592,33 @@ Use &quot;Duplicar&quot; em um tema padrão pra começar.</source>
 Utilisez «&#xa0;Dupliquer&#xa0;» sur un thème par défaut pour commencer.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1489"/>
+        <location filename="../src/ThemesPanel.cpp" line="1492"/>
         <source>Nenhum tema nessa categoria.</source>
         <translation>Aucun thème dans cette catégorie.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1608"/>
+        <location filename="../src/ThemesPanel.cpp" line="1611"/>
         <source>🐈‍⬛ Esse theme foi feito inspirado no gato preto e calmo como a noite — Tifu, O Sábio.</source>
         <translation>🐈‍⬛ Ce thème est inspiré du chat noir, calme comme la nuit — Tifu, le Sage.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1611"/>
+        <location filename="../src/ThemesPanel.cpp" line="1614"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation>🐈 Ce thème est inspiré de l&apos;hyperactivité et de l&apos;agitation du meilleur chat roux — Tommy, le Redoutable.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2301"/>
+        <location filename="../src/ThemesPanel.cpp" line="2304"/>
         <source>Hora real (a luz acompanha o relógio)</source>
         <translation>Heure réelle (la lumière suit l&apos;horloge)</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1622"/>
+        <location filename="../src/ThemesPanel.cpp" line="1625"/>
         <source>Esse theme tem apenas fins estéticos e não busca incentivar o fumo. Cigarro causa câncer e outros problemas de saúde. No Brasil, você não está sozinho. Para obter ajuda, ligue: 136</source>
         <translation>Ce thème a une vocation purement esthétique et ne cherche pas à encourager le tabagisme. Le tabac provoque le cancer et d&apos;autres problèmes de santé. Au Brésil, vous n&apos;êtes pas seul. Pour obtenir de l&apos;aide, appelez le : 136</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="282"/>
-        <location filename="../src/ThemesPanel.cpp" line="1803"/>
+        <location filename="../src/ThemesPanel.cpp" line="285"/>
+        <location filename="../src/ThemesPanel.cpp" line="1806"/>
         <source>Novo tema</source>
         <translation>Nouveau thème</translation>
     </message>
@@ -33239,175 +33647,175 @@ Utilisez «&#xa0;Dupliquer&#xa0;» sur un thème par défaut pour commencer.</tr
         <translation>très doux</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="330"/>
-        <location filename="../src/ThemesPanel.cpp" line="506"/>
+        <location filename="../src/ThemesPanel.cpp" line="333"/>
+        <location filename="../src/ThemesPanel.cpp" line="509"/>
         <source>EM USO</source>
         <translation>UTILISÉ</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="927"/>
+        <location filename="../src/ThemesPanel.cpp" line="930"/>
         <source>Buscar tema</source>
         <translation>Rechercher un thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="937"/>
+        <location filename="../src/ThemesPanel.cpp" line="940"/>
         <source>Favoritos</source>
         <translation>Favoris</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="966"/>
+        <location filename="../src/ThemesPanel.cpp" line="969"/>
         <source>Meus temas</source>
         <translation>Mes thèmes</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="967"/>
-        <location filename="../src/ThemesPanel.cpp" line="1139"/>
+        <location filename="../src/ThemesPanel.cpp" line="970"/>
+        <location filename="../src/ThemesPanel.cpp" line="1142"/>
         <source>Dia e noite</source>
         <translation>Jour et nuit</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1004"/>
+        <location filename="../src/ThemesPanel.cpp" line="1007"/>
         <source>Tudo</source>
         <translation>Tout</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1005"/>
+        <location filename="../src/ThemesPanel.cpp" line="1008"/>
         <source>✦  Novidades</source>
         <translation>✦  Nouveautés</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1006"/>
+        <location filename="../src/ThemesPanel.cpp" line="1009"/>
         <source>↺  Últimos usados</source>
         <translation>↺  Utilisés récemment</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1039"/>
+        <location filename="../src/ThemesPanel.cpp" line="1042"/>
         <source>Mais recentes</source>
         <translation>Plus récents</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1040"/>
+        <location filename="../src/ThemesPanel.cpp" line="1043"/>
         <source>Mais antigos</source>
         <translation>Plus anciens</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1041"/>
+        <location filename="../src/ThemesPanel.cpp" line="1044"/>
         <source>A–Z</source>
         <translation>A–Z</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1049"/>
+        <location filename="../src/ThemesPanel.cpp" line="1052"/>
         <source>Ordem: %1  ▾</source>
         <translation>Tri : %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1059"/>
+        <location filename="../src/ThemesPanel.cpp" line="1062"/>
         <source>A ordem do Qenna, com as recomendações de cada categoria primeiro</source>
         <translation>L&apos;ordre de Qenna, avec les recommandations de chaque catégorie en premier</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1060"/>
+        <location filename="../src/ThemesPanel.cpp" line="1063"/>
         <source>Os temas mais novos primeiro, pela versão em que saíram</source>
         <translation>Les thèmes les plus récents en premier, selon la version où ils sont sortis</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1061"/>
+        <location filename="../src/ThemesPanel.cpp" line="1064"/>
         <source>Os temas mais antigos primeiro, pela versão em que saíram</source>
         <translation>Les thèmes les plus anciens en premier, selon la version où ils sont sortis</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1062"/>
+        <location filename="../src/ThemesPanel.cpp" line="1065"/>
         <source>Pelo nome, em ordem alfabética</source>
         <translation>Par nom, dans l’ordre alphabétique</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1228"/>
-        <location filename="../src/ThemesPanel.cpp" line="1426"/>
+        <location filename="../src/ThemesPanel.cpp" line="1231"/>
+        <location filename="../src/ThemesPanel.cpp" line="1429"/>
         <source>Escrita</source>
         <translation>Écriture</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1228"/>
-        <location filename="../src/ThemesPanel.cpp" line="1426"/>
+        <location filename="../src/ThemesPanel.cpp" line="1231"/>
+        <location filename="../src/ThemesPanel.cpp" line="1429"/>
         <source>Gavetas</source>
         <translation>Tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1228"/>
-        <location filename="../src/ThemesPanel.cpp" line="1426"/>
+        <location filename="../src/ThemesPanel.cpp" line="1231"/>
+        <location filename="../src/ThemesPanel.cpp" line="1429"/>
         <source>Editor</source>
         <translation>Éditeur</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1278"/>
+        <location filename="../src/ThemesPanel.cpp" line="1281"/>
         <source>Favoritar</source>
         <translation>Ajouter aux favoris</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1527"/>
+        <location filename="../src/ThemesPanel.cpp" line="1530"/>
         <source>✦  Novidades  %1</source>
         <translation>✦  Nouveautés  %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1528"/>
+        <location filename="../src/ThemesPanel.cpp" line="1531"/>
         <source>↺  Últimos usados  %1</source>
         <translation>↺  Utilisés récemment  %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1536"/>
+        <location filename="../src/ThemesPanel.cpp" line="1539"/>
         <source>Nenhum tema novo aqui.</source>
         <translation>Aucun nouveau thème ici.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1537"/>
+        <location filename="../src/ThemesPanel.cpp" line="1540"/>
         <source>Nenhum tema usado aqui ainda.
 Os que você aplicar aparecem nesta lista, o último primeiro.</source>
         <translation>Aucun thème utilisé ici pour l&apos;instant.
 Ceux que vous appliquez apparaissent dans cette liste, le dernier en premier.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1589"/>
+        <location filename="../src/ThemesPanel.cpp" line="1592"/>
         <source>por %1</source>
         <translation>par %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1596"/>
+        <location filename="../src/ThemesPanel.cpp" line="1599"/>
         <source>Foto de %1</source>
         <translation>Photo de %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1597"/>
+        <location filename="../src/ThemesPanel.cpp" line="1600"/>
         <source>Foto de %1 no %2</source>
         <translation>Photo de %1 sur %2</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1604"/>
+        <location filename="../src/ThemesPanel.cpp" line="1607"/>
         <source>Recomendação do desenvolvedor</source>
         <translation>Recommandé par le développeur</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1603"/>
+        <location filename="../src/ThemesPanel.cpp" line="1606"/>
         <source>Escolha do Tony</source>
         <translation>Choix de Tony</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1366"/>
-        <location filename="../src/ThemesPanel.cpp" line="1658"/>
+        <location filename="../src/ThemesPanel.cpp" line="1369"/>
+        <location filename="../src/ThemesPanel.cpp" line="1661"/>
         <source>Personalizar</source>
         <translation>Personnaliser</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1792"/>
+        <location filename="../src/ThemesPanel.cpp" line="1795"/>
         <source>Tifu, O Sábio</source>
         <translation>Tifu, le Sage</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1792"/>
+        <location filename="../src/ThemesPanel.cpp" line="1795"/>
         <source>Tommy, O Temível</source>
         <translation>Tommy, le Redoutable</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1307"/>
+        <location filename="../src/ThemesPanel.cpp" line="1310"/>
         <source>Contraste</source>
         <translation>Contraste</translation>
     </message>
@@ -33420,42 +33828,42 @@ Ceux que vous appliquez apparaissent dans cette liste, le dernier en premier.</t
         <translation type="vanished">Utilisés récemment</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1005"/>
+        <location filename="../src/ThemesPanel.cpp" line="1008"/>
         <source>Temas adicionados recentemente: os desta versão e os da anterior</source>
         <translation>Thèmes ajoutés récemment : ceux de cette version et de la précédente</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1006"/>
+        <location filename="../src/ThemesPanel.cpp" line="1009"/>
         <source>Os temas que você aplicou por último</source>
         <translation>Les derniers thèmes que vous avez appliqués</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1318"/>
+        <location filename="../src/ThemesPanel.cpp" line="1321"/>
         <source>Texto</source>
         <translation>Texte</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1320"/>
+        <location filename="../src/ThemesPanel.cpp" line="1323"/>
         <source>Texto apagado</source>
         <translation>Texte atténué</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1349"/>
+        <location filename="../src/ThemesPanel.cpp" line="1352"/>
         <source>Parecidos com este</source>
         <translation>Thèmes similaires</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1381"/>
+        <location filename="../src/ThemesPanel.cpp" line="1384"/>
         <source>Mais ações</source>
         <translation>Plus d&apos;actions</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1404"/>
+        <location filename="../src/ThemesPanel.cpp" line="1407"/>
         <source>Importar…</source>
         <translation>Importer…</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1441"/>
+        <location filename="../src/ThemesPanel.cpp" line="1444"/>
         <source>Fechar ✕</source>
         <translation>Fermer ✕</translation>
     </message>
@@ -33470,55 +33878,55 @@ Os que você aplicar aparecem aqui, o último primeiro.</source>
 Ceux que vous appliquez apparaissent ici, le dernier en premier.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1643"/>
-        <location filename="../src/ThemesPanel.cpp" line="1644"/>
+        <location filename="../src/ThemesPanel.cpp" line="1646"/>
+        <location filename="../src/ThemesPanel.cpp" line="1647"/>
         <source>em uso %1</source>
         <translation>utilisé %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1665"/>
+        <location filename="../src/ThemesPanel.cpp" line="1668"/>
         <source>Em uso:</source>
         <translation>Utilisé :</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1754"/>
+        <location filename="../src/ThemesPanel.cpp" line="1757"/>
         <source>Editar uma cópia</source>
         <translation>Modifier une copie</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1759"/>
+        <location filename="../src/ThemesPanel.cpp" line="1762"/>
         <source>Só temas seus. Pra compartilhar este, edite uma cópia e exporte a cópia.</source>
         <translation>Uniquement vos thèmes. Pour partager celui-ci, modifiez une copie et exportez la copie.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1821"/>
-        <location filename="../src/ThemesPanel.cpp" line="1985"/>
+        <location filename="../src/ThemesPanel.cpp" line="1824"/>
+        <location filename="../src/ThemesPanel.cpp" line="1988"/>
         <source>%1 (cópia)</source>
         <translation>%1 (copie)</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1850"/>
+        <location filename="../src/ThemesPanel.cpp" line="1853"/>
         <source>Excluir tema</source>
         <translation>Supprimer le thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1851"/>
+        <location filename="../src/ThemesPanel.cpp" line="1854"/>
         <source>Excluir este tema personalizado? Esta ação não pode ser desfeita.</source>
         <translation>Supprimer ce thème personnalisé&#xa0;? Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1888"/>
-        <location filename="../src/ThemesPanel.cpp" line="1893"/>
+        <location filename="../src/ThemesPanel.cpp" line="1891"/>
+        <location filename="../src/ThemesPanel.cpp" line="1896"/>
         <source>Exportar tema</source>
         <translation>Exporter le thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1903"/>
+        <location filename="../src/ThemesPanel.cpp" line="1906"/>
         <source>Tema exportado</source>
         <translation>Thème exporté</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1904"/>
+        <location filename="../src/ThemesPanel.cpp" line="1907"/>
         <source>“%1” foi salvo em:
 %2
 
@@ -33529,164 +33937,164 @@ Esse arquivo pode ser enviado pra qualquer pessoa que use o Qenna.</source>
 Vous pouvez envoyer ce fichier à toute personne qui utilise Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1911"/>
-        <location filename="../src/ThemesPanel.cpp" line="1919"/>
-        <location filename="../src/ThemesPanel.cpp" line="1948"/>
-        <location filename="../src/ThemesPanel.cpp" line="1993"/>
+        <location filename="../src/ThemesPanel.cpp" line="1914"/>
+        <location filename="../src/ThemesPanel.cpp" line="1922"/>
+        <location filename="../src/ThemesPanel.cpp" line="1951"/>
+        <location filename="../src/ThemesPanel.cpp" line="1996"/>
         <source>Importar tema</source>
         <translation>Importer un thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1935"/>
+        <location filename="../src/ThemesPanel.cpp" line="1938"/>
         <source>&lt;b&gt;%1&lt;/b&gt;</source>
         <translation>&lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1937"/>
+        <location filename="../src/ThemesPanel.cpp" line="1940"/>
         <source>&lt;br&gt;por %1</source>
         <translation>&lt;br&gt;par %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1942"/>
+        <location filename="../src/ThemesPanel.cpp" line="1945"/>
         <source>Licença: %1</source>
         <translation>Licence&#xa0;: %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1956"/>
+        <location filename="../src/ThemesPanel.cpp" line="1959"/>
         <source>Você já tem este tema (versão %1). O arquivo traz a versão %2.</source>
         <translation>Vous avez déjà ce thème (version %1). Le fichier contient la version %2.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1958"/>
+        <location filename="../src/ThemesPanel.cpp" line="1961"/>
         <source>Substituir</source>
         <translation>Remplacer</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1959"/>
+        <location filename="../src/ThemesPanel.cpp" line="1962"/>
         <source>Manter os dois</source>
         <translation>Garder les deux</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1960"/>
-        <location filename="../src/ThemesPanel.cpp" line="1965"/>
+        <location filename="../src/ThemesPanel.cpp" line="1963"/>
+        <location filename="../src/ThemesPanel.cpp" line="1968"/>
         <source>Cancelar</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2126"/>
         <location filename="../src/ThemesPanel.cpp" line="2129"/>
+        <location filename="../src/ThemesPanel.cpp" line="2132"/>
         <source>— %1</source>
         <translation>— %1</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2127"/>
         <location filename="../src/ThemesPanel.cpp" line="2130"/>
+        <location filename="../src/ThemesPanel.cpp" line="2133"/>
         <source>— nenhum tema definido</source>
         <translation>— aucun thème défini</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2132"/>
+        <location filename="../src/ThemesPanel.cpp" line="2135"/>
         <source>Diurno e Noturno valem pro tema selecionado, o da prévia à direita (agora: %1). Pra escolher outro, clique nele em Todos ou numa categoria e volte aqui.</source>
         <translation>Jour et Nuit s&apos;appliquent au thème sélectionné, celui de l&apos;aperçu à droite (actuellement : %1). Pour en choisir un autre, cliquez dessus dans Tous ou dans une catégorie, puis revenez ici.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="943"/>
+        <location filename="../src/ThemesPanel.cpp" line="946"/>
         <source>Animados</source>
         <translation>Animés</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2269"/>
+        <location filename="../src/ThemesPanel.cpp" line="2272"/>
         <source>Animação</source>
         <translation>Animation</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2296"/>
+        <location filename="../src/ThemesPanel.cpp" line="2299"/>
         <source>Hora</source>
         <translation>Moment de la journée</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2297"/>
+        <location filename="../src/ThemesPanel.cpp" line="2300"/>
         <source>Do tema</source>
         <translation>Du thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2297"/>
+        <location filename="../src/ThemesPanel.cpp" line="2300"/>
         <source>Dia</source>
         <translation>Jour</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2298"/>
+        <location filename="../src/ThemesPanel.cpp" line="2301"/>
         <source>Entardecer</source>
         <translation>Crépuscule</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2298"/>
+        <location filename="../src/ThemesPanel.cpp" line="2301"/>
         <source>Noite</source>
         <translation>Nuit</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2307"/>
+        <location filename="../src/ThemesPanel.cpp" line="2310"/>
         <source>Este tema tem a própria luz.</source>
         <translation>Ce thème a sa propre lumière.</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2311"/>
-        <location filename="../src/ThemesPanel.cpp" line="2313"/>
+        <location filename="../src/ThemesPanel.cpp" line="2314"/>
+        <location filename="../src/ThemesPanel.cpp" line="2316"/>
         <source>Chuva</source>
         <translation>Pluie</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2312"/>
+        <location filename="../src/ThemesPanel.cpp" line="2315"/>
         <source>Nenhuma</source>
         <translation>Aucune</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2312"/>
+        <location filename="../src/ThemesPanel.cpp" line="2315"/>
         <source>Garoa</source>
         <translation>Bruine</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2313"/>
+        <location filename="../src/ThemesPanel.cpp" line="2316"/>
         <source>Tempestade</source>
         <translation>Orage</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2317"/>
+        <location filename="../src/ThemesPanel.cpp" line="2320"/>
         <source>Camadas</source>
         <translation>Couches</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2323"/>
+        <location filename="../src/ThemesPanel.cpp" line="2326"/>
         <source>Estrelas</source>
         <translation>Étoiles</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2323"/>
+        <location filename="../src/ThemesPanel.cpp" line="2326"/>
         <source>Neblina</source>
         <translation>Brouillard</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2323"/>
+        <location filename="../src/ThemesPanel.cpp" line="2326"/>
         <source>Folhas</source>
         <translation>Feuilles</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2324"/>
+        <location filename="../src/ThemesPanel.cpp" line="2327"/>
         <source>Pétalas</source>
         <translation>Pétales</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2324"/>
+        <location filename="../src/ThemesPanel.cpp" line="2327"/>
         <source>Vaga-lumes</source>
         <translation>Lucioles</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2324"/>
+        <location filename="../src/ThemesPanel.cpp" line="2327"/>
         <source>Neve</source>
         <translation>Neige</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="2342"/>
+        <location filename="../src/ThemesPanel.cpp" line="2345"/>
         <source>Voltar ao padrão do tema</source>
         <translation>Revenir au réglage du thème</translation>
     </message>
