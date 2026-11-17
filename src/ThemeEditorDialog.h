@@ -77,6 +77,10 @@ private:
     Theme::MiraTheme m_theme;
     Theme::MiraTheme m_original;
     QList<Theme::MiraTheme> m_history;
+    // A pessoa escolheu o "Texto apagado" à mão nesta sessão: daí em diante o
+    // Criador não ajusta mais essa cor sozinho (ver followUiText).
+    bool m_mutedTouched = false;
+    void followUiText(bool uiTextChanged);
 
     Group m_group = Sheet;
     QString m_panel;                  // painel clicado (PanelKey) no grupo Painéis

@@ -260,3 +260,36 @@ used as published and some were recolored.
   - Reading Room: photo by Louie Cepeda, https://www.pexels.com/photo/28436227/
 - **License:** Pixabay Content License (https://pixabay.com/service/license-summary/)
   - Cloud Sea: photo by yoshitaka2, https://pixabay.com/photos/clouds-7530090/
+
+## Theme background photos (2.1)
+
+The background images of these themes are derived from photographs and
+artwork scans published on Unsplash (recolored, filtered or used as they
+are). Museum and library scans are public-domain artworks shared on
+Unsplash by the institutions named below.
+
+- **License:** Unsplash License (https://unsplash.com/license)
+  - Barbizon: photo by The Cleveland Museum of Art, https://unsplash.com/photos/G9fBPl-8vBY
+  - Blue Distance, Cross Process, Mauve Ridges: photo by Marek Piwnicki, https://unsplash.com/photos/-_OuVFhN5BU
+  - Blue Dune: photo by Daniel Olah, https://unsplash.com/photos/6KQETG8J-zI
+  - Full Moon, Light Leak: photo by Thula Na, https://unsplash.com/photos/ddJ9PNYjric
+  - Gale Warning, Late Edition, Pewter Squall: photo by Ant Rozetsky, https://unsplash.com/photos/q-DJ9XhKkhA
+  - Gilt Frame, Varnish Night: photo by The Cleveland Museum of Art, https://unsplash.com/photos/yzO7Wt6Ppsw
+  - Grand Tour, Cocoa Alps: photo by Europeana, https://unsplash.com/photos/MdVURXJRMsU
+  - Hand-Tinted, Heather Valley: photo by British Library, https://unsplash.com/photos/gUDNK8NqYHk
+  - Hidden City, Sabattier: photo by Arto Marttinen, https://unsplash.com/photos/K2K1Ec_51SA
+  - Lith, Ash Rose: photo by Erika, https://unsplash.com/photos/U6GYjO-9jBM
+  - Long Exposure: photo by Joseph Barrientos, https://unsplash.com/photos/oQl0eVYd_n8
+  - Low Tide, Faded Print: photo by Kace Rodriguez, https://unsplash.com/photos/p3OzJuT_Dks
+  - Luminism: photo by Boston Public Library, https://unsplash.com/photos/9p-Rs1YfVMQ
+  - Midtown, Path of Neo: photo by Tom Moser, https://unsplash.com/photos/uR6VahqorEk
+  - Miniature, Temple Dusk: photo by Filiz Elaerts, https://unsplash.com/photos/C62Tb_iodQE
+  - Old Growth, Instant Film, Fog Pine: photo by Pine Watt, https://unsplash.com/photos/2Hzmz15wGik
+  - Out of Focus: photo by Bro Takes Photos, https://unsplash.com/photos/V-LB7BLRqBs
+  - Red Sky at Night, Low Sun: photo by Sergio Mena Ferreira, https://unsplash.com/photos/N5sC8zZUgy4
+  - Rose Summit, Park Poster: photo by Jerry Zhang, https://unsplash.com/photos/ePpaQC2c1xA
+  - Sublime: photo by Art Institute of Chicago, https://unsplash.com/photos/a1_FBTLuvU4
+  - Ukiyo-e: photo by The Metropolitan Museum of Art, https://unsplash.com/photos/ZBH-w0cjl6E
+  - Vacancy, Vacancy Light, Signal Loss: photo by Olga Iacovlenco, https://unsplash.com/photos/uiyrzYXO8n0
+  - Windward: photo by Birmingham Museums Trust, https://unsplash.com/photos/yRDu4_w4g4A
+  - Zone System: photo by Ashish Kumar Senapati, https://unsplash.com/photos/uqHSe-zZN4A

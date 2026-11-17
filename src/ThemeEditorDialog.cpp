@@ -754,6 +754,65 @@ void ThemeEditorDialog::setColor(const QString& key, const QString& v)
         auto& pc = t.panelColors[parts.value(1)];
         if (parts.value(2) == QLatin1String("bg")) pc.background = v; else pc.border = v;
     }
+
+    if (key == QLatin1String("textMuted")) m_mutedTouched = true;
+    if (key == QLatin1String("textPrimary") || key == QLatin1String("panelBackground"))
+        followUiText(key == QLatin1String("textPrimary"));
+}
+
+namespace {
+double relLuminance(const QColor& c)
+{
+    auto f = [](int v) { const double x = v / 255.0; return x <= 0.04045 ? x / 12.92 : qPow((x + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.red()) + 0.7152 * f(c.green()) + 0.0722 * f(c.blue());
+}
+double contrastOf(const QColor& a, const QColor& b)
+{
+    double x = relLuminance(a), y = relLuminance(b);
+    if (x < y) std::swap(x, y);
+    return (x + 0.05) / (y + 0.05);
+}
+QString rgbaOf(const QColor& c, double a)
+{
+    return QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(a);
+}
+} // namespace
+
+// Bug de 17/11 (o Pe: "o texto da UI parece travado no preto"): trocar o
+// "Texto da UI" mudava só ele, e os tons que o app tira dessa cor (hover,
+// bordas finas, texto desabilitado, texto em destaque) e o "Texto apagado"
+// continuavam os do tema de partida. Num tema que começou claro e virou
+// escuro, metade dos textos ficava preta em cima de painel escuro.
+void ThemeEditorDialog::followUiText(bool uiTextChanged)
+{
+    auto& t = m_theme;
+    const QColor ink = Theme::toColor(t.textPrimary);
+    const QColor panel = Theme::toColor(t.panelBackground);
+    if (!ink.isValid() || !panel.isValid()) return;
+    const bool darkPanel = relLuminance(panel) < 0.18;
+
+    if (uiTextChanged) {
+        t.hoverOverlay = rgbaOf(ink, 0.06);
+        t.pressedOverlay = rgbaOf(ink, 0.04);
+        t.subtleBorder = rgbaOf(ink, 0.1);
+        t.hoverStrong = rgbaOf(ink, 0.12);
+        t.borderStrong = rgbaOf(ink, 0.22);
+        t.focusBorder = rgbaOf(ink, 0.32);
+        t.disabledText = rgbaOf(ink, 0.3);
+        // Texto em destaque: um degrau além do texto da UI, pro lado dele.
+        t.textBright = relLuminance(ink) > 0.35 ? QStringLiteral("#ffffff") : QStringLiteral("#000000");
+        t.selectionRing = t.textBright;
+    }
+    t.inputBackground = darkPanel ? QStringLiteral("rgba(0,0,0,0.25)") : QStringLiteral("rgba(0,0,0,0.05)");
+
+    // O apagado só segue o texto se a pessoa não escolheu ele e se ficou
+    // ilegível no painel: aí vira o texto da UI 40% puxado pra cor do painel.
+    const QColor muted = Theme::toColor(t.textMuted);
+    if (!m_mutedTouched && (!muted.isValid() || contrastOf(muted, panel) < 3.0)) {
+        const auto mix = [&](int a, int b) { return int(a + (b - a) * 0.4 + 0.5); };
+        t.textMuted = QColor(mix(ink.red(), panel.red()), mix(ink.green(), panel.green()),
+                             mix(ink.blue(), panel.blue())).name();
+    }
 }
 
 QString ThemeEditorDialog::colorLabel(const QString& key) const
@@ -1071,6 +1130,10 @@ QWidget* ThemeEditorDialog::imageButton()
         if (path.isEmpty()) return;
         pushUndo();
         m_theme.backgroundImage = path;
+        // A foto nova não é de quem fotografou a antiga.
+        m_theme.imageCredit.clear();
+        m_theme.imageSource.clear();
+        m_theme.imageSourceUrl.clear();
         refreshPreview();
         rebuildControls();
     });
@@ -1143,6 +1206,9 @@ void ThemeEditorDialog::rebuildControls()
             pl->addWidget(link(tr("Remover foto"), [this]() {
                 pushUndo();
                 m_theme.backgroundImage.clear();
+                m_theme.imageCredit.clear();
+                m_theme.imageSource.clear();
+                m_theme.imageSourceUrl.clear();
                 refreshPreview();
                 rebuildControls();
             }), 0, Qt::AlignLeft);

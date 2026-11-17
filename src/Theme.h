@@ -197,6 +197,13 @@ struct MiraTheme {
     QString license;
     // Descrição curta opcional, pra quando o nome não basta.
     QString description;
+    // Crédito da foto de fundo (16/11, pedido do Pe): quem fotografou, onde
+    // a foto foi publicada (Unsplash, Pexels...) e o link dela. Aparece no
+    // painel de Temas embaixo do nome. Some quando a foto é trocada ou
+    // removida no Criador, porque o crédito é da foto, não do tema.
+    QString imageCredit;
+    QString imageSource;
+    QString imageSourceUrl;
     // Versão *do tema*, não do app: o autor corrige uma cor e republica.
     // Quem recebe consegue saber qual é a mais nova.
     int themeVersion = 1;

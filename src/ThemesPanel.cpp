@@ -98,7 +98,10 @@ const QHash<QString, QStringList>& recommended()
                                           QStringLiteral("e-ink-gray"), QStringLiteral("brutalismo") } },
         { QStringLiteral("estampados"), { QStringLiteral("redemption"), QStringLiteral("paper-city-yellowed"), QStringLiteral("tokyo-noir"), QStringLiteral("one-dark-skyline"),
                                           QStringLiteral("solarized-highlands"), QStringLiteral("arquivo"),
-                                          QStringLiteral("desk-mahogany"), QStringLiteral("cloud-sea") } },
+                                          QStringLiteral("desk-mahogany"), QStringLiteral("cloud-sea"),
+                                          // os melhores das levas 15 a 19, escolhidos pelo Pe em 17/11
+                                          QStringLiteral("barbizon"), QStringLiteral("gilt-frame"), QStringLiteral("old-growth"),
+                                          QStringLiteral("windward"), QStringLiteral("instant-film"), QStringLiteral("path-of-neo") } },
         { QStringLiteral("warm"),       { QStringLiteral("gruvbox-dark"), QStringLiteral("cafe"), QStringLiteral("lamparina"),
                                           QStringLiteral("fig-preserve"), QStringLiteral("acafrao") } },
         { QStringLiteral("colorful"),   { QStringLiteral("blacklight"), QStringLiteral("rose-pine"), QStringLiteral("outrun"),
@@ -1288,6 +1291,7 @@ QWidget* ThemesPanel::buildSide()
     m_authorLabel->setObjectName(QStringLiteral("themeAuthor"));
     m_authorLabel->setTextFormat(Qt::RichText);
     m_authorLabel->setWordWrap(true);
+    m_authorLabel->setOpenExternalLinks(true);   // o nome do fotógrafo abre a foto no site
     m_authorLabel->hide();
     lay->addWidget(m_authorLabel);
     m_recBadge = new QLabel(side);
@@ -1581,15 +1585,24 @@ void ThemesPanel::refreshSide()
                              .arg(cur.name.toHtmlEscaped(), shown->name.toHtmlEscaped(), Theme::subtleBorder()));
 
     m_nameLabel->setText(shown->name);
-    if (shown->author.isEmpty()) {
-        m_authorLabel->hide();
-    } else {
-        QString credit = tr("por %1").arg(shown->author.toHtmlEscaped());
-        if (!shown->description.isEmpty())
-            credit += QStringLiteral("<br><i>%1</i>").arg(shown->description.toHtmlEscaped());
-        m_authorLabel->setText(credit);
-        m_authorLabel->show();
+    // Créditos embaixo do nome: quem fez o tema, quem fotografou o fundo e a
+    // descrição. Cada um só aparece quando existe.
+    QStringList credits;
+    if (!shown->author.isEmpty())
+        credits << tr("por %1").arg(shown->author.toHtmlEscaped());
+    if (!shown->imageCredit.isEmpty() && !shown->backgroundImage.isEmpty()) {
+        QString who = shown->imageCredit.toHtmlEscaped();
+        if (!shown->imageSourceUrl.isEmpty())
+            who = QStringLiteral("<a href=\"%1\" style=\"color:%2;text-decoration:none\">%3</a>")
+                      .arg(shown->imageSourceUrl.toHtmlEscaped(), Theme::accentDefault(), who);
+        credits << (shown->imageSource.isEmpty()
+                        ? tr("Foto de %1").arg(who)
+                        : tr("Foto de %1 no %2").arg(who, shown->imageSource.toHtmlEscaped()));
     }
+    if (!shown->author.isEmpty() && !shown->description.isEmpty())
+        credits << QStringLiteral("<i>%1</i>").arg(shown->description.toHtmlEscaped());
+    m_authorLabel->setText(credits.join(QStringLiteral("<br>")));
+    m_authorLabel->setVisible(!credits.isEmpty());
     m_recBadge->setText(QStringLiteral("★  ") + (isTonyPick(shown->id) ? tr("Escolha do Tony")
                                                                         : tr("Recomendação do desenvolvedor")));
     m_recBadge->setVisible(isRecommended(shown->id));
