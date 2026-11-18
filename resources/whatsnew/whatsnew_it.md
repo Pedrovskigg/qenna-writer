@@ -1,179 +1,150 @@
-**Qenna Writer - BIG UPDATE - 2.0**
+**Qenna Writer - Update 2.5**
 
-Sul, Sul!
-Come stiamo, miei cari?
-La nuova versione di Qenna Writer è arrivata sfondando la porta per rimettere ordine in casa.
-In questo aggiornamento portiamo una funzione nuova **DAVVERO PAZZESCA**, altre funzioni più piccole e qualche correzione.
+![Il Pippo di Qenna che sfonda la porta: "IT'S QENNA UPDATE TIME!"](qrc:/whatsnew/update-time.png)
 
-Prima di arrivarci, voglio ringraziare gli utenti che si sono offerti di aiutare nello sviluppo della versione Mac di Qenna Writer!
-Grazie davvero! I feedback e i bug che avete trovato sono stati fondamentali per tirare fuori questo port dal cassetto. Ce l'abbiamo fatta!
-E ricordate: anche se la versione Mac non è più in beta, resta completamente aperta come quella per Windows. Qualsiasi bug o problema troviate, scrivetemi pure: qennawriter@gmail.com
-
-Bene, veniamo al dunque! E ovviamente al pesce grosso di questo aggiornamento.
-*O stella...*
-
-Noi, il team di Qenna (composto da me, Grace e le mie 12 personalità), siamo orgogliosi di presentarvi...
-
-## Qenna Writer: Galaxy Map
-
-![La schermata di creazione della mappa galattica](qrc:/whatsnew/galaxy-criacao.jpg)
-
-L'ultimo aggiornamento di Qenna ha portato qualcosa di fenomenale: il creatore di mappe. Pensato per le opere fantasy, offriva tanti strumenti dedicati a quel genere.
-Ma i miei cari amici che, come me, amano, adorano e abbracciano la buona vecchia fantascienza e le space opera, erano rimasti in un angolo della festa.
-Ora non più.
-
-La Mappa Galattica di Qenna funziona quasi come la classica mappa fantasy. Puoi definire territori, gruppi, sottogruppi, creare collegamenti, esplorare, leggere, modificare e così via. Le cose che già conoscete.
-Ma ora su scala **Galattica**.
-
-Crea pianeti, lune, sistemi solari. Modificali, scrivi di loro, aggiungi costruzioni alla tua galassia e ai tuoi pianeti. Forgia e sviluppa tutto l'universo della tua storia come preferisci.
-
-La Mappa Galattica ha due modalità di creazione:
-la modalità **Navigatore** e la modalità **Astronomo**.
-
-![La modalità Navigatore](qrc:/whatsnew/galaxy-navegador.jpg)
-
-![La modalità Astronomo](qrc:/whatsnew/galaxy-astronomo.jpg)
-
-La modalità Navigatore ti offre un universo 3D completamente interattivo, navigabile e funzionale. Ti dà più libertà visiva e di movimento dentro la tua galassia. In compenso, ti dà anche più lavoro e più cose da fare prima che la tua storia prenda davvero il via lì.
-La modalità Astronomo lavora con testi e documenti. Scrivi e crea solo quello che vuoi e guarda il tuo universo prendere forma attraverso le tue parole. Non ha la stessa profondità interattiva del Navigatore, ma offre più libertà creativa. E sì, ha comunque qualche giocattolo 3D.
-
-Entrambe le modalità hanno lo stesso obiettivo: creare il tuo universo. Cambia solo il modo di lavorare. Sentiti libero di scegliere quella che vuoi e di creare come vuoi. Senza limiti.
-
-Nel dettaglio:
-
-**• Scegli la tua galassia**
-La Via Lattea (compreso il nostro cortile di casa, il Sistema Solare), Andromeda, M87, Sombrero, oppure creane una tua.
-
-**• Fisica reale**
-Niente più ricerche, scoperte o invenzioni di dati fisici del tuo universo quando la storia lo richiede.
-Il Galaxy Map genera i dati fisici dei corpi celesti che crea, su solide basi teoriche. Massa, gravità, tipo di pianeta, periodi di rotazione e di orbita e molto altro. Tutto generato e a tua disposizione in pochi clic.
-
-**• Guardala come vuoi**
-Completo, Atlante, Cielo, Infrarosso, Inchiostro. Ci sono diversi modi di vedere la mappa e ognuno ti dà un'esperienza quasi unica, che può adattarsi ancora meglio allo stile della tua storia.
-
-**• Costruzioni**
-Anelli orbitali, flotte, città orbitali, basi e perfino gigantesche sfere di Dyson. Aggiungi e scrivi di quello che vuoi.
-
-**• Classi di pianeti**
-Abitabilità da I a VI, per capire facilmente quali pianeti sono adatti alla vita.
-
-**• Semina organica e popolazioni**
-I sistemi compaiono nella galassia man mano che i territori crescono, e i pianeti possono popolarsi da soli.
-
-Tutto esportabile in PNG. Inoltre, ogni documento creato e scritto dentro le mappe ha una destinazione precisa. Puoi salvarli nei cassetti o nel Creatore di Mondi.
-
-Non mi dilungo oltre, gli screenshot parlano da soli. Se hai altri dubbi su come funziona la mappa, ha già la sua sezione nel Pannello della Guida!
-
-![Un pianeta con la sua scheda aperta](qrc:/whatsnew/galaxy-planeta-ficha.jpg)
-
-![Un pianeta con anello orbitale, flotta, città e stazione](qrc:/whatsnew/galaxy-construcoes.jpg)
-
-![Un sistema intero, con una sfera di Dyson al centro](qrc:/whatsnew/galaxy-sistema.jpg)
-
-![La modalità Astronomo con la scheda di un pianeta](qrc:/whatsnew/galaxy-astronomo-ficha.jpg)
-
-E per il resto, amici:
+La versione 2.5 di Qenna Writer è arrivata per smussare qualche spigolo delle versioni passate e, come sempre, portare cose nuove!
+Stiamo dando un'attenzione raddoppiata alle versioni per Mac! E lì sono stati corretti altri bug.
+Ma senza girarci troppo intorno, andiamo:
 
 ## Novità
 
-**○ Rework: Schede dei personaggi**
-Le schede dei personaggi hanno avuto un rework completo.
-Durante la beta per Mac, Mars mi ha mandato uno screenshot con un bug in cui la parte alta dei personaggi veniva tagliata dalle schede.
-E beh, le schede sono una funzione... arcaica dell'app. Erano sempre le stesse e funzionavano allo stesso modo da quando sono uscite. Bug compresi. Come la pagina che restava scura qualunque fosse il tema, e altri.
-Così ho fatto quello che mi riesce meglio in questa app. Un rework.
+Comincio questa sezione con una funzione nuova che ammetto subito: nessuno l'ha chiesta.
+È una funzione che ho deciso di mettere in Qenna perché mi mancava scrivere in questo modo e avere questa libertà.
 
-**• Nuove schede dei personaggi**
-Più complete, personalizzabili e belle.
-Crea i campi che vuoi, eliminali e tieni nelle schede solo le informazioni che ti servono.
+*Quindi... vi presento:*
 
-![La scheda nello stile Fascicolo](qrc:/whatsnew/ficha-prontuario.jpg)
+**• Manoscritto completo**
 
-![La stessa scheda nello stile Schede](qrc:/whatsnew/ficha-abas.jpg)
+Con questa funzione attiva, puoi leggere, modificare, scrivere e persino lavorare dall'inizio, se vuoi, vedendo l'intero libro nell'editor. Senza dover passare da un capitolo all'altro tramite i cassetti o le scorciatoie. È tutto sullo schermo. Basta scorrere.
+Ecco qualche informazione in più su questo giocattolo:
+1. Scrivere, incollare, cercare, annullare, ripetere ecc. Tutto funziona sull'intero libro e ogni cosa resta nel suo capitolo. Questa modalità si può attivare e disattivare, e le modifiche vengono comunque salvate nei singoli capitoli a cui appartengono.
+2. Le aperture dei capitoli sono protette. Cioè, i capitoli non si fondono mai tra loro, in nessun modo.
+3. Con questa modalità attiva, il Cassetto diventa un sommario. Cliccando su un capitolo l'editor scorre fino a lì. Shift+PagSu/PagGiù saltano da uno all'altro.
 
-**• Stili diversi**
-Schede, Rivista, Fascicolo, Infobox e Dossier. Ogni stile mette in risalto e presenta le informazioni in modo diverso. Scegli quello che preferisci e cambialo quando vuoi!
+L'ottimizzazione è buona. Uno dei miei progetti più grandi, un romanzo grezzo di 192 mila parole, si apre in questa modalità in circa 1 secondo. Va liscio. Certo, la media può variare in base al tuo computer e così via, ma scorrerà bene. L'editor in sé non ha avuto nessun impatto sulle prestazioni ed è ancora fluido e piacevole da usare come è sempre stato e sempre sarà.
 
-**○ 30 temi nuovi**
-*Niente animazioni stavolta. Ritorno alle origini.*
-Prima di creare qualsiasi cosa, ho misurato i colori dei 443 temi che l'app aveva già. Risultato: il 68% di tutto era nero, bianco o grigio, e un altro 13% era blu scuro. Un foglio chiaro colorato? Nemmeno uno. Così questa infornata è nata con una regola che ho battezzato Tork: più è alto, più il tema si allontana dai colori che Qenna usava già.
+*E in arrivo anche...*
 
-**• Tinta unita**
-16 temi tra chiari, ingialliti, scuri e colorati, più tranquilli, ognuno nato da qualcosa della vita reale. La carta da macellaio di Butcher Paper, il blocco da stenografia di Steno Pad, la copia rosa del modulo di Third Copy, il telefono anni '60 di Princess Phone e così via.
+**• Personalizzazione: le barre di Qenna**
 
-**• Foto**
-14 nuovi temi con immagine, fatti con foto che erano qui da mesi. Il mare di nuvole dorate di Cloud Sea, i fulmini che cadono sul mare in Heat Lightning, l'antica biblioteca di Reading Room, il finestrino dell'autobus sotto la pioggia di Bus Window. E Last Light, in bianco e nero, con solo la cima della montagna ancora a colori.
-Cloud Sea arriva già con il sigillo Consigliato dallo sviluppatore.
+Mi sono stancato della barra degli strumenti (la barra in alto). Semplice. Cominciavo a vederla troppo affollata, con troppi pulsanti e troppo lunga. E dopo aver provato a rifarla più e più volte, sono arrivato a diverse opzioni, che rispondevano a esigenze e gusti diversi.
+E ovviamente ho pensato: "Perché no?"
 
-**○ Modalità pagina**
-Si attiva nelle impostazioni. L'editor inizia a dividere il testo in pagine, come Word. Anche il conteggio delle pagine nel contatore è stato aggiornato e ora riflette il numero reale di pagine.
+Ora Qenna ha **7 stili diversi** di barra superiore. Barre simili a Word, per esempio. Tradizionali, minimaliste e quella rotante (che è diventata la nuova barra predefinita).
+Non preoccuparti, se la nuova non ti piace, la barra classica si può riportare nelle impostazioni.
 
-**○ Sfondo del foglio**
-*Suggerimento di Mars.*
-Ora puoi aggiungere immagini di sfondo alla pagina di un capitolo o di una scena. L'opzione si trova nella finestra di creazione/modifica dei capitoli. In più, ne è stata aggiunta anche una versione globale dentro i temi!
+Lo stesso vale per la barra di esplorazione (la barra a sinistra): ora ha anche lei **4 stili nuovi**, che si cambiano nella sezione aspetto delle impostazioni. Non ho toccato molto la barra di esplorazione perché, a differenza di quella degli strumenti, è buona. Ha sempre funzionato bene e non ha mai dato problemi.
 
-**○ Nuovi stili di cassetti per documenti semplici**
-Documenti senza elementi che sono solo documenti (spiegato bene, vero?)
-I cassetti senza elementi ora hanno nuove viste. Albero, Schedario, Indice e Quaderno continuo.
+E poi, questa è nuova:
 
-**○ Selettore dei font sistemato**
-Abbiamo fatto pulizia. Il selettore dei font era brutto da far male e disordinato da piangere. Non più.
-Ora i font sono organizzati per recenti, tipi standard e categorie. Più facile da sfogliare e scegliere quello che vuoi.
+**Barra del mondo (barra destra)**
+Per togliere un po' di peso dalle spalle della barra degli strumenti, ho scelto una nuova alternativa: una barra a destra. È piccola, discreta e... beh, sta a destra (wow, chi l'avrebbe mai detto?).
+Il Menu Riferimento, il Pensarium, i Promemoria, il Creatore di Mondi, l'Assistente IA e le Statistiche sono stati spostati lì.
 
-**○ Finestra Nuova mappa**
-*QUESTA DOVEVA ARRIVARE NELLA VERSIONE PRECEDENTE E ME NE SONO DIMENTICATO, AAAAAA!*
-Le mappe, sia quella galattica sia quella normale, ora hanno una finestra di creazione. Con anteprima e un po' di personalizzazione prima di essere generate.
+E naturalmente, insieme a tutte le barre di Qenna, ora puoi anche cambiarne la lunghezza sullo schermo.
 
-**○ Tag liberi**
-Guerra, monarchia, stirpe, tradimento: ora metti i tag che vuoi, dove vuoi. Si trovano nella creazione e nella modifica di documenti, personaggi, ambientazioni, oggetti e nei luoghi e sistemi del Creatore di Mondi. Invio o virgola aggiungono, e Tab completa il suggerimento.
-E nella Mappa, Esplora ha guadagnato "Filtra per tag". Scegline uno e guarda in quali territori compare. Non è mai stato così facile scoprire dove si sta combattendo quella tua guerra.
+E non è finita:
+1. Carosello
+Le icone delle barre scorrono quando non c'è spazio per farle stare tutte.
+2. Barre in rilievo
+Si attivano nelle impostazioni dell'aspetto: le barre diventano traslucide, con i pulsanti in rilievo, molto discreti. Rende l'interfaccia più pulita quando la tua attenzione è solo sul testo. Lo consiglio, è molto comodo.
 
-**○ Sagome per i personaggi senza foto**
-*Cosa saremmo senza Mars?*
-In una delle email che mi ha mandato mentre testava Qenna su Mac, Mars mi ha mostrato il suo cassetto dei personaggi, dove usava delle sagome come immagini. L'ho trovato fantastico e ho pensato... perché no?
-Quando crei o modifichi un personaggio, nell'area dell'immagine, ora hai l'opzione delle sagome, per scegliere quella che si adatta meglio al tuo personaggio. Non sono venute tutte perfette, eh? Ma è più bello di quel quadratino grigio con l'omino del bagno pubblico.
+E ora, sempre sull'interfaccia, abbiamo:
+*L'unico che non era stato toccato dalle ultime ondate di rework visivi... fino a ora.*
 
-**○ Superfluo**
-Ma perché no?
-Ora c'è un pulsante per chiudere e aprire la barra sinistra, in fondo alla barra stessa.
+**• NUOVO PANNELLO DEL SUONO IMMERSIVO**
 
-**○ Nuova opzione nelle impostazioni: Zoom dell'app**
-A differenza della dimensione dell'interfaccia, che ingrandisce solo le barre, questa opzione ingrandisce tutto. La finestra dei cassetti, i pulsanti e i testi al loro interno e tutto il resto. Utile per gli schermi piccoli. La modifica vale alla riapertura di Qenna.
+Sì, è arrivato!
+Il nuovo pannello del Suono immersivo è già disponibile in questa versione. Interfaccia rifatta, bella, illustrata e facile da usare.
+E in più ha portato un nuovo strumento incredibile:
 
-*E per le riparazioni di casa...*
+**Modalità Mix**
+Ora, nel Suono immersivo, puoi unire due suoni e mixarli in modo facile e veloce per creare atmosfere ancora più accoglienti!
+Una pioggia con un pianoforte horror in sottofondo?
+Una bella chitarra di Ebunny sopra lo scoppiettare di un falò?
+Il traffico della città vicino alla spiaggia?
 
-## Correzioni
+È tutto facile da fare e bastano pochi clic. Ora il Suono immersivo è davvero a un altro livello! E credetemi, è fantastico.
 
-**○ Corretti errori di interfaccia e di pagina sugli schermi piccoli.**
-La barra superiore poteva implodere e i pulsanti finivano sovrapposti. Avevamo già affrontato questo bug nelle versioni passate, ma visto che è tornato, l'abbiamo affrontato di nuovo. Ora quello che non ci sta va nel menu "⋯" della barra, e i pulsanti tornano da soli quando c'è spazio.
-C'era anche un bug con i margini. Con risoluzioni piccole o interfacce grandi, i margini potevano diventare troppo larghi e schiacciare il testo al centro. Corretto anche questo! *Grazie, Hyder!*
+*E ancora sull'interfaccia*
 
-**○ I backup non bloccano più l'app**
-Durante i backup, l'app poteva restare bloccata per diversi istanti, dando l'impressione di essersi piantata.
-Qenna è timida, quindi se le mettevi fretta, poteva andare storto. Ora c'è un avviso che il backup è in corso.
+**• Nuovo pannello del Contatore**
+Il nostro pannello dei progressi giornalieri e il contatore si sono rifatti il look!
+Il nuovo pannello è più bello e più facile da usare. Ora è diviso in schede, per vedere i tuoi obiettivi, avviare gli sprint e seguire il calendario del mese.
 
-**○ Rilevatore di presenza migliorato**
-Niente più quel popup fastidioso nell'angolo. La presenza dei personaggi viene sempre rilevata automaticamente e segnalata nell'intestazione, come l'app fa già con i dialoghi salvati, ma con un'animazione diversa per distinguere le due cose.
-Ah! C'era un altro bug: i nomi con un accento all'inizio o alla fine non venivano mai rilevati. Corretto.
+Ai veterani: niente paura, le stelline del calendario sono ancora intatte.
 
-**○ Bug della versione Mac corretti**
-**• La barra di selezione fluttuante spariva al clic**
-Il clic faceva sparire la barra invece di attivare i pulsanti. Corretto.
-**• Icone sfocate sugli schermi Retina**
-Ora vengono disegnate alla risoluzione dello schermo. Migliora anche su Windows con zoom dal 125% in su.
-**• I nomi dei personaggi si sovrapponevano alle immagini nei cassetti**
-Corretto. Ora compare una sola riga con i puntini di sospensione se il nome supera la scheda. Vale anche per Windows.
-**• Opzioni e testi dei pannelli troppo piccoli**
-Corretto con l'opzione Zoom dell'app. Se lo noti, vai su Impostazioni > Aspetto e regola lo zoom.
-**• Bug di sovrapposizione della scheda personaggio (foglio duplicato)**
-Corretto con il rework delle schede.
+**• Pannello di esportazione rifatto**
+Anche il pannello di esportazione di Qenna è stato rifatto. Ora con l'anteprima, più facile da usare e da impostare su cosa esportare.
 
-C'è un bug ancora aperto: Qenna su Mac può mostrare "Errore alla chiusura dell'app" dopo essere stata chiusa normalmente. Non sono riuscito a scoprire il motivo. Se ti succede, puoi cliccare su "Report..." e mandarmi quello che ricevi, per favore?
-Questo bug succede solo su Mac.
+E ora, alle modifiche dell'editor:
 
-E a proposito dei bug del Mac: se ne trovate altri o se qualcuno di questi succede ancora, fatemelo sapere!
+**• Schede dei documenti**
+Navigazione ancora più veloce e diretta!
+Ora puoi spostarti tra i documenti aperti nell'editor. Puoi tornare ai documenti che erano aperti, in modo facile e veloce.
+Alt + freccia sinistra/destra: torna indietro o vai avanti tra i documenti aperti.
+Oppure puoi portare il mouse nell'angolo in basso a destra e scorrere le schede dei documenti aperti. Ah! Funziona anche con i tasti laterali del mouse, se il tuo li ha.
 
-Per oggi è tutto, compagni!
-Bevete acqua, fate esercizio e tutto il resto. Tutto quello che io non faccio.
+**• Ritocco al menu di selezione**
+Il menu di selezione dell'editor (quello che appare quando selezioni un pezzo di testo) era enorme.
+Ho aggiunto una nuova funzione che lo rende più piccolo, con i pulsanti che si muovono al suo interno come un carosello.
 
-*Con amore, pazienza e Rock n' Roll,*
-**— P.H. Lobato, Guardiano delle Galassie di Qenna**
+**• Pagina e margini**
+Le impostazioni di pagina e margini sono state portate nella barra superiore.
+
+**• Segno di capitolo**
+Il titolo dei capitoli nella striscia in alto ha nuovi design, che si cambiano col clic destro. Appaiono anche a separare i capitoli nella modalità libro intero.
+
+E ora, passando alla mappa...
+
+**• NUOVO: creare una mappa da un'immagine**
+Un suggerimento ricevuto, e aveva senso. Se hai già una mappa della tua storia e vuoi usare gli strumenti della mappa, puoi! Ora si può caricare una mappa come immagine. Alcuni strumenti non funzionano in questa modalità, ma tutti i principali sì.
+
+**• Nuovi sprite sulla mappa**
+Aggiunti nuovi sprite: castelli, statue, costruzioni e pennelli.
+
+**• Novità: scala del mondo ancora più piccola**
+Ora c'è una nuova opzione per rendere la scala del mondo ANCORA PIÙ PICCOLA del minimo precedente.
+Così il mondo diventa enorme, anche nelle mappe medie. Nel supercontinente, poi? Si può ricostruire l'intero Brasile e avanzano ancora decine di chilometri vuoti.
+
+**• NUOVI THEME**
+*Perché non sono mai troppi!*
+Abbiamo 45 Theme nuovi! Un sacco, eh?
+Ma quelli che metto in evidenza sono:
+Barbizon, Windward, Old Growth, Gilt Frame, Instant Film e **Path of Neo**, un Theme ispirato all'estetica e alla palette di colori di Matrix (una saga dannatamente bella).
+
+E ah! Vale la pena sottolinearlo: Qenna ha portato anche qualcosa di nuovo.
+Il Theme Dark Knight, creato dall'utente Gabriel Tobias, ispirato alla fantastica estetica di The Batman. Che theme FANTASTICO.
+
+E poi, non siate timidi, eh? Se avete dei theme che vi piacciono molto e volete condividerli nell'app, basta esportarli e mandarmeli per e-mail!
+
+E ora, per le pulizie settimanali:
+
+## Correzioni e piccoli ritocchi
+
+1. Corretto un bug nel creatore di Theme per cui il colore del testo dell'interfaccia non veniva applicato.
+2. Ogni documento ora salva esattamente dove si è fermato il cursore.
+3. Corretto un errore di design COLOSSALE per cui la barra a sinistra semplicemente non toccava l'angolo dello schermo; inoltre è stata assottigliata per un'interfaccia più pulita (dimensione dei pulsanti invariata).
+4. Nuova icona dell'editor concentrato.
+5. Sempre nell'editor concentrato, corretto un bug per cui la barra a sinistra poteva sparire anche con il mouse sopra.
+6. Corretto il caricamento dei documenti: ora si aprono tutti più velocemente, anche quelli enormi.
+7. I testi delle mappe potevano risultare pixelati quando la mappa veniva esportata. Corretto.
+8. Foto dei theme sfocate su Mac (conflitto con Retina) o su Windows (conflitto con interfacce oltre il 125% di dimensione). Corretto.
+9. Usando immagini nei capitoli, la striscia del titolo poteva restare del colore del capitolo precedente. Corretto.
+10. Scie nell'interfaccia su Mac aprendo, chiudendo o spostando cose sullo schermo. Corretto.
+11. BUG COLOSSALE: se il testo era molto lungo, si poteva "sforare" il limite di scorrimento. In breve, anche con lo schermo scorso fino in fondo, poteva esserci ancora del testo sotto. Corretto.
+12. Corretto un bug nella modalità pagina per cui Ctrl+Z poteva togliere il margine.
+13. Scorrendo le impostazioni, la rotellina del mouse poteva cambiarle per sbaglio. Corretto.
+
+E ah! Qenna ha un nuovo logo, fatto con le illustrazioni della lettera Q del menu. Io lo trovo proprio carino, sai? Meglio del vecchio.
+
+Eh già... abbiamo cucinato di nuovo!
+
+Bene, per oggi è tutto, giusto?
+
+Ancora una volta, grazie per tutti i feedback e i suggerimenti che ricevo per e-mail! Davvero, i messaggi che mi mandate mi svoltano la giornata. E sapere che là fuori c'è gente a cui il mio app piace così tanto da prendersi il tempo di scrivermi mi dà tantissima motivazione per andare avanti.
+
+Siete tutti belli e profumati!
+
+*Con affetto, ma non troppo per non viziarvi,*
+**— P.H. Lobato, Guardiano delle Terre di Qenna**
