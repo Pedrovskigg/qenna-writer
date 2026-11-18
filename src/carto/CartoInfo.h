@@ -48,7 +48,8 @@ struct Building {
     bool timber = false;
     mutable int snowy = -1;       // −1 = ainda não olhou o clima
 };
-struct Field { double x = 0, y = 0, w = 0, d = 0, yaw = 0; int crop = 0; };
+// crop: 0–3 plantação · 4 pomar · 5 vinhedo · 6 lavanda (pincel Pomar); v sorteia a fruta do pomar
+struct Field { double x = 0, y = 0, w = 0, d = 0, yaw = 0; int crop = 0; double v = 0; };
 struct Dock { double x0 = 0, y0 = 0, x1 = 0, y1 = 0; };
 struct Boat { double x = 0, y = 0, yaw = 0, v = 0; };
 
@@ -67,7 +68,8 @@ struct Realm { QString name; RGB color{}; double x = 0, y = 0; int area = 0; };
 struct RealmState { std::vector<RealmDef> defs; std::vector<uint8_t> barrier; };
 
 // ── vegetação ──
-enum FloraType { Broad = 0, Pine, SnowPine, Palm, Cactus, Shrub, Rock, Reed, Dead };
+// Cherry em diante: só pelo pincel Floresta (leva 5); o clima não planta
+enum FloraType { Broad = 0, Pine, SnowPine, Palm, Cactus, Shrub, Rock, Reed, Dead, Cherry, Autumn, Mushroom, Crystal };
 struct Flora { double x, y; int type; double v, s; int b; };
 
 // ── o que o usuário constrói ──
@@ -82,7 +84,11 @@ struct Art {
     QString groupId;              // Explorar: batizou, virou lugar (grupo filho do território)
 };
 // casa da vila; city = sobrado do pincel Cidade (2 ou 3 andares, a cumeeira pro fundo), bell = campanário do lado
-struct House { double x = 0, y = 0, yaw = 0, v = 0; int floors = 1; bool timber = false; bool city = false, bell = false; mutable int snowy = -1; };
+// prop (leva 5) = peça de pincel no lugar da casa: tent (big = pavilhão) · yurt · fire · ruin · pier (do x0,y0 na terra ao x1,y1 no mar; boat = barco amarrado)
+struct House {
+    double x = 0, y = 0, yaw = 0, v = 0; int floors = 1; bool timber = false; bool city = false, bell = false; mutable int snowy = -1;
+    QString prop; bool big = false, boat = false; double x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+};
 struct Wall { Path pts; QString kind; };   // kind: "" pedra · "wood" paliçada
 struct Road { Path pts; QString kind = QStringLiteral("road"); };   // trail · road · royal
 struct UserLayer {
@@ -149,10 +155,15 @@ void realmsFromJson(Info& info, const QJsonObject& o);
 // construir
 Art& addArt(const World& w, Info& info, const QString& kind, double x, double y, int size);
 bool paintVillage(const World& w, Info& info, double x, double y, double r);
-bool paintFieldsUser(const World& w, Info& info, double x, double y, double r);
+// cropMode: −1 plantação sorteada (0–3) · 4 pomar · 5 vinhedo · 6 lavanda (o pincel Pomar; vinhedo e pomar sobem encosta)
+bool paintFieldsUser(const World& w, Info& info, double x, double y, double r, int cropMode = -1);
 bool paintCity(const World& w, Info& info, double x, double y, double r);
-// mode: auto (a árvore que o clima daria) · broad · pine · palm · rocks
+// mode: auto (a árvore que o clima daria) · broad · pine · palm · rocks · cherry · autumn · dead · mushroom · crystal
 bool paintTrees(World& w, Info& info, double x, double y, double r, const QString& mode);
+// leva 5: Acampamento (mode army = barracas em fileira · nomad = iurtas), Ruínas e Cais (na água rente à costa)
+bool paintTents(const World& w, Info& info, double x, double y, double r, const QString& mode);
+bool paintRuins(const World& w, Info& info, double x, double y, double r);
+bool paintDocks(const World& w, Info& info, double x, double y, double r);
 bool addWall(Info& info, const Path& pts, const QString& kind = QString());
 bool addRoad(Info& info, const Path& pts, const QString& kind, bool smooth);
 bool addBridge(Info& info, Pt a, Pt b);

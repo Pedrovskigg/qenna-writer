@@ -322,6 +322,146 @@ FloraImg drawFlora(int type, double v, double pitchDeg, double ppw)
         for (int k = 0; k < 4; k++) branch(0, 0, 2.6 + k * 0.6, k / 4.0 * M_PI * 2 + v * 4, 1.5, 0.3, 0);
         break;
     }
+    // ── leva 5 (só pelo pincel Floresta): cerejeira, outono, cogumelo gigante, cristais ──
+    case Cherry: case Autumn: {
+        // a copa da folhosa com outra paleta; a cerejeira solta pétalas no chão
+        static const RGB cherry[6][2] = { { { 252, 206, 222 }, { 204, 118, 156 } }, { { 248, 190, 210 }, { 196, 104, 144 } }, { { 255, 222, 232 }, { 214, 140, 170 } },
+                                          { { 244, 176, 204 }, { 184, 96, 136 } }, { { 252, 214, 226 }, { 206, 126, 160 } }, { { 250, 198, 216 }, { 200, 112, 150 } } };
+        static const RGB autumn[6][2] = { { { 238, 152, 62 }, { 152, 66, 30 } }, { { 228, 98, 54 }, { 126, 40, 28 } }, { { 240, 198, 76 }, { 162, 112, 32 } },
+                                          { { 214, 120, 48 }, { 120, 52, 26 } }, { { 232, 172, 70 }, { 150, 86, 30 } }, { { 204, 84, 52 }, { 112, 36, 30 } } };
+        const bool petals = type == Cherry;
+        const RGB cl = petals ? cherry[gi][0] : autumn[gi][0], cd = petals ? cherry[gi][1] : autumn[gi][1];
+        const int form = static_cast<int>(std::floor(v * 18)) % 3;
+        const double zc = form == 2 ? 5.0 : form == 1 ? 3.9 : 4.6, Rr = form == 2 ? 1.75 : form == 1 ? 2.35 : 2.1;
+        shadow(Rr * 1.1, 1.0);
+        if (petals) {
+            g.setPen(Qt::NoPen);
+            g.setBrush(rgb(cl, 1.05, 0.8));
+            for (int k = 0; k < 14; k++) {
+                const double a = R() * M_PI * 2, d = std::sqrt(R()) * Rr * 1.5, pr = std::max(0.4, 0.14 * u);
+                g.drawEllipse(P(std::cos(a) * d, std::sin(a) * d, 0), pr, pr);
+            }
+        }
+        trunk(zc - Rr * 0.4, 0.45, petals ? RGB{ 78, 56, 50 } : RGB{ 88, 64, 44 });
+        g.setPen(pen(rgb(petals ? RGB{ 72, 52, 46 } : RGB{ 84, 62, 42 }), lw(0.22), Qt::RoundCap));
+        for (int s : { -1, 1 }) g.drawLine(P(0, 0, zc - Rr * 0.9), P(s * Rr * 0.65, 0, zc - Rr * 0.15));
+        const int n = form == 2 ? 6 : 8;
+        std::vector<std::array<double, 4>> lumps;
+        for (int k = 0; k < n; k++) {
+            const double a = double(k) / n * M_PI * 2 + R() * 0.6, e = -0.35 + R() * 1.0;
+            const double rr = Rr * (0.5 + R() * 0.14);
+            lumps.push_back({ std::cos(a) * Rr * 0.55 * std::cos(e), std::sin(a) * Rr * 0.55 * std::cos(e), zc + Rr * (form == 2 ? 0.75 : 0.45) * std::sin(e), rr });
+        }
+        lumps.push_back({ 0, 0, zc + Rr * (form == 2 ? 0.8 : 0.5), Rr * 0.62 });
+        std::stable_sort(lumps.begin(), lumps.end(), [&](const auto& p, const auto& q) { return depthKey(p[1], p[2]) < depthKey(q[1], q[2]); });
+        for (const auto& l : lumps) lump(l[0], l[1], l[2], l[3], cl, cd, 16);
+        break;
+    }
+    case Mushroom: {
+        static const RGB caps[6] = { { 206, 58, 48 }, { 158, 108, 72 }, { 72, 168, 180 }, { 144, 92, 176 }, { 214, 150, 60 }, { 196, 70, 96 } };
+        const RGB cap = caps[gi % 6];
+        const bool spots = gi % 3 != 1;
+        const double zc = 3.3 + v * 1.3, rc = 1.8 + v * 0.8, hd = rc * 0.62;
+        shadow(rc * 0.9, 0.8);
+        // cogumelinhos em volta
+        auto mini = [&](double x, double d, double s) {
+            const QPointF a = P(x, d, 0), b = P(x, d, 0.8 * s);
+            g.setPen(pen(rgb({ 236, 228, 208 }), lw(0.22 * s)));
+            g.drawLine(a, b);
+            const double rx = 0.55 * s * u, ry = std::max(0.6, (0.35 * s * co + 0.3 * s * si) * u);
+            const QRectF er(b.x() - rx, b.y() - ry, 2 * rx, 2 * ry);
+            QPainterPath pa; pa.arcMoveTo(er, 0); pa.arcTo(er, 0, 180); pa.closeSubpath();
+            g.fillPath(pa, rgb(cap, 0.95));
+        };
+        mini(-1.6, 0.6, 1.0);
+        if (v > 0.4) mini(1.5, 0.9, 0.8);
+        // pé: um pouco torto, mais grosso embaixo
+        const double bend = (R() - 0.5) * 0.8;
+        const QPointF p0 = P(0, 0, 0), pm = P(bend * 0.6, 0, zc * 0.5), p1 = P(bend, 0, zc);
+        const double sw = 0.62 * u, tw = 0.42 * u;
+        QLinearGradient gr(p0.x() - sw, 0, p0.x() + sw, 0);
+        gr.setColorAt(0, rgb({ 246, 240, 226 })); gr.setColorAt(1, rgb({ 196, 186, 166 }));
+        QPainterPath stem;
+        stem.moveTo(p0.x() - sw, p0.y());
+        stem.quadTo(QPointF(pm.x() - (sw + tw) / 2, pm.y()), QPointF(p1.x() - tw, p1.y()));
+        stem.lineTo(p1.x() + tw, p1.y());
+        stem.quadTo(QPointF(pm.x() + (sw + tw) / 2, pm.y()), QPointF(p0.x() + sw, p0.y()));
+        stem.closeSubpath();
+        g.fillPath(stem, gr);
+        // chapéu: aba (metade de baixo da elipse do disco) e a cúpula por cima
+        const QPointF Pc = P(bend, 0, zc);
+        const double Xc = Pc.x(), Yc = Pc.y(), rx = rc * u, ry = std::max(0.8, rc * si * u), Yt = P(bend, 0, zc + hd).y();
+        const QRectF er(Xc - rx, Yc - ry, 2 * rx, 2 * ry);
+        { QPainterPath brim; brim.arcMoveTo(er, 0); brim.arcTo(er, 0, -180); brim.closeSubpath(); g.fillPath(brim, rgb(cap, 0.55)); }
+        const double domeTop = std::min(Yt, Yc - ry);
+        QRadialGradient cg(QPointF(Xc, Yc), rx * 1.2, QPointF(Xc - rx * 0.35, domeTop + (Yc - domeTop) * 0.3), rx * 0.1);
+        cg.setColorAt(0, rgb(cap, 1.25)); cg.setColorAt(0.6, rgb(cap)); cg.setColorAt(1, rgb(cap, 0.7));
+        QPainterPath dome;
+        dome.moveTo(Xc - rx, Yc);
+        dome.cubicTo(QPointF(Xc - rx, Yc - (Yc - domeTop) * 0.75), QPointF(Xc - rx * 0.55, domeTop), QPointF(Xc, domeTop));
+        dome.cubicTo(QPointF(Xc + rx * 0.55, domeTop), QPointF(Xc + rx, Yc - (Yc - domeTop) * 0.75), QPointF(Xc + rx, Yc));
+        dome.arcTo(er, 0, -180);
+        dome.closeSubpath();
+        g.fillPath(dome, cg);
+        if (spots && u > 1.6) {
+            g.setPen(Qt::NoPen);
+            g.setBrush(QColor(250, 246, 236, 235));
+            for (int k = 0; k < 9; k++) {
+                const double a = R() * M_PI * 2, e = 0.15 + R() * 1.1, sx = std::cos(a) * std::cos(e) * 0.85, sd = std::sin(a) * std::cos(e) * 0.85;
+                if (sd < -0.35) continue;
+                const QPointF X = P(bend + sx * rc, sd * rc, zc + std::sin(e) * hd * 0.9);
+                const double ex = (0.22 + R() * 0.2) * u;
+                const double ey = (0.16 + R() * 0.12) * u;
+                g.drawEllipse(X, ex, ey);
+            }
+        }
+        if (gi == 2 || gi == 3) {     // os azulados e roxos brilham de leve
+            QRadialGradient gl(QPointF(Xc, Yc), rx * 1.6);
+            gl.setColorAt(0, rgb(cap, 1.3, 0.25)); gl.setColorAt(1, rgb(cap, 1.3, 0));
+            g.setPen(Qt::NoPen); g.setBrush(gl);
+            g.drawEllipse(QPointF(Xc, Yc), rx * 1.6, rx * 1.6);
+        }
+        break;
+    }
+    case Crystal: {
+        static const RGB hues[6] = { { 176, 124, 226 }, { 110, 210, 232 }, { 240, 140, 184 }, { 96, 206, 146 }, { 150, 170, 240 }, { 236, 210, 120 } };
+        const RGB col = hues[gi % 6];
+        shadow(1.6, 0.6);
+        const int n = 3 + static_cast<int>(std::floor(v * 3));
+        struct Shard { double x, d, h, w, tx, td; };
+        std::vector<Shard> shards;
+        for (int k = 0; k < n; k++) {
+            const double a = double(k) / n * M_PI * 2 + R();
+            const double d = k == 0 ? 0 : 0.5 + R() * 0.8;
+            const double tilt = k == 0 ? 0.1 : 0.35 + R() * 0.35;
+            const double h = k == 0 ? 4.6 + v * 2 : 1.6 + R() * 2.4;
+            const double w = k == 0 ? 0.75 : 0.35 + R() * 0.3;
+            shards.push_back({ std::cos(a) * d, std::sin(a) * d, h, w, std::cos(a) * tilt, std::sin(a) * tilt });
+        }
+        std::stable_sort(shards.begin(), shards.end(), [&](const Shard& a, const Shard& b) { return a.d * co < b.d * co; });
+        // pedra da base
+        g.setPen(Qt::NoPen); g.setBrush(QColor(112, 106, 100));
+        g.drawEllipse(P(0, 0, 0), 1.5 * u, std::max(0.6, 1.5 * si * u * 0.6));
+        for (const Shard& s : shards) {
+            const QPointF X0 = P(s.x, s.d, 0), X1 = P(s.x + s.tx * s.h, s.d + s.td * s.h, s.h * 0.82), Xt = P(s.x + s.tx * s.h * 1.1, s.d + s.td * s.h * 1.1, s.h);
+            double px = -(X1.y() - X0.y()), py = X1.x() - X0.x();
+            double pl = std::hypot(px, py);
+            if (!pl) pl = 1;
+            px = px / pl * s.w * u; py = py / pl * s.w * u;
+            QPainterPath a1; a1.moveTo(X0.x() - px, X0.y() - py); a1.lineTo(X1.x() - px, X1.y() - py); a1.lineTo(Xt); a1.lineTo(X0); a1.closeSubpath();
+            g.fillPath(a1, rgb(col, 1.18));
+            QPainterPath a2; a2.moveTo(X0); a2.lineTo(Xt); a2.lineTo(X1.x() + px, X1.y() + py); a2.lineTo(X0.x() + px, X0.y() + py); a2.closeSubpath();
+            g.fillPath(a2, rgb(col, 0.78));
+            g.setPen(pen(rgb(col, 1.45, 0.8), std::max(0.5, 0.08 * u)));
+            g.drawLine(QPointF(X0.x() - px * 0.4, X0.y() - py * 0.4), QPointF(X1.x() - px * 0.4, X1.y() - py * 0.4));
+        }
+        const QPointF Xg = P(0, 0, 2.5);
+        QRadialGradient gl(Xg, 3.2 * u);
+        gl.setColorAt(0, rgb(col, 1.3, 0.22)); gl.setColorAt(1, rgb(col, 1.3, 0));
+        g.setPen(Qt::NoPen); g.setBrush(gl);
+        g.drawEllipse(Xg, 3.2 * u, 3.2 * u);
+        break;
+    }
     }
     g.end();
     return { img, bx, by, ppw };
@@ -744,6 +884,7 @@ void drawBoat(QPainter& p, const Boat& b, const Cam& cam)
 // ── plantação: retalho no chão com sulcos ──
 void drawField(QPainter& p, const Field& f, const Cam& cam)
 {
+    if (f.crop >= 4) { drawFieldCrop(p, f, cam); return; }      // pomar, vinhedo e lavanda (leva 5)
     static const RGB CROPS[4] = { { 196, 176, 110 }, { 128, 148, 82 }, { 140, 110, 80 }, { 168, 172, 102 } };
     const double c = std::cos(f.yaw), s = std::sin(f.yaw);
     auto L = [&](double lx, double ly) { return V3{ f.x + c * lx - s * ly, f.y + s * lx + c * ly, 0.05 }; };
@@ -949,6 +1090,7 @@ void drawWallTower(QPainter& p, const Pt& at, const Cam& cam, double k)
 // Atlas: símbolos chapados, no estilo de mapa de livro
 void atlasGlyph(QPainter& p, int type, double X, double Y, double k)
 {
+    if (type == Cherry || type == Autumn || type == Mushroom) type = Broad;    // leva 5: copa redonda; os cristais ficam de fora, como as pedras
     p.setPen(pen(QColor(52, 60, 40, 217), 1));
     if (type == Pine || type == SnowPine) {
         QPainterPath t; t.moveTo(X, Y - 6 * k); t.lineTo(X + 2.6 * k, Y); t.lineTo(X - 2.6 * k, Y); t.closeSubpath();
@@ -979,6 +1121,32 @@ void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v, con
         for (const QPointF& q : pts) { if (first) path.moveTo(q); else path.lineTo(q); first = false; }
         p.setBrush(Qt::NoBrush); p.drawPath(path); p.setBrush(PAPERC);
     };
+    if (type == Cherry || type == Autumn) type = Broad;     // leva 5: cerejeira e outono usam a copa redonda
+    if (type == Mushroom) {
+        // cogumelo: pé, o chapéu em meia-lua e uma pinta
+        const double r = 2.4 * k, cy = Y - 3.6 * k;
+        QPainterPath st; st.moveTo(X - 0.5 * k, Y); st.lineTo(X - 0.4 * k, cy); st.lineTo(X + 0.4 * k, cy); st.lineTo(X + 0.5 * k, Y);
+        p.drawPath(st);
+        const QRectF cr(X - r, cy - r, 2 * r, 2 * r);
+        QPainterPath cap; cap.arcMoveTo(cr, 180); cap.arcTo(cr, 180, -180); cap.closeSubpath();
+        p.drawPath(cap);
+        p.setBrush(Qt::NoBrush);
+        p.drawEllipse(QPointF(X - r * 0.35, cy - r * 0.45), 0.35 * k, 0.35 * k);
+        p.setBrush(PAPERC);
+        return;
+    }
+    if (type == Crystal) {
+        // cristais: três prismas pontudos
+        static const double sh[3][3] = { { 0, 5.2, 0.9 }, { -1.4, 3.0, 0.6 }, { 1.3, 3.6, 0.6 } };
+        for (const auto& s : sh) {
+            const double dx = s[0], h = s[1], w = s[2];
+            QPainterPath t;
+            t.moveTo(X + dx * k - w * k, Y); t.lineTo(X + dx * k - w * k, Y - h * 0.75 * k); t.lineTo(X + dx * k + dx * 0.15 * k, Y - h * k);
+            t.lineTo(X + dx * k + w * k, Y - h * 0.75 * k); t.lineTo(X + dx * k + w * k, Y); t.closeSubpath();
+            p.drawPath(t);
+        }
+        return;
+    }
     if (type == Broad) {
         // copa redonda com sombra em meia-lua embaixo à direita; as copas se encavalam e viram mata
         const double r = 2.3 * k * (0.85 + 0.3 * v), cy = Y - r * 1.2;

@@ -75,8 +75,15 @@ bool drawArt4(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol);
 // o fosso do castelo "com fosso": meio-lados da ilha (Rx, Ry) e a largura da água (M), já na escala k do artefato
 struct MoatGeom { double Rx, Ry, M; };
 MoatGeom moatGeom(int size, double k);
-// tochas da noite: o castelo do Penhasco acende em volta da muralha dele, não da de sempre (false = a de sempre)
+// tochas da noite: o castelo do Penhasco (e os de montanha e o Forte Estrelado) acende em volta da muralha dele, não da de sempre (false = a de sempre)
 bool castleLightRing(const Art& a, double& R, double& z);
+// leva 5: o que assenta no relevo (Penhasco, Ninho de Águia, Terraços, Cidadela em Anéis, Mosteiro): a câmera leva o chão (Cam::gz)
+bool onRelief(const Art& a);
+// leva 5: as peças dos pincéis (House::prop: tent · yurt · fire · ruin · pier); o barco amarrado no cais a cena desenha à parte, na escala dele
+void drawProp(QPainter& p, const House& h, const Cam& cam);
+bool pierBoat(const House& h, Boat& out);
+// leva 5: pomar (crop 4), vinhedo (5) e lavanda (6), com as fileiras em pé (drawField chama sozinho)
+void drawFieldCrop(QPainter& p, const Field& f, const Cam& cam);
 // estilos de castelo, na ordem do catálogo
 const QStringList& castleStyles();
 

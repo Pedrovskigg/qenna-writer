@@ -57,8 +57,10 @@ struct ToolOpts {
     // construir
     QString buildKind = QStringLiteral("castle");   // select castle tower lighthouse windmill temple ruins (e os de artSpecs()) bridge village fields wall road erase
     int castleSize = 1;
-    QString castleStyle;                             // "" humano · norman · moat · chateau · crag · elven · dwarf · orc · oriental · desert · dark · ice
-    QString treeMode = QStringLiteral("auto");       // pincel Floresta: auto (do clima) · broad · pine · palm
+    QString castleStyle;                             // "" humano · norman · moat · chateau · crag · eyrie · terraced · tiered · star · slavic · motte · elven · dwarf · orc · oriental · desert · dark · ice
+    QString treeMode = QStringLiteral("auto");       // pincel Floresta: auto (do clima) · broad · pine · palm · cherry · autumn · dead · mushroom · crystal
+    int orchardMode = 4;                             // pincel Pomar: 4 pomar · 5 vinhedo · 6 lavanda
+    QString tentMode = QStringLiteral("army");       // pincel Acampamento: army (barracas em fileira) · nomad (iurtas)
     QString wallKind;                                // muralha: "" pedra · wood paliçada
     double buildBrush = 14;
     QString roadMode = QStringLiteral("route");      // route · hand

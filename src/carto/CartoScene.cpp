@@ -657,7 +657,10 @@ const Scene::SpriteIndex& Scene::spriteIndex(const SceneState& st, const std::ve
         } else if (it.k == 2) { const Building& o = info->buildings[it.idx]; around(ground(st, o.x, o.y), big); }
         else if (it.k == 1) {
             const bool user = it.sub == 1;
-            around(ground(st, user ? U.houses[it.idx].x : info->buildings[it.idx].x, user ? U.houses[it.idx].y : info->buildings[it.idx].y), big * 0.5);
+            if (user && U.houses[it.idx].prop == QLatin1String("pier")) {     // o cais vai da terra ao mar
+                const House& h = U.houses[it.idx];
+                span({ ground(st, h.x0, h.y0), ground(st, h.x1, h.y1) }, big * 0.6);
+            } else around(ground(st, user ? U.houses[it.idx].x : info->buildings[it.idx].x, user ? U.houses[it.idx].y : info->buildings[it.idx].y), big * 0.5);
         }
     }
     return ix;
@@ -739,7 +742,7 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
             if (!g || !g->vis) continue;
             if (o.sc > 1.01) { const double pd = pad * o.sc; if (g->X < -pd || g->Y < -pd || g->X > W + pd || g->Y > H + pd * 2) continue; }
             else if (out(*g)) continue;
-            const bool crag = o.kind == QLatin1String("castle") && o.style == QLatin1String("crag");
+            const bool crag = spr::onRelief(o);      // Penhasco, castelos de montanha e Mosteiro assentam no relevo
             const spr::Cam c = camAt(st, g->L, o.x, o.y, o.sc, crag);
             const RGB rc = realmCol(*info, o.realm);
             const double ka = ks * o.sc;
@@ -800,6 +803,22 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
             spr::drawCastle(p, o.x, o.y, o.yaw, o.size, camAt(st, g->L, o.x, o.y), realmCol(*info, o.realm));
         } else if (it.k == 1) {
             const bool user = it.sub == 1;
+            if (user && !U.houses[it.idx].prop.isEmpty()) {
+                // peça de pincel (leva 5): tenda, iurta, fogueira, ruína, cais
+                const House& h = U.houses[it.idx];
+                const bool pier = h.prop == QLatin1String("pier");
+                const auto g = ground(st, h.x, h.y, pier ? 2 : 4);
+                if (!g || !g->vis || out(*g)) continue;
+                if (pier) {
+                    spr::drawProp(p, h, cam(st, 0));
+                    Boat bt;
+                    if (spr::pierBoat(h, bt)) spr::drawBoat(p, bt, camAt(st, 0, bt.x, bt.y));
+                } else {
+                    Hide hide(p, unhidden(st, h.x, h.y, 2.2 * ks, 5 * ks));
+                    spr::drawProp(p, h, camAt(st, g->L, h.x, h.y));
+                }
+                continue;
+            }
             const double x = user ? U.houses[it.idx].x : info->buildings[it.idx].x, y = user ? U.houses[it.idx].y : info->buildings[it.idx].y;
             const bool city = user && U.houses[it.idx].city;
             const auto g = ground(st, x, y, city ? (U.houses[it.idx].bell ? 12 : 7) : 4);
@@ -858,6 +877,12 @@ void Scene::drawLights(QPainter& p, const SceneState& st, double night)
             for (const Path& br : info.bridges) { add(br[0][0], br[0][1], 1.6, 1.6 * k, "lantern", 0.8); add(br.back()[0], br.back()[1], 1.6, 1.6 * k, "lantern", 0.8); }
         }
         for (const House& h : U.houses) {
+            if (!h.prop.isEmpty()) {     // leva 5: peças dos pincéis (fogueira, cais, iurta)
+                if (h.prop == QLatin1String("fire")) add(h.x, h.y, 0.9 * k, 2.8 * k, "torch", 1);
+                else if (h.prop == QLatin1String("pier")) add(h.x1, h.y1, 1.6, 1.9 * k, "lantern", 0.9);
+                else if (h.prop == QLatin1String("yurt") && fr(h.v * 7.31) < 0.4) add(h.x, h.y, 0.8 * k, 1.8 * k, "window", 0.6);
+                continue;
+            }
             if (!h.city) { house(h.x, h.y, h.v, h.floors); continue; }
             if (fr(h.v * 7.31) < 0.15) continue;
             add(h.x, h.y, (h.floors * 1.75 - 1) * k, 2.6 * k, "window", 0.75 + 0.25 * fr(h.v * 3.7));
@@ -1201,6 +1226,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
     }
     UserLayer& U = info.user;
     if (flat) for (const House& h : U.houses) {
+        if (h.prop == QLatin1String("pier") || h.prop == QLatin1String("fire")) continue;    // cais e fogueira não viram quadradinho
         const auto g = ground(st, h.x, h.y);
         if (!g) continue;
         // no Topográfico a cidade é mancha suave (quadradinho sem contorno, meio transparente), não um monte de tijolos

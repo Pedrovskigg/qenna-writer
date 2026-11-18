@@ -562,6 +562,10 @@ void Canvas::buildDab(double x, double y)
     else if (k == QLatin1String("city")) paintCity(*m_world, in, x, y, m_opts.buildBrush);
     else if (k == QLatin1String("forest")) paintTrees(*m_world, in, x, y, m_opts.buildBrush, m_opts.treeMode);
     else if (k == QLatin1String("rocks")) paintTrees(*m_world, in, x, y, m_opts.buildBrush, QStringLiteral("rocks"));
+    else if (k == QLatin1String("orchard")) paintFieldsUser(*m_world, in, x, y, m_opts.buildBrush * 1.4, m_opts.orchardMode);
+    else if (k == QLatin1String("tents")) paintTents(*m_world, in, x, y, m_opts.buildBrush, m_opts.tentMode);
+    else if (k == QLatin1String("ruinsb")) paintRuins(*m_world, in, x, y, m_opts.buildBrush);
+    else if (k == QLatin1String("docks")) paintDocks(*m_world, in, x, y, m_opts.buildBrush);
 }
 
 void Canvas::buildDown(QPointF pos)
@@ -828,8 +832,9 @@ void Canvas::drawToolOverlay(QPainter& p, const SceneState& st)
             p.strokePath(pp, dashPen(QColor(240, 232, 214, 230), 3, 6, 4));
         }
         if (kind == QLatin1String("village") || kind == QLatin1String("city") || kind == QLatin1String("fields") || kind == QLatin1String("forest")
-            || kind == QLatin1String("rocks") || kind == QLatin1String("erase"))
-            cursorRing(m_opts.buildBrush * (kind == QLatin1String("fields") ? 1.4 : 1), kind == QLatin1String("erase") ? QColor(232, 140, 120) : QColor(240, 232, 214));
+            || kind == QLatin1String("rocks") || kind == QLatin1String("erase") || kind == QLatin1String("orchard") || kind == QLatin1String("tents")
+            || kind == QLatin1String("ruinsb") || kind == QLatin1String("docks"))
+            cursorRing(m_opts.buildBrush * (kind == QLatin1String("fields") || kind == QLatin1String("orchard") ? 1.4 : 1), kind == QLatin1String("erase") ? QColor(232, 140, 120) : QColor(240, 232, 214));
     } else if (m_tool == Tool::Names) {
         if (m_nameNew && m_trail.size() >= 2) {
             QPainterPath pp; pp.moveTo(m_trail[0]);

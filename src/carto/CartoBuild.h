@@ -90,10 +90,14 @@ private:
     QWidget* m_brushRow = nullptr;
     QLabel* m_sizeCap = nullptr;
     QLabel* m_brushCap = nullptr;
-    QHash<QString, QToolButton*> m_sizeBtns, m_rmodeBtns, m_rkindBtns, m_scaleBtns, m_wallBtns, m_treeBtns;
+    QHash<QString, QToolButton*> m_sizeBtns, m_rmodeBtns, m_rkindBtns, m_scaleBtns, m_wallBtns, m_orchBtns, m_tentBtns;
     QComboBox* m_styleBox = nullptr;
     QWidget* m_wallRow = nullptr;
     QWidget* m_treeRow = nullptr;
+    QLabel* m_treeCap = nullptr;
+    QComboBox* m_treeBox = nullptr;          // a árvore do pincel Floresta (nove: lista, não pílulas)
+    QWidget* m_orchRow = nullptr;            // pincel Pomar: pomar · vinhedo · lavanda
+    QWidget* m_tentRow = nullptr;            // pincel Acampamento: exército · nômade
     QSlider* m_brush = nullptr;
     QLabel* m_brushValue = nullptr;
     QToolButton* m_selectBtn = nullptr;

@@ -188,6 +188,19 @@ QString artName(const QString& kind)
     if (kind == QLatin1String("arch")) return QCoreApplication::translate("carto", "Arco do Triunfo");
     if (kind == QLatin1String("market")) return QCoreApplication::translate("carto", "Mercado");
     if (kind == QLatin1String("aqueduct")) return QCoreApplication::translate("carto", "Aqueduto");
+    if (kind == QLatin1String("equestrian")) return QCoreApplication::translate("carto", "Estátua Equestre");
+    if (kind == QLatin1String("angel")) return QCoreApplication::translate("carto", "Anjo");
+    if (kind == QLatin1String("sphinx")) return QCoreApplication::translate("carto", "Esfinge");
+    if (kind == QLatin1String("totem")) return QCoreApplication::translate("carto", "Totens");
+    if (kind == QLatin1String("fallenhead")) return QCoreApplication::translate("carto", "Cabeça Caída");
+    if (kind == QLatin1String("monastery")) return QCoreApplication::translate("carto", "Mosteiro");
+    if (kind == QLatin1String("palace")) return QCoreApplication::translate("carto", "Palácio");
+    if (kind == QLatin1String("inn")) return QCoreApplication::translate("carto", "Estalagem");
+    if (kind == QLatin1String("watermill")) return QCoreApplication::translate("carto", "Moinho d'Água");
+    if (kind == QLatin1String("observatory")) return QCoreApplication::translate("carto", "Observatório");
+    if (kind == QLatin1String("academy")) return QCoreApplication::translate("carto", "Academia");
+    if (kind == QLatin1String("watchtower")) return QCoreApplication::translate("carto", "Posto de Vigia");
+    if (kind == QLatin1String("shrine")) return QCoreApplication::translate("carto", "Santuário");
     return QCoreApplication::translate("carto", "Artefato");
 }
 
@@ -207,6 +220,12 @@ const std::vector<ArtSpec>& artSpecs()
         { "colossus", 5.6, 33, false, false, 'f' }, { "guardians", 8.5, 21, false, false, 'f' }, { "seatedgod", 6, 14, false, false, 'f' },
         { "cathedral", 8.5, 20, false, false, 't' }, { "arch", 4.4, 11, false, false, 'f' }, { "market", 7, 4, false, false, 0 },
         { "aqueduct", 11, 9.5, false, false, 's' },
+        // leva 5: estátuas e construções
+        { "equestrian", 3.4, 9.6, false, false, 't' }, { "angel", 2.6, 11, false, false, 'f' }, { "sphinx", 5.4, 6, false, false, 'f' },
+        { "totem", 3.6, 10.5, false, false, 'f' }, { "fallenhead", 5.6, 5.5, false, false, 't' },
+        { "monastery", 6.5, 7, false, false, 'f' }, { "palace", 10, 12, false, false, 'f' }, { "inn", 5.2, 6.5, false, false, 't' },
+        { "watermill", 5, 6, false, false, 't' }, { "observatory", 3.6, 10, false, false, 'f' }, { "academy", 7.6, 13.5, false, false, 't' },
+        { "watchtower", 2.4, 11, false, false, 'f' }, { "shrine", 7, 5.5, false, false, 'f' },
     };
     return specs;
 }
@@ -586,7 +605,7 @@ bool paintVillage(const World& w, Info& info, double x, double y, double r)
     return made > 0;
 }
 
-bool paintFieldsUser(const World& w, Info& info, double x, double y, double r)
+bool paintFieldsUser(const World& w, Info& info, double x, double y, double r, int cropMode)
 {
     UserLayer& U = info.user;
     int made = 0;
@@ -597,9 +616,100 @@ bool paintFieldsUser(const World& w, Info& info, double x, double y, double r)
         const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
         const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
         const double fw = (5 + uRand(U, 5) * 4) * k, fd = (3.5 + uRand(U, 6) * 3) * k;
-        if (!solidGround(w, px, py, fw * 0.6, 0.34, 0.3) || crowded(U, px, py, 5.5 * k, 9 * k, 7.5 * k)) continue;
-        Field f; f.x = px; f.y = py; f.w = fw; f.d = fd; f.yaw = uRand(U, 7) * M_PI; f.crop = static_cast<int>(std::floor(uRand(U, 8) * 4));
+        // pomar e vinhedo aceitam encosta e um pouco mais de altura
+        const bool orchard = cropMode >= 4;
+        if (!solidGround(w, px, py, fw * 0.6, orchard ? 0.42 : 0.34, orchard ? 0.42 : 0.3) || crowded(U, px, py, 5.5 * k, 9 * k, 7.5 * k)) continue;
+        Field f; f.x = px; f.y = py; f.w = fw; f.d = fd; f.yaw = uRand(U, 7) * M_PI;
+        f.crop = orchard ? std::min(6, cropMode) : static_cast<int>(std::floor(uRand(U, 8) * 4));
+        if (orchard) f.v = uRand(U, 9);
         U.fields.push_back(f);
+        made++;
+    }
+    if (made) U.ver++;
+    return made > 0;
+}
+
+// ── leva 5: pincéis de Acampamento, Ruínas e Cais (as peças moram junto das casas, com prop) ──
+// Acampamento: barracas em fileira (exército) ou iurtas espalhadas (nômade), de vez em quando a fogueira
+bool paintTents(const World& w, Info& info, double x, double y, double r, const QString& mode)
+{
+    UserLayer& U = info.user;
+    int made = 0;
+    U.scale = worldScale(w);
+    const double k = worldScale(w);
+    const bool nomad = mode == QLatin1String("nomad");
+    for (int it = 0; it < 6; it++) {
+        U.seq++;
+        const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
+        const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
+        if (!solidGround(w, px, py, 2 * k, 0.5) || crowded(U, px, py, (nomad ? 4.2 : 3.4) * k, 8 * k, 4.5 * k)) continue;
+        const double q = 22 * k, base = hash2(static_cast<int>(std::floor(px / q)), static_cast<int>(std::floor(py / q)), 7717) * M_PI;
+        const bool fire = uRand(U, 8) < 0.1 && std::none_of(U.houses.begin(), U.houses.end(), [&](const House& o) {
+            return o.prop == QLatin1String("fire") && std::hypot(o.x - px, o.y - py) < 14 * k;
+        });
+        House h; h.x = px; h.y = py; h.v = uRand(U, 6);
+        h.yaw = nomad ? uRand(U, 5) * M_PI * 2 : base + (uRand(U, 5) < 0.5 ? 0 : M_PI) + (uRand(U, 9) - 0.5) * 0.1;
+        h.prop = fire ? QStringLiteral("fire") : nomad ? QStringLiteral("yurt") : QStringLiteral("tent");
+        if (!nomad && !fire && uRand(U, 10) < 0.06) h.big = true;
+        U.houses.push_back(h);
+        made++;
+    }
+    if (made) U.ver++;
+    return made > 0;
+}
+// Ruínas: pedaços de muro, colunas, tambores tombados, entulho e arcos quebrados
+bool paintRuins(const World& w, Info& info, double x, double y, double r)
+{
+    UserLayer& U = info.user;
+    int made = 0;
+    U.scale = worldScale(w);
+    const double k = worldScale(w);
+    for (int it = 0; it < 4; it++) {
+        U.seq++;
+        const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
+        const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
+        if (!solidGround(w, px, py, 2.4 * k, 0.6, 0.5) || crowded(U, px, py, 5.2 * k, 8 * k, 5 * k)) continue;
+        House h; h.x = px; h.y = py; h.yaw = uRand(U, 5) * M_PI; h.v = uRand(U, 6); h.prop = QStringLiteral("ruin");
+        U.houses.push_back(h);
+        made++;
+    }
+    if (made) U.ver++;
+    return made > 0;
+}
+// Cais: na água rente à costa, o píer sai da terra pro mar; às vezes com um barco amarrado
+bool paintDocks(const World& w, Info& info, double x, double y, double r)
+{
+    UserLayer& U = info.user;
+    int made = 0;
+    U.scale = worldScale(w);
+    const double k = worldScale(w);
+    auto H = [&](double px, double py) { return hAt(w, px, py); };
+    for (int it = 0; it < 6; it++) {
+        U.seq++;
+        const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
+        const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
+        if (H(px, py) > 0) continue;
+        // a terra mais perto (16 rumos, até 7 px)
+        bool found = false;
+        double bx = 0, by = 0, bang = 0;
+        for (double d = 1; d <= 7 && !found; d += 0.5)
+            for (int q = 0; q < 16; q++) {
+                const double ang = q / 16.0 * M_PI * 2, lx = px + std::cos(ang) * d, ly = py + std::sin(ang) * d;
+                if (H(lx, ly) > 0) { bx = lx; by = ly; bang = ang; found = true; break; }
+            }
+        if (!found) continue;
+        const double out = bang + M_PI, len = (6 + uRand(U, 5) * 4) * k;
+        // recua até a beira da terra e sai mar adentro
+        double sx = bx, sy = by;
+        for (int s = 0; s < 8 && H(sx, sy) > 0; s++) { sx += std::cos(out) * 0.5; sy += std::sin(out) * 0.5; }
+        sx -= std::cos(out) * 0.8; sy -= std::sin(out) * 0.8;
+        const double ex = sx + std::cos(out) * len, ey = sy + std::sin(out) * len;
+        if (H(ex, ey) > 0 || H((sx + ex) / 2, (sy + ey) / 2) > 0) continue;
+        const double mx = (sx + ex) / 2, my = (sy + ey) / 2;
+        if (std::any_of(U.houses.begin(), U.houses.end(), [&](const House& o) { return o.prop == QLatin1String("pier") && std::hypot(o.x - mx, o.y - my) < 6 * k; })) continue;
+        House h; h.x = mx; h.y = my; h.x0 = sx; h.y0 = sy; h.x1 = ex; h.y1 = ey; h.yaw = out; h.v = uRand(U, 6);
+        h.prop = QStringLiteral("pier"); h.boat = uRand(U, 7) < 0.55;
+        U.houses.push_back(h);
         made++;
     }
     if (made) U.ver++;
@@ -672,8 +782,14 @@ bool paintTrees(World& w, Info& info, double x, double y, double r, const QStrin
         else if (mode == QLatin1String("broad")) type = Broad;
         else if (mode == QLatin1String("pine")) type = Pine;
         else if (mode == QLatin1String("palm")) type = Palm;
+        else if (mode == QLatin1String("cherry")) type = Cherry;
+        else if (mode == QLatin1String("autumn")) type = Autumn;
+        else if (mode == QLatin1String("dead")) type = Dead;
+        else if (mode == QLatin1String("mushroom")) type = Mushroom;
+        else if (mode == QLatin1String("crystal")) type = Crystal;
         else type = floraTypeAt(c, uRand(U, 5));
-        Flora t{ px, py, type, uRand(U, 6), rocks ? 1.3 + 1.4 * uRand(U, 7) : 0.85 + 0.45 * uRand(U, 7), c.id };
+        const double big = type == Mushroom ? 0.85 + 0.4 * uRand(U, 7) : type == Crystal ? 0.8 + 0.7 * uRand(U, 7) : rocks ? 1.3 + 1.4 * uRand(U, 7) : 0.85 + 0.45 * uRand(U, 7);
+        Flora t{ px, py, type, uRand(U, 6), big, c.id };
         U.trees.push_back(t);
         made++;
     }
@@ -931,13 +1047,21 @@ QJsonObject UserLayer::toJson() const
         QJsonObject o{ { "x", h.x }, { "y", h.y }, { "yaw", h.yaw }, { "v", h.v }, { "floors", h.floors }, { "timber", h.timber } };
         if (h.city) o["city"] = true;
         if (h.bell) o["bell"] = true;
+        if (!h.prop.isEmpty()) {
+            o["prop"] = h.prop;
+            if (h.big) o["big"] = true;
+            if (h.prop == QLatin1String("pier")) { o["x0"] = h.x0; o["y0"] = h.y0; o["x1"] = h.x1; o["y1"] = h.y1; o["boat"] = h.boat; }
+        }
         Hs.append(o);
     }
     // muralha de pedra continua só o traço (como antes); a paliçada vira { kind, pts }
     for (const Wall& wl : walls) Ws.append(wl.kind.isEmpty() ? QJsonValue(pathJ(wl.pts)) : QJsonValue(QJsonObject{ { "kind", wl.kind }, { "pts", pathJ(wl.pts) } }));
     for (const Flora& t : trees) Ts.append(QJsonArray{ t.x, t.y, t.type, t.v, t.s, t.b });
-    for (const Field& f : fields)
-        Fs.append(QJsonObject{ { "x", f.x }, { "y", f.y }, { "w", f.w }, { "d", f.d }, { "yaw", f.yaw }, { "crop", f.crop } });
+    for (const Field& f : fields) {
+        QJsonObject o{ { "x", f.x }, { "y", f.y }, { "w", f.w }, { "d", f.d }, { "yaw", f.yaw }, { "crop", f.crop } };
+        if (f.crop >= 4) o["v"] = f.v;
+        Fs.append(o);
+    }
     for (const Path& b : bridges) Bs.append(pathJ(b));
     for (const Road& r : roads) Rs.append(QJsonObject{ { "kind", r.kind }, { "pts", pathJ(r.pts) } });
     QJsonObject o{ { "arts", A }, { "houses", Hs }, { "walls", Ws }, { "fields", Fs }, { "bridges", Bs }, { "roads", Rs },
@@ -970,6 +1094,8 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         House h; h.x = a.value("x").toDouble(); h.y = a.value("y").toDouble(); h.yaw = a.value("yaw").toDouble(); h.v = a.value("v").toDouble();
         h.floors = a.value("floors").toInt(1); h.timber = a.value("timber").toBool();
         h.city = a.value("city").toBool(); h.bell = a.value("bell").toBool();
+        h.prop = a.value("prop").toString(); h.big = a.value("big").toBool(); h.boat = a.value("boat").toBool();
+        h.x0 = a.value("x0").toDouble(); h.y0 = a.value("y0").toDouble(); h.x1 = a.value("x1").toDouble(); h.y1 = a.value("y1").toDouble();
         U.houses.push_back(h);
     }
     for (const QJsonValue& v : o.value("walls").toArray()) {
@@ -984,7 +1110,7 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
     for (const QJsonValue& v : o.value("fields").toArray()) {
         const QJsonObject a = v.toObject();
         Field f; f.x = a.value("x").toDouble(); f.y = a.value("y").toDouble(); f.w = a.value("w").toDouble(); f.d = a.value("d").toDouble();
-        f.yaw = a.value("yaw").toDouble(); f.crop = a.value("crop").toInt();
+        f.yaw = a.value("yaw").toDouble(); f.crop = a.value("crop").toInt(); f.v = a.value("v").toDouble();
         U.fields.push_back(f);
     }
     for (const QJsonValue& v : o.value("bridges").toArray()) U.bridges.push_back(jPath(v));

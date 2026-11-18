@@ -42,7 +42,7 @@ Faces ringL(const Loc& L, double lx, double ly, double rx0, double ry0, double r
 }
 // torneado: perfil [raio, z] girado em volta de (lx, ly) — cúpula, cebola, bacia
 using Prof = std::vector<std::array<double, 2>>;
-Faces lathe(const Loc& L, double lx, double ly, const Prof& prof, int n, const RGB& col)
+Faces lathe(const Loc& L, double lx, double ly, const Prof& prof, int n, const RGB& col, const std::function<Deco(int, int)>& deco = {})
 {
     Faces f;
     const V3 C = L(lx, ly, (prof.front()[1] + prof.back()[1]) / 2);
@@ -53,7 +53,7 @@ Faces lathe(const Loc& L, double lx, double ly, const Prof& prof, int n, const R
             const double a0 = double(k) / n * M_PI * 2, a1 = double(k + 1) / n * M_PI * 2;
             if (r1 < 0.01) f.push_back(face({ P(a0, r0, z0), P(a1, r0, z0), P(a0, 0, z1) }, col, C));
             else if (r0 < 0.01) f.push_back(face({ P(a0, 0, z0), P(a1, r1, z1), P(a0, r1, z1) }, col, C));
-            else f.push_back(face({ P(a0, r0, z0), P(a1, r0, z0), P(a1, r1, z1), P(a0, r1, z1) }, col, C));
+            else f.push_back(face({ P(a0, r0, z0), P(a1, r0, z0), P(a1, r1, z1), P(a0, r1, z1) }, col, C, deco ? deco(static_cast<int>(i), k) : Deco()));
         }
     }
     return f;
@@ -1106,11 +1106,15 @@ CastleOut4 iceCastle(const Art& b, const RGB&)
     return o;
 }
 
+// leva 5: castelos de montanha e mais três, estátuas, construções, peças dos pincéis novos e as plantações de pé
+#include "CartoSpritesArts5.inc"
+
 bool drawStyledCastle4(QPainter& p, const Art& b, const Cam& cam, const RGB& realmCol)
 {
     const QString& s = b.style;
     CastleOut4 o;
-    if (s == QLatin1String("norman")) o = normanCastle(b, realmCol);
+    if (castle5(b, cam, o)) {}
+    else if (s == QLatin1String("norman")) o = normanCastle(b, realmCol);
     else if (s == QLatin1String("moat")) o = moatCastle(b, realmCol);
     else if (s == QLatin1String("chateau")) o = chateauCastle(b, realmCol);
     else if (s == QLatin1String("crag")) o = cragCastle(b, realmCol, cam);
@@ -1220,6 +1224,7 @@ bool drawArt4(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol)
 {
     const QString& k = a.kind;
     if (k == QLatin1String("castle")) return drawStyledCastle4(p, a, cam, realmCol);
+    if (art5(p, a, cam)) return true;
     if (k == QLatin1String("colossus")) drawColossus(p, a, cam);
     else if (k == QLatin1String("guardians")) drawGuardians(p, a, cam);
     else if (k == QLatin1String("seatedgod")) drawSeatedGod(p, a, cam);
@@ -1239,15 +1244,35 @@ MoatGeom moatGeom(int size, double k)
 
 bool castleLightRing(const Art& a, double& R, double& z)
 {
-    if (a.kind != QLatin1String("castle") || a.style != QLatin1String("crag")) return false;
+    if (a.kind != QLatin1String("castle")) return false;
     const CastleCfg& cfg = kCastle[clampi(a.size, 0, 3)];
-    R = cfg.R * 0.9; z = cfg.wallH + 0.6;   // cada luz pega o chão do próprio lugar
+    // cada luz pega o chão do próprio lugar
+    if (a.style == QLatin1String("crag")) { R = cfg.R * 0.9; z = cfg.wallH + 0.6; }
+    else if (a.style == QLatin1String("eyrie")) { R = cfg.R * 0.8; z = cfg.wallH + 1.2; }
+    else if (a.style == QLatin1String("terraced")) { R = cfg.R * 0.85; z = cfg.wallH * 2.2; }
+    else if (a.style == QLatin1String("tiered")) { R = cfg.R * 0.9; z = cfg.wallH * 1.2; }
+    else if (a.style == QLatin1String("star")) { R = cfg.R * 0.9; z = cfg.wallH * 0.95; }
+    else return false;
     return true;
 }
+
+bool onRelief(const Art& a)
+{
+    if (a.kind == QLatin1String("monastery")) return true;
+    if (a.kind != QLatin1String("castle")) return false;
+    const QString& s = a.style;
+    return s == QLatin1String("crag") || s == QLatin1String("eyrie") || s == QLatin1String("terraced") || s == QLatin1String("tiered");
+}
+
+void drawProp(QPainter& p, const House& h, const Cam& cam) { drawProp5(p, h, cam); }
+bool pierBoat(const House& h, Boat& out) { return pierBoat5(h, out); }
+void drawFieldCrop(QPainter& p, const Field& f, const Cam& cam) { drawField5(p, f, cam); }
 
 const QStringList& castleStyles()
 {
     static const QStringList s = { QString(), QStringLiteral("norman"), QStringLiteral("moat"), QStringLiteral("chateau"), QStringLiteral("crag"),
+                                   QStringLiteral("eyrie"), QStringLiteral("terraced"), QStringLiteral("tiered"), QStringLiteral("star"),
+                                   QStringLiteral("slavic"), QStringLiteral("motte"),
                                    QStringLiteral("elven"), QStringLiteral("dwarf"), QStringLiteral("orc"), QStringLiteral("oriental"),
                                    QStringLiteral("desert"), QStringLiteral("dark"), QStringLiteral("ice") };
     return s;

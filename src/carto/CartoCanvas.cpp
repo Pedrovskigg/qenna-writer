@@ -648,11 +648,11 @@ bool userDiff(const UserLayer& a, const UserLayer& b, std::vector<Pt>& pts)
          [&](const Art& x) { pts.push_back({ x.x, x.y }); if (x.sc > 1.5) big = true; });
     if (big) return false;
     each(a.houses, b.houses, [](const House& x, const House& y) { return x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.floors == y.floors && x.timber == y.timber && x.v == y.v
-                                                                         && x.city == y.city && x.bell == y.bell; },
-         [&](const House& x) { pts.push_back({ x.x, x.y }); });
+                                                                         && x.city == y.city && x.bell == y.bell && x.prop == y.prop && x.big == y.big && x.boat == y.boat; },
+         [&](const House& x) { pts.push_back({ x.x, x.y }); if (x.prop == QLatin1String("pier")) { pts.push_back({ x.x0, x.y0 }); pts.push_back({ x.x1, x.y1 }); } });
     each(a.walls, b.walls, [](const Wall& x, const Wall& y) { return x.pts == y.pts && x.kind == y.kind; }, [&](const Wall& x) { path(x.pts); });
     each(a.trees, b.trees, [](const Flora& x, const Flora& y) { return x.x == y.x && x.y == y.y && x.type == y.type && x.s == y.s; }, [&](const Flora& x) { pts.push_back({ x.x, x.y }); });
-    each(a.fields, b.fields, [](const Field& x, const Field& y) { return x.x == y.x && x.y == y.y && x.w == y.w && x.d == y.d && x.yaw == y.yaw && x.crop == y.crop; },
+    each(a.fields, b.fields, [](const Field& x, const Field& y) { return x.x == y.x && x.y == y.y && x.w == y.w && x.d == y.d && x.yaw == y.yaw && x.crop == y.crop && x.v == y.v; },
          [&](const Field& x) { const double r = std::max(x.w, x.d); pts.push_back({ x.x - r, x.y - r }); pts.push_back({ x.x + r, x.y + r }); pts.push_back({ x.x - r, x.y + r }); pts.push_back({ x.x + r, x.y - r }); });
     each(a.bridges, b.bridges, [](const Path& x, const Path& y) { return x == y; }, path);
     each(a.roads, b.roads, [](const Road& x, const Road& y) { return x.kind == y.kind && x.pts == y.pts; }, [&](const Road& x) { path(x.pts); });

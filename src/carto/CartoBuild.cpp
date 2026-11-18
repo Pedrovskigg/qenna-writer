@@ -50,6 +50,10 @@ QString shortLabel(const QString& k)
     if (k == QLatin1String("camp")) return Panel::tr("Tendas");
     if (k == QLatin1String("seatedgod")) return Panel::tr("Deus");
     if (k == QLatin1String("arch")) return Panel::tr("Arco");
+    if (k == QLatin1String("equestrian")) return Panel::tr("Equestre");
+    if (k == QLatin1String("fallenhead")) return Panel::tr("Cabeça");
+    if (k == QLatin1String("watchtower")) return Panel::tr("Vigia");
+    if (k == QLatin1String("tents")) return Panel::tr("Acampam.");
     return buildKindName(k);
 }
 
@@ -83,6 +87,16 @@ QString tipOf(const QString& k)
         { "aqueduct", QT_TRANSLATE_NOOP("carto::Panel", "Trecho de aqueduto com duas fileiras de arcos") },
         { "city", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de cidade: sobrados de dois e três andares") },
         { "forest", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de floresta") }, { "rocks", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de rochedos") },
+        // leva 5
+        { "equestrian", QT_TRANSLATE_NOOP("carto::Panel", "Estátua equestre de bronze") }, { "angel", QT_TRANSLATE_NOOP("carto::Panel", "Anjo de asas abertas") },
+        { "sphinx", QT_TRANSLATE_NOOP("carto::Panel", "Esfinge de arenito") }, { "totem", QT_TRANSLATE_NOOP("carto::Panel", "Totens entalhados") },
+        { "fallenhead", QT_TRANSLATE_NOOP("carto::Panel", "A cabeça de uma estátua gigante caída") },
+        { "monastery", QT_TRANSLATE_NOOP("carto::Panel", "Mosteiro agarrado na encosta") }, { "palace", QT_TRANSLATE_NOOP("carto::Panel", "Palácio com cúpula e jardim") },
+        { "inn", QT_TRANSLATE_NOOP("carto::Panel", "Estalagem de enxaimel com estábulo e poço") }, { "watermill", QT_TRANSLATE_NOOP("carto::Panel", "Moinho d'água com a roda") },
+        { "observatory", QT_TRANSLATE_NOOP("carto::Panel", "Observatório com a luneta") }, { "academy", QT_TRANSLATE_NOOP("carto::Panel", "Academia com claustro e torre do relógio") },
+        { "watchtower", QT_TRANSLATE_NOOP("carto::Panel", "Posto de vigia de madeira com braseiro") }, { "shrine", QT_TRANSLATE_NOOP("carto::Panel", "Santuário com os portais em fila") },
+        { "orchard", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de pomar, vinhedo e lavanda") }, { "tents", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de acampamento: barracas ou iurtas") },
+        { "ruinsb", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de ruínas") }, { "docks", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de cais: pinte na beira da água") },
     };
     const char* t = tips.value(k, nullptr);
     return t ? Panel::tr(t) : buildKindName(k);
@@ -90,12 +104,19 @@ QString tipOf(const QString& k)
 
 // os povos do castelo, na ordem da categoria Castelos (cada um vira uma cartinha: castle:<estilo>)
 struct StyleSw { const char* v; const char* label; const char* tip; QRgb col; };
-const StyleSw kStyles[12] = {
+const StyleSw kStyles[] = {
     { "human", QT_TRANSLATE_NOOP("carto::Panel", "Humano"), QT_TRANSLATE_NOOP("carto::Panel", "Muralha de pedra, torres de flecha e a menagem"), 0xffa39a8c },
     { "norman", QT_TRANSLATE_NOOP("carto::Panel", "Normando"), QT_TRANSLATE_NOOP("carto::Panel", "Torres quadradas e a menagem maciça com torreões"), 0xffb8ad98 },
     { "moat", QT_TRANSLATE_NOOP("carto::Panel", "Com fosso"), QT_TRANSLATE_NOOP("carto::Panel", "Cava o fosso no terreno em volta; ponte levadiça"), 0xff7aa0b4 },
     { "chateau", QT_TRANSLATE_NOOP("carto::Panel", "Château"), QT_TRANSLATE_NOOP("carto::Panel", "Palácio branco, telhado de ardósia, torres de cone e jardim"), 0xffe8e2d4 },
     { "crag", QT_TRANSLATE_NOOP("carto::Panel", "Penhasco"), QT_TRANSLATE_NOOP("carto::Panel", "Assenta no relevo: muralha e torres acompanham o morro"), 0xff8a8070 },
+    // leva 5: três de montanha (assentam no relevo) e mais três
+    { "eyrie", QT_TRANSLATE_NOOP("carto::Panel", "Ninho de Águia"), QT_TRANSLATE_NOOP("carto::Panel", "Palácio branco de torrinhas finas, no alto do morro"), 0xff5a6c88 },
+    { "terraced", QT_TRANSLATE_NOOP("carto::Panel", "Terraços"), QT_TRANSLATE_NOOP("carto::Panel", "Degraus que sobem a encosta, com pavilhões dourados no alto"), 0xff9c3a2c },
+    { "tiered", QT_TRANSLATE_NOOP("carto::Panel", "Cidadela em Anéis"), QT_TRANSLATE_NOOP("carto::Panel", "Anéis de muralha um acima do outro, casas nos terraços"), 0xffe4e0d4 },
+    { "star", QT_TRANSLATE_NOOP("carto::Panel", "Forte Estrelado"), QT_TRANSLATE_NOOP("carto::Panel", "Baluartes em estrela, fosso seco e canhões nas pontas"), 0xff76905a },
+    { "slavic", QT_TRANSLATE_NOOP("carto::Panel", "Eslavo"), QT_TRANSLATE_NOOP("carto::Panel", "Tijolo vermelho, torres de telhado verde e a catedral de cebolas"), 0xffb04838 },
+    { "motte", QT_TRANSLATE_NOOP("carto::Panel", "Forte de Madeira"), QT_TRANSLATE_NOOP("carto::Panel", "O morro de terra com a torre de toras e a paliçada"), 0xff84623e },
     { "elven", QT_TRANSLATE_NOOP("carto::Panel", "Élfico"), QT_TRANSLATE_NOOP("carto::Panel", "Muralha clara, torres finas e uma torre altíssima no meio"), 0xffdfe8e2 },
     { "dwarf", QT_TRANSLATE_NOOP("carto::Panel", "Anão"), QT_TRANSLATE_NOOP("carto::Panel", "Fortaleza escavada no monte, com portão dourado e forjas"), 0xffc9963c },
     { "orc", QT_TRANSLATE_NOOP("carto::Panel", "Orc"), QT_TRANSLATE_NOOP("carto::Panel", "Paliçada de toras, torres de vigia e o salão comprido"), 0xff7a5434 },
@@ -111,7 +132,7 @@ QString styleOfItem(const QString& item) { const int i = item.indexOf(QLatin1Cha
 bool isPaintBrush(const QString& k)
 {
     return k == QLatin1String("village") || k == QLatin1String("city") || k == QLatin1String("fields") || k == QLatin1String("forest") || k == QLatin1String("rocks")
-        || k == QLatin1String("erase");
+        || k == QLatin1String("erase") || k == QLatin1String("orchard") || k == QLatin1String("tents") || k == QLatin1String("ruinsb") || k == QLatin1String("docks");
 }
 bool isBrushKind(const QString& k) { return isPaintBrush(k) || k == QLatin1String("wall") || k == QLatin1String("road"); }
 
@@ -266,6 +287,41 @@ void paintItem(QPainter& p, const QString& kind, const QString& style, const spr
         }
         return;
     }
+    // leva 5: miniaturas dos pincéis novos
+    if (kind == QLatin1String("orchard")) {
+        disc(p, cam, 9, kLand);
+        Field a; a.x = -2.6; a.y = -2.6; a.yaw = 0.25; a.w = 8; a.d = 4.8; a.crop = 5; a.v = 0.3;
+        Field b; b.x = 2.8; b.y = 2.8; b.yaw = 0.25; b.w = 7.4; b.d = 5; b.crop = 4; b.v = 0.7;
+        spr::drawField(p, a, cam);
+        spr::drawField(p, b, cam);
+        return;
+    }
+    if (kind == QLatin1String("tents") || kind == QLatin1String("ruinsb")) {
+        disc(p, cam, 9, kLand);
+        struct Pc { double x, y, yaw, v; const char* prop; };
+        std::vector<Pc> ps = kind == QLatin1String("tents")
+            ? std::vector<Pc>{ { -4, -3, 0.3, 0.1, "tent" }, { -0.5, -4, 0.3, 0.5, "tent" }, { 3, -4.5, 0.3, 0.8, "tent" }, { -4.5, 1.5, 0.3, 0.3, "tent" },
+                               { 4, 2.5, 0, 0.6, "yurt" }, { 0, 1.5, 0, 0.2, "fire" }, { -1.5, 5, 0.3, 0.9, "tent" } }
+            : std::vector<Pc>{ { -3.5, -2.5, 0.4, 0.05, "ruin" }, { 3, -3, 0.2, 0.25, "ruin" }, { -2, 3.5, 0.9, 0.85, "ruin" }, { 3.5, 3, 0.1, 0.45, "ruin" } };
+        const double ca = std::cos(kVA), sa = std::sin(kVA);
+        std::sort(ps.begin(), ps.end(), [&](const Pc& a, const Pc& b) { return sa * a.x + ca * a.y < sa * b.x + ca * b.y; });
+        for (const Pc& q : ps) { House h; h.x = q.x; h.y = q.y; h.yaw = q.yaw; h.v = q.v; h.prop = QString::fromLatin1(q.prop); spr::drawProp(p, h, cam); }
+        return;
+    }
+    if (kind == QLatin1String("docks")) {
+        disc(p, cam, 9, kSea);
+        QPolygonF land;
+        for (const auto& q : { Pt{ -9, -9 }, Pt{ -2, -9 }, Pt{ -2, 9 }, Pt{ -9, 9 } }) land << cam.proj(q[0], q[1], 0);
+        p.setBrush(rgbc(kLand)); p.setPen(Qt::NoPen); p.drawPolygon(land);
+        for (int i = 0; i < 2; i++) {
+            House h; h.prop = QStringLiteral("pier");
+            h.x0 = -2.8; h.y0 = i ? 3.5 : -3.5; h.x1 = i ? 4.5 : 6; h.y1 = h.y0; h.x = (h.x0 + h.x1) / 2; h.y = h.y0; h.v = i ? 0.8 : 0.3; h.boat = !i;
+            spr::drawProp(p, h, cam);
+            Boat bt;
+            if (spr::pierBoat(h, bt)) spr::drawBoat(p, bt, cam);
+        }
+        return;
+    }
     if (kind == QLatin1String("wall")) {
         disc(p, cam, 9, kLand);
         spr::drawWallSeg(p, Pt{ -7, 3 }, Pt{ 0, -2.5 }, cam, 1); spr::drawWallTower(p, Pt{ -7, 3 }, cam, 1);
@@ -352,16 +408,19 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
     m_cats = {
         // v32: os castelos ganharam categoria própria, uma cartinha por povo
         { QStringLiteral("cas"), Panel::tr("Castelos"), QStringLiteral("castle"),
-          { "castle:human", "castle:norman", "castle:moat", "castle:chateau", "castle:crag", "castle:elven", "castle:dwarf", "castle:orc",
+          { "castle:human", "castle:norman", "castle:moat", "castle:chateau", "castle:crag", "castle:eyrie", "castle:terraced", "castle:tiered",
+            "castle:star", "castle:slavic", "castle:motte", "castle:elven", "castle:dwarf", "castle:orc",
             "castle:oriental", "castle:desert", "castle:dark", "castle:ice" } },
-        { QStringLiteral("uni"), Panel::tr("Únicos"), QStringLiteral("tower"), { "tower", "lighthouse", "windmill", "temple", "ruins", "bridge" } },
-        { QStringLiteral("brs"), Panel::tr("Pincéis"), QStringLiteral("house"), { "village", "city", "fields", "forest", "rocks", "wall", "road", "erase" } },
+        { QStringLiteral("uni"), Panel::tr("Únicos"), QStringLiteral("tower"),
+          { "tower", "watchtower", "lighthouse", "windmill", "watermill", "inn", "observatory", "temple", "ruins", "bridge" } },
+        { QStringLiteral("brs"), Panel::tr("Pincéis"), QStringLiteral("house"),
+          { "village", "city", "fields", "orchard", "forest", "rocks", "tents", "ruinsb", "docks", "wall", "road", "erase" } },
         { QStringLiteral("more"), Panel::tr("Mais"), QStringLiteral("a-statue"),
-          { "statue", "cathedral", "market", "aqueduct", "colosseum", "cave", "mine", "mage", "greattree", "stones", "camp" } },
-        { QStringLiteral("leg"), Panel::tr("Lendas"), QStringLiteral("a-dragon"), { "dragon", "bones", "portal", "floatisland", "sword", "heads" } },
+          { "statue", "palace", "cathedral", "monastery", "academy", "shrine", "market", "aqueduct", "colosseum", "cave", "mine", "mage", "greattree", "stones", "camp" } },
+        { QStringLiteral("leg"), Panel::tr("Lendas"), QStringLiteral("a-dragon"), { "dragon", "bones", "portal", "floatisland", "sword", "heads", "fallenhead" } },
         { QStringLiteral("sea"), Panel::tr("Mar"), QStringLiteral("a-longship"), { "ship", "longship", "wreck", "seaserpent", "kraken" } },
         { QStringLiteral("mon"), Panel::tr("Monumentos"), QStringLiteral("a-pyramid"),
-          { "colossus", "guardians", "seatedgod", "arch", "pyramid", "ziggurat", "pagoda", "obelisk", "graveyard", "farm" } },
+          { "colossus", "guardians", "seatedgod", "equestrian", "angel", "sphinx", "totem", "arch", "pyramid", "ziggurat", "pagoda", "obelisk", "graveyard", "farm" } },
     };
     auto btn = [this](QWidget* parent, const QString& iconName, const QString& tip, const QString& obj = QStringLiteral("cartoBtn")) {
         auto* b = new QToolButton(parent);
@@ -483,15 +542,44 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
          { Panel::tr("Muralha de pedra com ameias e torres"), Panel::tr("Toras pontudas e torres de vigia de madeira") },
          [this](const QString& v) { m_canvas->opts().wallKind = v; if (changed) changed(); });
     hl->addWidget(m_wallRow);
-    // floresta: a árvore
+    // floresta: a árvore (leva 5: nove não cabem em pílulas, virou lista)
     m_treeRow = new QWidget(head);
     auto* tr2 = new QHBoxLayout(m_treeRow);
     tr2->setContentsMargins(0, 0, 0, 0);
-    mini(m_treeRow, tr2, m_treeBtns, { QStringLiteral("auto"), QStringLiteral("broad"), QStringLiteral("pine"), QStringLiteral("palm") },
-         { Panel::tr("Do clima"), Panel::tr("Folhosa"), Panel::tr("Pinheiro"), Panel::tr("Palmeira") },
-         { Panel::tr("A árvore que o lugar daria (pinheiro no frio, cacto no deserto, junco no brejo)"), Panel::tr("Copa redonda"), Panel::tr("Pinheiro"), Panel::tr("Palmeira") },
-         [this](const QString& v) { m_canvas->opts().treeMode = v; if (changed) changed(); });
+    tr2->setSpacing(8);
+    m_treeCap = new QLabel(Panel::tr("ÁRVORE"), m_treeRow);
+    m_treeCap->setObjectName(QStringLiteral("cartoCaption"));
+    tr2->addWidget(m_treeCap);
+    m_treeBox = new QComboBox(m_treeRow);
+    m_treeBox->setObjectName(QStringLiteral("cartoField"));
+    m_treeBox->setFocusPolicy(Qt::NoFocus);
+    {
+        const QStringList vals = { QStringLiteral("auto"), QStringLiteral("broad"), QStringLiteral("pine"), QStringLiteral("palm"), QStringLiteral("cherry"),
+                                   QStringLiteral("autumn"), QStringLiteral("dead"), QStringLiteral("mushroom"), QStringLiteral("crystal") };
+        const QStringList labels = { Panel::tr("Do clima"), Panel::tr("Folhosa"), Panel::tr("Pinheiro"), Panel::tr("Palmeira"), Panel::tr("Cerejeira"),
+                                     Panel::tr("Outono"), Panel::tr("Sombria"), Panel::tr("Cogumelo gigante"), Panel::tr("Cristais") };
+        for (int i = 0; i < vals.size(); i++) m_treeBox->addItem(labels[i], vals[i]);
+        m_treeBox->setItemData(0, Panel::tr("A árvore que o lugar daria (pinheiro no frio, cacto no deserto, junco no brejo)"), Qt::ToolTipRole);
+    }
+    connect(m_treeBox, &QComboBox::activated, this, [this](int i) { m_canvas->opts().treeMode = m_treeBox->itemData(i).toString(); if (changed) changed(); });
+    tr2->addWidget(m_treeBox);
     hl->addWidget(m_treeRow);
+    // pomar: pomar, vinhedo ou lavanda
+    m_orchRow = new QWidget(head);
+    auto* orl = new QHBoxLayout(m_orchRow);
+    orl->setContentsMargins(0, 0, 0, 0);
+    mini(m_orchRow, orl, m_orchBtns, { QStringLiteral("4"), QStringLiteral("5"), QStringLiteral("6") }, { Panel::tr("Pomar"), Panel::tr("Vinhedo"), Panel::tr("Lavanda") },
+         { Panel::tr("Árvores frutíferas em grade (sobe encosta)"), Panel::tr("Fileiras de videira (sobe encosta)"), Panel::tr("Fileiras de lavanda") },
+         [this](const QString& v) { m_canvas->opts().orchardMode = v.toInt(); if (changed) changed(); });
+    hl->addWidget(m_orchRow);
+    // acampamento: exército ou nômade
+    m_tentRow = new QWidget(head);
+    auto* tnl = new QHBoxLayout(m_tentRow);
+    tnl->setContentsMargins(0, 0, 0, 0);
+    mini(m_tentRow, tnl, m_tentBtns, { QStringLiteral("army"), QStringLiteral("nomad") }, { Panel::tr("Exército"), Panel::tr("Nômade") },
+         { Panel::tr("Barracas em fileira, de vez em quando um pavilhão com bandeira"), Panel::tr("Iurtas espalhadas") },
+         [this](const QString& v) { m_canvas->opts().tentMode = v; if (changed) changed(); });
+    hl->addWidget(m_tentRow);
     m_roadRow = new QWidget(head);
     auto* rr = new QHBoxLayout(m_roadRow);
     rr->setContentsMargins(0, 0, 0, 0);
@@ -788,6 +876,7 @@ void BuildBar::setNarrow(bool on)
     if (QToolButton* b = m_rmodeBtns.value(QStringLiteral("route"))) b->setText(on ? Panel::tr("Vale") : Panel::tr("Pelo vale"));
     m_sizeCap->setVisible(!on);
     m_brushCap->setVisible(!on);
+    m_treeCap->setVisible(!on);
 }
 
 void BuildBar::syncCtx()
@@ -802,7 +891,11 @@ void BuildBar::syncCtx()
     m_wallRow->setVisible(k == QLatin1String("wall"));
     for (auto it = m_wallBtns.begin(); it != m_wallBtns.end(); ++it) it.value()->setChecked(it.key() == o.wallKind);
     m_treeRow->setVisible(k == QLatin1String("forest"));
-    for (auto it = m_treeBtns.begin(); it != m_treeBtns.end(); ++it) it.value()->setChecked(it.key() == o.treeMode);
+    if (const int ti = m_treeBox->findData(o.treeMode); ti >= 0 && m_treeBox->currentIndex() != ti) m_treeBox->setCurrentIndex(ti);
+    m_orchRow->setVisible(k == QLatin1String("orchard"));
+    for (auto it = m_orchBtns.begin(); it != m_orchBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == o.orchardMode);
+    m_tentRow->setVisible(k == QLatin1String("tents"));
+    for (auto it = m_tentBtns.begin(); it != m_tentBtns.end(); ++it) it.value()->setChecked(it.key() == o.tentMode);
     const int cs = selCastle ? sel->size : o.castleSize;
     for (auto it = m_sizeBtns.begin(); it != m_sizeBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == cs);
     m_roadRow->setVisible(k == QLatin1String("road"));

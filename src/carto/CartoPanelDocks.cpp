@@ -32,6 +32,10 @@ QString buildKindName(const QString& k)
     if (k == QLatin1String("city")) return Panel::tr("Cidade");
     if (k == QLatin1String("forest")) return Panel::tr("Floresta");
     if (k == QLatin1String("rocks")) return Panel::tr("Rochedos");
+    if (k == QLatin1String("orchard")) return Panel::tr("Pomar");
+    if (k == QLatin1String("tents")) return Panel::tr("Acampamento");
+    if (k == QLatin1String("ruinsb")) return Panel::tr("Ruínas");
+    if (k == QLatin1String("docks")) return Panel::tr("Cais");
     return artName(k);
 }
 
@@ -286,6 +290,12 @@ QString Panel::buildHint()
     if (!m_canvas->toolMessage().isEmpty()) hint = m_canvas->toolMessage();
     else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("crag")) hint = tr("Ponha num morro ou na serra: a muralha e as torres assentam no relevo, cada uma no seu chão.");
     else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("moat")) hint = tr("Clique em terra: o castelo cava o fosso em volta (ele acompanha se você mover o castelo).");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("eyrie")) hint = tr("Ponha no alto de um morro: o palácio e as torrinhas assentam no relevo, cada um no seu chão.");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("terraced")) hint = tr("Ponha numa encosta: os degraus sobem o morro sozinhos e a frente olha pra baixo.");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("tiered")) hint = tr("Ponha num morro: cada anel de muralha fica um degrau acima do outro, com casas nos terraços.");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("star")) hint = tr("Forte de baluartes em estrela, com fosso seco e canhões nas pontas.");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("slavic")) hint = tr("Muralha de tijolo, torres de telhado verde e a catedral de cebolas no meio.");
+    else if (k == QLatin1String("castle") && m_canvas->opts().castleStyle == QLatin1String("motte")) hint = tr("O morro de terra com a torre de madeira, e a paliçada em volta do pátio.");
     else if (k == QLatin1String("castle")) hint = tr("Clique pra colocar um castelo; a bandeira pega a cor do território. Clique num artefato pra selecionar e arrastar.");
     else if (k == QLatin1String("tower")) hint = tr("Clique pra colocar uma torre de vigia.");
     else if (k == QLatin1String("lighthouse")) hint = tr("Clique pra colocar um farol (na costa fica bonito).");
@@ -327,6 +337,23 @@ QString Panel::buildHint()
     else if (k == QLatin1String("city")) hint = tr("Pinte: sobrados de cidade, mais juntos que os da vila, com as ruas num rumo só.");
     else if (k == QLatin1String("forest")) hint = tr("Pinte árvores; Do clima escolhe a árvore que o lugar daria.");
     else if (k == QLatin1String("rocks")) hint = tr("Pinte rochedos e pedras grandes.");
+    else if (k == QLatin1String("orchard")) hint = tr("Pinte pomares, vinhedos ou campos de lavanda; o vinhedo e o pomar sobem encosta.");
+    else if (k == QLatin1String("tents")) hint = tr("Pinte um acampamento: barracas em fileira (exército) ou iurtas (nômades), com fogueiras aqui e ali.");
+    else if (k == QLatin1String("ruinsb")) hint = tr("Pinte ruínas: pedaços de muro, colunas, arcos quebrados e entulho.");
+    else if (k == QLatin1String("docks")) hint = tr("Pinte na beira da água: os píeres saem da terra pro mar, alguns com barco amarrado.");
+    else if (k == QLatin1String("equestrian")) hint = tr("Clique pra pôr uma estátua equestre; Q/E viram o cavalo.");
+    else if (k == QLatin1String("angel")) hint = tr("Clique pra pôr o Anjo de asas abertas; Q/E viram pra onde ele olha.");
+    else if (k == QLatin1String("sphinx")) hint = tr("Clique pra pôr uma esfinge; Q/E viram pra onde ela olha.");
+    else if (k == QLatin1String("totem")) hint = tr("Clique pra pôr os totens; Q/E viram os rostos.");
+    else if (k == QLatin1String("fallenhead")) hint = tr("Clique pra pôr a cabeça de uma estátua gigante caída.");
+    else if (k == QLatin1String("monastery")) hint = tr("Ponha numa encosta ou num pico: cada casa do mosteiro assenta no seu chão, ligadas por escadas.");
+    else if (k == QLatin1String("palace")) hint = tr("Clique pra pôr um palácio com jardim; Q/E viram a fachada.");
+    else if (k == QLatin1String("inn")) hint = tr("Clique pra pôr uma estalagem (fica bem na beira da estrada).");
+    else if (k == QLatin1String("watermill")) hint = tr("Clique pra pôr um moinho d'água (bonito na beira de um rio); Q/E viram a roda.");
+    else if (k == QLatin1String("observatory")) hint = tr("Clique pra pôr um observatório; Q/E viram a luneta.");
+    else if (k == QLatin1String("academy")) hint = tr("Clique pra pôr uma academia com claustro e torre do relógio.");
+    else if (k == QLatin1String("watchtower")) hint = tr("Clique pra pôr um posto de vigia de madeira (o braseiro acende à noite).");
+    else if (k == QLatin1String("shrine")) hint = tr("Clique pra pôr um santuário com os portais em fila; Q/E viram o caminho.");
     else if (k == QLatin1String("bridge")) hint = tr("Clique numa margem e depois na outra.");
     else if (k == QLatin1String("select")) hint = tr("Clique num artefato pra selecionar; arraste pra mover. Q/E giram, Delete apaga.");
     else if (k == QLatin1String("village")) hint = tr("Pinte: as casas brotam em terra firme e pouco inclinada.");
