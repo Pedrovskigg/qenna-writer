@@ -214,9 +214,24 @@ void AmbienceManager::refresh()
     if (tracksDirectoryExists()) {
         QDir d(m_dir);
         const QFileInfoList files = d.entryInfoList(kAudioExtensions, QDir::Files, QDir::Name);
+        // O mesmo som em dois formatos vira uma faixa só. Aconteceu de verdade:
+        // na 0.17.0 os WAV viraram OGG, o instalador copiou por cima sem apagar e
+        // quem já tinha o app via cada som duas vezes. Fica o comprimido (o que
+        // a versão atual entrega); o WAV só ganha se for o único.
+        QHash<QString, int> byId;
+        auto rank = [](const QFileInfo& f) {
+            return f.suffix().compare(QLatin1String("wav"), Qt::CaseInsensitive) == 0 ? 0 : 1;
+        };
         for (const QFileInfo& fi : files) {
+            const QString id = fi.completeBaseName();
+            const auto seen = byId.constFind(id);
+            if (seen != byId.constEnd()) {
+                if (rank(fi) > rank(QFileInfo(m_tracks[*seen].filePath)))
+                    m_tracks[*seen].filePath = fi.absoluteFilePath();
+                continue;
+            }
             Track t;
-            t.id = fi.completeBaseName();
+            t.id = id;
             splitName(t.id, &t.name, &t.author);
             t.filePath = fi.absoluteFilePath();
             for (const char* ext : {".jpg", ".jpeg", ".png"}) {
@@ -228,6 +243,7 @@ void AmbienceManager::refresh()
                 t.category = it->cat;
                 t.music = it->music;
             }
+            byId.insert(id, m_tracks.size());
             m_tracks.append(t);
         }
     }
