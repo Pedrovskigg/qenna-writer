@@ -9,6 +9,20 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("2.5.0"), {
+            QStringLiteral("hardshell"), QStringLiteral("hot-dog-stand"), QStringLiteral("ukiyo-e"), QStringLiteral("gilt-frame"),
+            QStringLiteral("blue-distance"), QStringLiteral("red-sky-at-night"), QStringLiteral("luminism"), QStringLiteral("old-growth"),
+            QStringLiteral("rose-summit"), QStringLiteral("full-moon"), QStringLiteral("windward"), QStringLiteral("sublime"),
+            QStringLiteral("barbizon"), QStringLiteral("low-tide"), QStringLiteral("midtown"), QStringLiteral("blue-dune"),
+            QStringLiteral("gale-warning"), QStringLiteral("hidden-city"), QStringLiteral("zone-system"), QStringLiteral("grand-tour"),
+            QStringLiteral("vacancy"), QStringLiteral("vacancy-light"), QStringLiteral("instant-film"), QStringLiteral("late-edition"),
+            QStringLiteral("lith"), QStringLiteral("sabattier"), QStringLiteral("cross-process"), QStringLiteral("signal-loss"),
+            QStringLiteral("long-exposure"), QStringLiteral("park-poster"), QStringLiteral("out-of-focus"), QStringLiteral("miniature"),
+            QStringLiteral("faded-print"), QStringLiteral("light-leak"), QStringLiteral("hand-tinted"), QStringLiteral("mauve-ridges"),
+            QStringLiteral("path-of-neo"), QStringLiteral("ash-rose"), QStringLiteral("fog-pine"), QStringLiteral("pewter-squall"),
+            QStringLiteral("heather-valley"), QStringLiteral("varnish-night"), QStringLiteral("low-sun"), QStringLiteral("temple-dusk"),
+            QStringLiteral("cocoa-alps"), QStringLiteral("anim-dark-knight"),
+        } },
         { QStringLiteral("2.0.0"), {
             QStringLiteral("enamel-ward"), QStringLiteral("blue-book"), QStringLiteral("third-copy"), QStringLiteral("soft-overcast"),
             QStringLiteral("butcher-paper"), QStringLiteral("steno-pad"), QStringLiteral("tatami"), QStringLiteral("second-edition"),
