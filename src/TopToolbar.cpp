@@ -986,7 +986,8 @@ void TopToolbar::applyRootStyle()
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#topToolbar {
             background: %1;
-            border: 1px solid %7;
+            border: @panel-border-w solid %7;
+            border-color: @border-colors-toptoolbar;
             border-radius: %8;
         }
         QToolButton {

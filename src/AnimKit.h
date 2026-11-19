@@ -104,5 +104,7 @@ std::unique_ptr<Layer> makeDesert(const QString& scene);
 // Temas de gênero da leva 7 (Eve of Battle, Outpost, Hoard, Rooftop, Citadel), em AnimGenres*.cpp
 std::unique_ptr<Layer> makeGenresA(const QString& scene);
 std::unique_ptr<Layer> makeGenresB(const QString& scene);
+// Sunset in VIce (Miami anos 80, a baía no pôr do sol), em AnimOceanDrive.cpp
+std::unique_ptr<Layer> makeOceanDrive(const QString& scene);
 
 } // namespace AnimBg

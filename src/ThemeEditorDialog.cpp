@@ -727,6 +727,7 @@ QString ThemeEditorDialog::colorOf(const QString& key) const
     if (key == QLatin1String("iconColor"))        return t.iconColor.isEmpty() ? t.textMuted : t.iconColor;
     if (key == QLatin1String("docHeaderColor"))   return t.docHeaderColor.isEmpty() ? t.editorTextColor : t.docHeaderColor;
     if (key == QLatin1String("bgOverlayColor"))   return t.bgOverlayColor;
+    if (key == QLatin1String("panelBorderGradient")) return t.panelBorderGradient;
     if (key.startsWith(QLatin1String("panel:"))) {
         const QStringList parts = key.split(QLatin1Char(':'));
         const auto pc = t.panelColors.value(parts.value(1));
@@ -751,6 +752,7 @@ void ThemeEditorDialog::setColor(const QString& key, const QString& v)
     else if (key == QLatin1String("iconColor"))        t.iconColor = v;
     else if (key == QLatin1String("docHeaderColor"))   t.docHeaderColor = v;
     else if (key == QLatin1String("bgOverlayColor"))   t.bgOverlayColor = v;
+    else if (key == QLatin1String("panelBorderGradient")) t.panelBorderGradient = v;
     else if (key.startsWith(QLatin1String("panel:"))) {
         const QStringList parts = key.split(QLatin1Char(':'));
         auto& pc = t.panelColors[parts.value(1)];
@@ -821,7 +823,8 @@ QString ThemeEditorDialog::colorLabel(const QString& key) const
 {
     if (key == QLatin1String("appBackground"))    return tr("Cor do app");
     if (key == QLatin1String("panelBackground"))  return tr("Painéis");
-    if (key == QLatin1String("panelBorder"))      return tr("Borda");
+    if (key == QLatin1String("panelBorder"))      return m_theme.panelBorderGradient.isEmpty() ? tr("Borda") : tr("Borda (começo)");
+    if (key == QLatin1String("panelBorderGradient")) return tr("Borda (fim)");
     if (key == QLatin1String("textPrimary"))      return tr("Texto da UI");
     if (key == QLatin1String("textMuted"))        return tr("Texto apagado");
     if (key == QLatin1String("accentDefault"))    return tr("Destaque");
@@ -839,7 +842,7 @@ QString ThemeEditorDialog::colorLabel(const QString& key) const
 bool ThemeEditorDialog::colorHasAlpha(const QString& key) const
 {
     // Como no editor de antes: borda e sombra aceitam transparência.
-    return key == QLatin1String("panelBorder") || key == QLatin1String("pageShadowColor") || key.endsWith(QLatin1String(":bd"));
+    return key == QLatin1String("panelBorder") || key == QLatin1String("panelBorderGradient") || key == QLatin1String("pageShadowColor") || key.endsWith(QLatin1String(":bd"));
 }
 
 void ThemeEditorDialog::pickColor(const QString& key, QWidget* anchor)
@@ -1302,12 +1305,39 @@ void ThemeEditorDialog::rebuildControls()
                          ? tr("Arredondamento, opacidade e vidro continuam valendo pra todos. \"Todos os painéis\" faz a barra da direita voltar a acompanhar a barra lateral.")
                          : tr("Arredondamento, opacidade e vidro continuam valendo pra todos. \"Todos os painéis\" devolve este painel pra cor global."), 320));
         } else {
-            add(swatch(QStringLiteral("panelBackground")));
+            // Duas abas, como no Fundo e na Folha: com a borda em degradê tudo numa faixa só
+            // passava da largura e o Qt espremia os sliders um em cima do outro (18/11).
+            add(segTabs(tr("Cores e vidro"), tr("Borda"), m_panelBorderTab, [this](bool on) { m_panelBorderTab = on; }));
+            if (!m_panelBorderTab) {
+                add(swatch(QStringLiteral("panelBackground")));
+                add(swatch(QStringLiteral("textPrimary")));
+                add(slider(tr("Arredondamento"), 0, 24, t.panelRadius, tr("px"), [this](int v) { m_theme.panelRadius = v; }));
+                add(slider(tr("Opacidade"), 0, 100, t.panelOpacity, QStringLiteral("%"), [this](int v) { m_theme.panelOpacity = v; }));
+                add(slider(tr("Vidro"), 0, 30, t.panelBlur, tr("px"), [this](int v) { m_theme.panelBlur = v; }));
+                break;
+            }
             add(swatch(QStringLiteral("panelBorder")));
-            add(swatch(QStringLiteral("textPrimary")));
-            add(slider(tr("Arredondamento"), 0, 24, t.panelRadius, tr("px"), [this](int v) { m_theme.panelRadius = v; }));
-            add(slider(tr("Opacidade"), 0, 100, t.panelOpacity, QStringLiteral("%"), [this](int v) { m_theme.panelOpacity = v; }));
-            add(slider(tr("Vidro"), 0, 30, t.panelBlur, tr("px"), [this](int v) { m_theme.panelBlur = v; }));
+            // Borda em degradê (18/11): a borda vai da cor acima até uma segunda cor
+            if (!t.panelBorderGradient.isEmpty()) add(swatch(QStringLiteral("panelBorderGradient")));
+            add(slider(tr("Espessura da borda"), 1, 4, t.panelBorderWidth, tr("px"), [this](int v) { m_theme.panelBorderWidth = v; }));
+            if (t.panelBorderGradient.isEmpty()) {
+                add(link(tr("Borda em degradê"), [this]() {
+                    pushUndo();
+                    // começa no destaque; se ele for igual à borda, no texto em destaque, pra o degradê aparecer
+                    const bool same = Theme::toColor(m_theme.accentDefault) == Theme::toColor(m_theme.panelBorder);
+                    m_theme.panelBorderGradient = same ? m_theme.textBright : m_theme.accentDefault;
+                    refreshPreview();
+                    rebuildControls();
+                }));
+            } else {
+                add(slider(tr("Direção do degradê"), 0, 359, t.panelBorderGradientAngle, QStringLiteral("°"), [this](int v) { m_theme.panelBorderGradientAngle = v; }));
+                add(link(tr("Voltar pra borda lisa"), [this]() {
+                    pushUndo();
+                    m_theme.panelBorderGradient.clear();
+                    refreshPreview();
+                    rebuildControls();
+                }));
+            }
         }
         break;
     }

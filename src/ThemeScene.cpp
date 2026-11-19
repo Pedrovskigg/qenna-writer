@@ -11,6 +11,7 @@
 #include <QFontMetricsF>
 #include <QHash>
 #include <QImageReader>
+#include <QLinearGradient>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPointer>
@@ -56,6 +57,10 @@ struct Pal {
     qreal r = 0;          // raio dos painéis na escala da cena (75% da tela real)
     qreal pnOpacity = 1;  // 0..1
     QMap<QString, Theme::MiraTheme::PanelColors> per;
+    qreal bw = 1;         // espessura da borda na escala da cena
+    bool grad = false;    // borda em degradê (vai de bd até bd2)
+    QColor bd2;
+    int gAngle = 180;
     QImage glass;         // fundo + folha desfocados (a 1/4), quando o tema tem vidro
 
     QColor fill(const QString& key) const
@@ -74,6 +79,24 @@ struct Pal {
         if ((it == per.constEnd() || it->border.isEmpty()) && key == Theme::PanelKey::RightBar)
             it = per.constFind(Theme::PanelKey::LeftBar);
         return (it != per.constEnd() && !it->border.isEmpty()) ? col(it->border, bd) : bd;
+    }
+    // A caneta da borda do painel, como o app pinta: na espessura do tema e, com a borda em
+    // degradê, o degradê atravessando o painel `r` (painel com borda própria continua liso).
+    QPen pen(const QString& key, const QRectF& r, qreal width = -1) const
+    {
+        const qreal w = width > 0 ? width : bw;
+        auto it = per.constFind(key);
+        if ((it == per.constEnd() || it->border.isEmpty()) && key == Theme::PanelKey::RightBar)
+            it = per.constFind(Theme::PanelKey::LeftBar);
+        const bool own = it != per.constEnd() && !it->border.isEmpty();
+        if (!grad || own) return QPen(border(key), w);
+        const qreal a = gAngle * M_PI / 180.0, dx = std::sin(a), dy = -std::cos(a);
+        const qreal len = std::abs(r.width() * dx) + std::abs(r.height() * dy);
+        const QPointF m = r.center(), d(dx * len / 2, dy * len / 2);
+        QLinearGradient g(m - d, m + d);
+        g.setColorAt(0, bd);
+        g.setColorAt(1, bd2);
+        return QPen(QBrush(g), w);
     }
 };
 
@@ -101,6 +124,10 @@ Pal palette(const Theme::MiraTheme& t)
     p.r = t.panelRadius * 0.75;
     p.pnOpacity = qBound(0, t.panelOpacity, 100) / 100.0;
     p.per = t.panelColors;
+    p.bw = qMax<qreal>(1.0, qBound(1, t.panelBorderWidth, 4) * 0.75);
+    p.bd2 = col(t.panelBorderGradient, QColor());
+    p.grad = p.bd2.isValid() && !t.panelBorderGradient.isEmpty();
+    p.gAngle = t.panelBorderGradientAngle;
     return p;
 }
 
@@ -179,7 +206,7 @@ void panelShape(QPainter& p, const QPainterPath& path, const Pal& c, const QStri
         p.drawImage(b, c.glass, QRectF(b.x() / 4.0, b.y() / 4.0, b.width() / 4.0, b.height() / 4.0));
         p.restore();
     }
-    p.setPen(QPen(c.border(key), 1.0));
+    p.setPen(c.pen(key, path.boundingRect()));
     p.setBrush(c.fill(key));
     p.drawPath(path);
 }
@@ -699,7 +726,7 @@ void paintTopBar(QPainter& p, const Pal& c, const Geo& g)
     const QString key = Theme::PanelKey::TopToolbar;
     for (const BarShape& s : g.shapes) {
         if (s.card) {
-            p.setPen(QPen(c.border(key), 1));
+            p.setPen(c.pen(key, s.r));
             p.setBrush(withAlpha(opaque(c.app), 0.55));
             p.drawRoundedRect(s.r, s.tl, s.tl);
             continue;
@@ -707,7 +734,7 @@ void paintTopBar(QPainter& p, const Pal& c, const Geo& g)
         if (g.edge) {
             // Teto da janela: a borda só embaixo, e não onde a lateral desce emendada.
             panelFill(p, s.r, c, key);
-            p.setPen(QPen(c.border(key), 1));
+            p.setPen(c.pen(key, s.r));
             p.drawLine(QPointF(kLeftBar.right(), s.r.bottom()), QPointF(s.r.right(), s.r.bottom()));
             continue;
         }
@@ -852,7 +879,7 @@ void paintLeftBar(QPainter& p, const Pal& c, bool drawerOpen, bool joined = fals
     if (joined) {
         const QRectF lr(-1, kLeftBar.top() - 2, kLeftBar.right() + 1, kLeftBar.height() + 2);
         panelFill(p, lr, c, Theme::PanelKey::LeftBar);
-        p.setPen(QPen(c.border(Theme::PanelKey::LeftBar), 1));
+        p.setPen(c.pen(Theme::PanelKey::LeftBar, lr));
         p.drawLine(QPointF(lr.right(), lr.top()), QPointF(lr.right(), lr.bottom()));
     } else {
         panelRect(p, kLeftBar, c, c.r, c.r, 0, 0, Theme::PanelKey::LeftBar);
@@ -1280,13 +1307,13 @@ void paintThumb(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const Q
     const qreal lineH = qMax(2.0, h * 4.0 / 86.0);
     // Topbar: um tico mais larga que a folha, centrada nela.
     const QRectF tb(r.left() + w * 0.15, r.top() + h * 0.07, w * 0.78, h * 0.08);
-    p.setPen(QPen(c.border(Theme::PanelKey::TopToolbar), 1));
+    p.setPen(c.pen(Theme::PanelKey::TopToolbar, tb, c.bw > 1.2 ? 1.5 : 1));
     p.setBrush(opaque(c.fill(Theme::PanelKey::TopToolbar)));
     p.drawRoundedRect(tb, tb.height() / 2, tb.height() / 2);
     // Lateral
     const QRectF lb(r.left() + w * 0.04, r.top() + h * 0.20, w * 0.07, h * 0.72);
     const qreal lr = qMin(5.0 * h / 86.0, lb.width() / 2);
-    p.setPen(QPen(c.border(Theme::PanelKey::LeftBar), 1));
+    p.setPen(c.pen(Theme::PanelKey::LeftBar, lb, c.bw > 1.2 ? 1.5 : 1));
     p.setBrush(opaque(c.fill(Theme::PanelKey::LeftBar)));
     p.drawRoundedRect(lb, lr, lr);
     // Folha, quase encostando na topbar
@@ -1341,6 +1368,33 @@ void paintScene(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, Scene s
     paintRightBar(p, c, g);
     if (scene == Drawers) { p.save(); p.translate(0, g.dyDrawer); paintDrawer(p, c); p.restore(); }
     if (g.edge) paintTopBar(p, c, g);
+    // Halo da folha (temas com pageGlowEnabled): no app ele fica ACIMA das barras e só do lado de
+    // fora da folha (PageGlow em MainWindow.cpp); aqui a mesma conta, na escala da cena.
+    if (t.pageGlowEnabled) {
+        const QColor gc = col(t.pageShadowColor, QColor());
+        const qreal blur = t.pageShadowRadius * 0.75, off = t.pageShadowOffset * 0.75, corner = t.panelRadius * 0.75;
+        if (gc.isValid() && gc.alpha() > 0 && blur > 0) {
+            const QRectF sheet = kSheet.translated(0, g.dy);
+            p.save();
+            QPainterPath outside;
+            outside.addRect(all);
+            outside.addRect(sheet);
+            outside.setFillRule(Qt::OddEvenFill);
+            p.setClipPath(outside, Qt::IntersectClip);
+            p.setPen(Qt::NoPen);
+            const QRectF core = sheet.translated(0, off);
+            const int steps = qBound(8, int(blur), 48);
+            for (int i = steps; i >= 1; --i) {
+                const qreal k = qreal(i) / steps, grow = k * blur, falloff = (1.0 - k) * (1.0 - k);
+                QColor s = gc;
+                s.setAlphaF(qBound(0.0, gc.alphaF() * falloff * 0.5, 1.0));
+                p.setBrush(s);
+                const qreal rr = corner + grow * 0.5;
+                p.drawRoundedRect(core.adjusted(-grow, -grow, grow, grow), rr, rr);
+            }
+            p.restore();
+        }
+    }
     p.restore();
 }
 

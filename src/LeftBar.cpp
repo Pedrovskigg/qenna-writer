@@ -1763,9 +1763,10 @@ void LeftBar::paintEvent(QPaintEvent* event) {
     if (m_plateVisibleH >= 0 && !m_rolling && !m_chromeHidden) {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);
-        const QRectF box = QRectF(visibleBox()).adjusted(0.5, 0.5, -0.5, -0.5);
+        const qreal bw = Theme::panelBorderWidth() / 2.0;
+        const QRectF box = QRectF(visibleBox()).adjusted(bw, bw, -bw, -bw);
         const qreal r = qMin<qreal>(Theme::panelRadius(), box.height() / 2.0);
-        p.setPen(QPen(Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::LeftBar)), 1));
+        p.setPen(QPen(Theme::panelBorderBrushFor(Theme::PanelKey::LeftBar, box), Theme::panelBorderWidth()));
         p.setBrush(Theme::toColor(Theme::panelBackgroundFor(Theme::PanelKey::LeftBar)));
         p.drawRoundedRect(box, r, r);
         return;
@@ -1783,7 +1784,7 @@ void LeftBar::paintEvent(QPaintEvent* event) {
     const int snapH = qRound(m_rollSnapshot.height() / m_rollSnapshot.devicePixelRatio());
     p.drawPixmap(0, height() - snapH, m_rollSnapshot);
     p.setClipping(false);
-    p.setPen(QPen(Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::LeftBar)), 1));
+    p.setPen(QPen(Theme::panelBorderBrushFor(Theme::PanelKey::LeftBar, box), Theme::panelBorderWidth()));
     p.setBrush(Qt::NoBrush);
     p.drawPath(shape);
 }

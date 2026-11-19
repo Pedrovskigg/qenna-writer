@@ -282,6 +282,7 @@ qt_add_executable(qenna-writer
     src/AnimCanvas.h
     src/AnimGenresA.cpp
     src/AnimGenresB.cpp
+    src/AnimOceanDrive.cpp
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp
@@ -610,6 +611,7 @@ set_source_files_properties(src/galaxy/GalaxyBlackHole.cpp src/galaxy/GalaxyCanv
 
 # O planeta do Citadel é pintado pixel a pixel na montagem do tema: otimizado mesmo no Debug, senão trava ~1 s ao trocar de tema
 set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+set_source_files_properties(src/AnimOceanDrive.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 # O Mapa pinta milhões de pixels por quadro (gerador, pintor, pincéis): otimizado mesmo no Debug
 set_source_files_properties(src/carto/CartoCore.cpp src/carto/CartoPaint.cpp src/carto/CartoEdit.cpp src/carto/CartoInfo.cpp src/carto/CartoNames.cpp src/carto/CartoSprites.cpp src/carto/CartoSpritesArts.cpp src/carto/CartoSpritesArts4.cpp src/carto/CartoScene.cpp
                             src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoCanvasExplore.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp src/carto/CartoImage.cpp PROPERTIES COMPILE_OPTIONS "-O2")

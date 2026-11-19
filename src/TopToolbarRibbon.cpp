@@ -571,8 +571,8 @@ QString TopToolbar::ribbonRootQss() const
     // Faixa = teto da janela: sem moldura dos lados nem cantos, só a linha de baixo.
     // Flutuante, ela fica com a moldura de painel de sempre. Vale pra clássica também.
     if (!barEdgeToEdge()) return QString();
-    return QStringLiteral("QWidget#topToolbar { border: none; border-bottom: 1px solid %1; border-radius: 0px; }")
-        .arg(Theme::panelBorderFor(Theme::PanelKey::TopToolbar));
+    return Theme::qss(QStringLiteral("QWidget#topToolbar { border: none; border-bottom: @panel-border-w solid %1; border-radius: 0px; }")
+        .arg(Theme::panelBorderFor(Theme::PanelKey::TopToolbar)));
 }
 
 void TopToolbar::buildRibbonChrome()

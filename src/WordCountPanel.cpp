@@ -299,7 +299,8 @@ void WordCountPanel::applyThemeStyle()
         QScrollArea#wcpScroll QScrollBar::sub-page:vertical { background: transparent; }
         QFrame#wcpBody, QFrame#wcpFullBody {
             background: %1;
-            border: 1px solid %4;
+            border: @panel-border-w solid %4;
+            border-color: @border-colors-counter;
             border-radius: @radius-panel;
         }
         QFrame#wcpBody[joined="true"] {

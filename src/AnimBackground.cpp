@@ -2026,6 +2026,7 @@ std::unique_ptr<Layer> makeScene(const QString& id)
     if (auto l = makeDesert(id)) return l;
     if (auto l = makeGenresA(id)) return l;   // leva 7, gêneros (AnimGenresA/B.cpp)
     if (auto l = makeGenresB(id)) return l;   // Last Exit e Route 66 (AnimDesert.cpp)
+    if (auto l = makeOceanDrive(id)) return l;   // Sunset in VIce (AnimOceanDrive.cpp)
     if (auto l = makeLeva3(id)) return l;
     if (auto l = makeLeva4(id)) return l;
     if (auto l = makeLeva5(id)) return l;

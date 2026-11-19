@@ -1,10 +1,12 @@
 #pragma once
 
+#include <QBrush>
 #include <QColor>
 #include <QJsonObject>
 #include <QList>
 #include <QMap>
 #include <QObject>
+#include <QRectF>
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -152,6 +154,15 @@ struct MiraTheme {
     // Chaves em Theme::PanelKey. Campo vazio = usa a global.
     struct PanelColors { QString background; QString border; };
     QMap<QString, PanelColors> panelColors;
+    // Borda em degradê (18/11, criada pro Sunset in VIce): a borda dos painéis vai
+    // de panelBorder até esta cor, na direção panelBorderGradientAngle (graus, como
+    // no CSS: 180 = de cima pra baixo, 90 = da esquerda pra direita). Cada painel
+    // tem o seu degradê, do começo ao fim dele. Vazio = borda lisa. Painel com
+    // borda própria ("só este painel") continua liso.
+    QString panelBorderGradient;
+    int panelBorderGradientAngle = 180;
+    // Espessura da borda dos painéis, em px (1 a 4).
+    int panelBorderWidth = 1;
     // Cores das gavetas: dentro de cada gaveta (botão de criar, etiquetas,
     // barrinhas) usa a cor da própria gaveta — a do projeto, padrão — ou o
     // destaque do tema. O ícone da gaveta na LeftBar sempre fica com a dela.
@@ -390,6 +401,18 @@ inline const QString RightBar   = QStringLiteral("rightbar");
 // Cor/borda do painel `key`, caindo na global quando o tema não tem override.
 QString panelBackgroundFor(const QString& key);
 QString panelBorderFor(const QString& key);
+// Borda em degradê: panelBorderFor() já devolve o qlineargradient pronto pra QSS
+// (vale pra todo painel que pinta a borda por QSS). Quem pinta à mão usa o pincel
+// abaixo, com o retângulo do contorno; e a cor lisa (o começo do degradê) pra
+// detalhes que precisam de QColor.
+bool panelBorderIsGradient(const QString& key);
+QBrush panelBorderBrushFor(const QString& key, const QRectF& r);
+QString panelBorderColorFor(const QString& key);
+// As quatro cores da borda (cima direita baixo esquerda) pro border-color do QSS. No QSS dá pra usar
+// o token @border-colors-<chave do painel>, que Theme::qss() troca por isto.
+QString panelBorderColorsCss(const QString& key);
+int panelBorderWidth();
+QString panelBorderWidthCss();   // "1px", "2px"...
 // Qualquer cor com a opacidade dos painéis aplicada (rgba pra QSS). Pra
 // faixas internas de um painel que usam outra cor (cabeçalho em appBackground
 // etc.) e precisam ficar tão translúcidas quanto o painel.

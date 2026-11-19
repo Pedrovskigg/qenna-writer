@@ -86,6 +86,7 @@ private:
     QString m_panel;                  // painel clicado (PanelKey) no grupo Painéis
     bool m_sheetImage = false;        // grupo Folha: aba "Imagem" (senão "Cor e sombra")
     bool m_bgOverlay = false;         // grupo Fundo: aba "Degradê e grão" (senão "Cor e foto")
+    bool m_panelBorderTab = false;    // grupo Painéis: aba "Borda" (senão "Cores e vidro")
     QString m_activeKey = QStringLiteral("accentDefault");  // cor que recebe as cores da foto
     int m_scene = 0;
     QList<QColor> m_photoColors;

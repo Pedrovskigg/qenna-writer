@@ -238,7 +238,7 @@ void MiniCounterWidget::paintEvent(QPaintEvent*)
     // Cor própria do contador (Criador de Temas) e a opacidade dos painéis.
     QColor bg           = Theme::toColor(Theme::panelBackgroundFor(Theme::PanelKey::Counter));
     bg.setAlphaF(bg.alphaF() * Theme::panelOpacity() / 100.0);
-    const QColor border = Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::Counter));
+    const QColor border = Theme::toColor(Theme::panelBorderColorFor(Theme::PanelKey::Counter));
     const QColor t1     = Theme::toColor(Theme::textBright());
     const QColor t2     = Theme::toColor(Theme::textMuted());
     const QColor acc    = Theme::toColor(Theme::accentDefault());
@@ -514,9 +514,16 @@ void MiniCounterWidget::paintEvent(QPaintEvent*)
         }
     }
 
+    // a borda do contador (lisa ou em degradê, na espessura do tema), por dentro do contorno
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(border, 1));
-    p.drawPath(outline);
+    {
+        const qreal bw = Theme::panelBorderWidth() / 2.0;
+        const QRectF in = QRectF(0, 0, W, H).adjusted(bw, bw, -bw, -bw);
+        QPainterPath ring;
+        ring.addRoundedRect(in, qMax<qreal>(0, radius - (bw - 0.5)), qMax<qreal>(0, radius - (bw - 0.5)));
+        p.setPen(QPen(Theme::panelBorderBrushFor(Theme::PanelKey::Counter, in), Theme::panelBorderWidth()));
+        p.drawPath(ring);
+    }
 }
 
 // Sem aceitar o press, o release vai pro pai e o clique nunca chega aqui.

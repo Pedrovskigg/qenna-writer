@@ -13,9 +13,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLinearGradient>
 #include <QPalette>
 #include <QSettings>
 #include <QTimer>
+#include <QtMath>
 
 namespace Theme {
 
@@ -19654,6 +19656,58 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
     {
+        // Sunset in VIce (18/11): Miami nos anos 80, a baía vista do alto no pôr do sol, com a perseguição na
+        // avenida da orla. Cor "Peach" (folha cor de pêssego, interface carvão quente) e a borda em degradê do
+        // céu, rosa em cima e laranja embaixo, em 2 px. Cena em AnimOceanDrive.cpp.
+        MiraTheme t;
+        t.id = QStringLiteral("anim-oceandrive");
+        t.name = QStringLiteral("Sunset in VIce");
+        t.bundled = true;
+        t.panelRadius = 6;
+        t.appBackground = QStringLiteral("#151014");
+        t.panelBackground = QStringLiteral("#1b1519");
+        t.panelBorder = QStringLiteral("#ff4fa8");
+        t.panelBorderGradient = QStringLiteral("#ffb45a");
+        t.panelBorderGradientAngle = 180;
+        t.panelBorderWidth = 2;
+        t.textPrimary = QStringLiteral("#ecdcd8");
+        t.textMuted = QStringLiteral("#8e7a7a");
+        t.textBright = QStringLiteral("#fffaf6");
+        t.hoverOverlay = QStringLiteral("rgba(236,220,216,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(236,220,216,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(236,220,216,0.1)");
+        t.accentDefault = QStringLiteral("#ff6a5a");
+        t.hoverStrong = QStringLiteral("rgba(236,220,216,0.12)");
+        t.borderStrong = QStringLiteral("rgba(236,220,216,0.22)");
+        t.focusBorder = QStringLiteral("rgba(236,220,216,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(236,220,216,0.3)");
+        t.selectionRing = QStringLiteral("#fffaf6");
+        t.accentSuccess = QStringLiteral("#5ad6a0");
+        t.accentSuccessSoft = QStringLiteral("rgba(90,214,160,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(90,214,160,0.5)");
+        t.accentDanger = QStringLiteral("#e05555");
+        t.accentDangerSoft = QStringLiteral("rgba(224,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(224,85,85,0.5)");
+        t.accentWarning = QStringLiteral("#ffb45a");
+        t.accentInfo = QStringLiteral("#3ff0e0");
+        t.accentInfoSoft = QStringLiteral("rgba(63,240,224,0.2)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(63,240,224,0.5)");
+        t.editorBackground = QStringLiteral("#f8e6da");
+        t.editorTextColor = QStringLiteral("#3a2228");
+        t.docHeaderColor = QStringLiteral("#d8503c");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.backgroundMode = BgZoom;
+        t.animScene = QStringLiteral("oceandrive");
+        m_themes.append(t);
+    }
+    {
         MiraTheme t;
         t.id = QStringLiteral("anim-canal");
         t.name = QStringLiteral("Canal Lights");
@@ -20745,6 +20799,9 @@ const QSet<QString>& knownThemeKeys()
         QStringLiteral("docHeaderColor"),
         QStringLiteral("docHeaderFont"),
         QStringLiteral("panelColors"),
+        QStringLiteral("panelBorderGradient"),
+        QStringLiteral("panelBorderGradientAngle"),
+        QStringLiteral("panelBorderWidth"),
         QStringLiteral("drawerAccentFromTheme"),
         QStringLiteral("bgOverlayType"),
         QStringLiteral("bgOverlayColor"),
@@ -20820,6 +20877,11 @@ QJsonObject themeToJson(const MiraTheme& t)
     // reexportado continuar idêntico ao de antes.
     if (!t.iconColor.isEmpty())      o["iconColor"] = t.iconColor;
     if (t.panelBlur > 0)             o["panelBlur"] = t.panelBlur;
+    if (!t.panelBorderGradient.isEmpty()) {
+        o["panelBorderGradient"] = t.panelBorderGradient;
+        o["panelBorderGradientAngle"] = t.panelBorderGradientAngle;
+    }
+    if (t.panelBorderWidth != 1)     o["panelBorderWidth"] = t.panelBorderWidth;
     if (!t.docHeaderColor.isEmpty()) o["docHeaderColor"] = t.docHeaderColor;
     if (!t.docHeaderFont.isEmpty())  o["docHeaderFont"] = t.docHeaderFont;
     if (t.drawerAccentFromTheme)     o["drawerAccentFromTheme"] = true;
@@ -20926,6 +20988,9 @@ MiraTheme themeFromJson(const QJsonObject& o)
     }
     t.iconColor = o.value("iconColor").toString();
     t.panelBlur = qBound(0, o.value("panelBlur").toInt(0), 60);
+    t.panelBorderGradient = o.value("panelBorderGradient").toString();
+    t.panelBorderGradientAngle = ((o.value("panelBorderGradientAngle").toInt(180) % 360) + 360) % 360;
+    t.panelBorderWidth = qBound(1, o.value("panelBorderWidth").toInt(1), 4);
     t.docHeaderColor = o.value("docHeaderColor").toString();
     t.docHeaderFont = o.value("docHeaderFont").toString();
     t.drawerAccentFromTheme = o.value("drawerAccentFromTheme").toBool(false);
@@ -21163,12 +21228,18 @@ QString itemBorderRadius()    { return QStringLiteral("%1px").arg(itemRadius());
 
 QString qss(const QString& sheet)
 {
-    // Substituição direta, sem regex: são três tokens fixos e esta função roda
+    // Substituição direta, sem regex: são quatro tokens fixos e esta função roda
     // a cada reaplicação de tema, em dezenas de folhas.
     QString out = sheet;
     out.replace(QLatin1String("@radius-panel"),   panelBorderRadius());
     out.replace(QLatin1String("@radius-control"), controlBorderRadius());
     out.replace(QLatin1String("@radius-item"),    itemBorderRadius());
+    out.replace(QLatin1String("@panel-border-w"), panelBorderWidthCss());
+    // "@border-colors-<painel>": as quatro cores da borda (cima, direita, baixo, esquerda), pra borda em degradê
+    if (out.contains(QLatin1String("@border-colors-"))) {
+        for (const QString& k : { PanelKey::TopToolbar, PanelKey::LeftBar, PanelKey::RefMenu, PanelKey::Counter, PanelKey::Drawers, PanelKey::RightBar })
+            out.replace(QStringLiteral("@border-colors-") + k, panelBorderColorsCss(k));
+    }
     return out;
 }
 namespace {
@@ -21329,8 +21400,72 @@ QString panelBorderFor(const QString& key)
     const auto it = pc.constFind(key);
     if (it != pc.constEnd() && !it->border.isEmpty()) return it->border;
     if (key == PanelKey::RightBar) return panelBorderFor(PanelKey::LeftBar);
+    if (panelBorderIsGradient(key)) {
+        // Coordenadas do QSS vão de 0 a 1 no próprio widget: o degradê atravessa o painel inteiro.
+        const auto& t = Manager::instance()->current();
+        const double a = qDegreesToRadians(double(t.panelBorderGradientAngle)), dx = std::sin(a), dy = -std::cos(a);
+        return QStringLiteral("qlineargradient(x1:%1, y1:%2, x2:%3, y2:%4, stop:0 %5, stop:1 %6)")
+            .arg(0.5 - dx / 2, 0, 'f', 3).arg(0.5 - dy / 2, 0, 'f', 3).arg(0.5 + dx / 2, 0, 'f', 3).arg(0.5 + dy / 2, 0, 'f', 3)
+            .arg(t.panelBorder, t.panelBorderGradient);
+    }
     return panelBorder();
 }
+
+bool panelBorderIsGradient(const QString& key)
+{
+    const auto& t = Manager::instance()->current();
+    if (t.panelBorderGradient.isEmpty() || !toColor(t.panelBorderGradient).isValid()) return false;
+    const QString k = key == PanelKey::RightBar && !t.panelColors.contains(PanelKey::RightBar) ? PanelKey::LeftBar : key;
+    const auto it = t.panelColors.constFind(k);
+    return it == t.panelColors.constEnd() || it->border.isEmpty();
+}
+
+QString panelBorderColorsCss(const QString& key)
+{
+    if (!panelBorderIsGradient(key)) return panelBorderFor(key);
+    // O Qt aplica o pincel da borda em cada lado separado, no retângulo do próprio lado: um degradê de cima pra
+    // baixo vira uma mistura no lado de cima (2 px de altura). Então cada lado ganha o seu degradê, entre as cores
+    // que o degradê do painel tem nos dois cantos desse lado.
+    const auto& t = Manager::instance()->current();
+    const double a = qDegreesToRadians(double(t.panelBorderGradientAngle)), dx = std::sin(a), dy = -std::cos(a);
+    const double x1 = 0.5 - dx / 2, y1 = 0.5 - dy / 2;
+    const QColor c0 = toColor(t.panelBorder), c1 = toColor(t.panelBorderGradient);
+    auto at = [&](double x, double y) {
+        const double k = qBound(0.0, (x - x1) * dx + (y - y1) * dy, 1.0);
+        const auto ch = [k](int p, int q) { return int(std::lround(p + (q - p) * k)); };
+        return QColor(ch(c0.red(), c1.red()), ch(c0.green(), c1.green()), ch(c0.blue(), c1.blue()), ch(c0.alpha(), c1.alpha()));
+    };
+    auto css = [](const QColor& c) { return QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(QString::number(c.alphaF(), 'f', 3)); };
+    auto side = [&](const QColor& p, const QColor& q, bool horizontal) {
+        if (p == q) return css(p);
+        return QStringLiteral("qlineargradient(x1:0, y1:0, x2:%1, y2:%2, stop:0 %3, stop:1 %4)")
+            .arg(horizontal ? 1 : 0).arg(horizontal ? 0 : 1).arg(css(p), css(q));
+    };
+    const QColor tl = at(0, 0), tr = at(1, 0), br = at(1, 1), bl = at(0, 1);
+    return side(tl, tr, true) + QLatin1Char(' ') + side(tr, br, false) + QLatin1Char(' ') + side(bl, br, true) + QLatin1Char(' ') + side(tl, bl, false);
+}
+
+QString panelBorderColorFor(const QString& key)
+{
+    if (!panelBorderIsGradient(key)) return panelBorderFor(key);
+    return panelBorder();
+}
+
+QBrush panelBorderBrushFor(const QString& key, const QRectF& r)
+{
+    if (!panelBorderIsGradient(key)) return QBrush(toColor(panelBorderFor(key)));
+    const auto& t = Manager::instance()->current();
+    const double a = qDegreesToRadians(double(t.panelBorderGradientAngle)), dx = std::sin(a), dy = -std::cos(a);
+    const double len = std::abs(r.width() * dx) + std::abs(r.height() * dy);
+    const QPointF c = r.center(), d(dx * len / 2, dy * len / 2);
+    QLinearGradient g(c - d, c + d);
+    g.setColorAt(0, toColor(t.panelBorder));
+    g.setColorAt(1, toColor(t.panelBorderGradient));
+    return QBrush(g);
+}
+
+int panelBorderWidth() { return qBound(1, Manager::instance()->current().panelBorderWidth, 4); }
+QString panelBorderWidthCss() { return QStringLiteral("%1px").arg(panelBorderWidth()); }
 
 QString withPanelOpacity(const QString& css)
 {
@@ -21353,10 +21488,11 @@ QString panelQss(const QString& objectName, const QString& key)
     return QStringLiteral(R"(
         #%1 {
             background: %2;
-            border: 1px solid %3;
+            border: %5 solid %3;
+            border-color: %6;
             border-radius: %4;
         }
-    )").arg(objectName, panelBackgroundCssFor(key), panelBorderFor(key), panelBorderRadius());
+    )").arg(objectName, panelBackgroundCssFor(key), panelBorderFor(key), panelBorderRadius(), panelBorderWidthCss(), panelBorderColorsCss(key));
 }
 
 QString iconColor()

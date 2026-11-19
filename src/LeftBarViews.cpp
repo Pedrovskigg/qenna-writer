@@ -764,7 +764,7 @@ void LeftBarTag::paintEvent(QPaintEvent*) {
     shape.addRoundedRect(body, r, r);
     QColor bg = Theme::toColor(Theme::panelBackgroundFor(Theme::PanelKey::LeftBar));
     bg.setAlphaF(qMax(bg.alphaF(), 0.97f));
-    p.setPen(QPen(Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::LeftBar)), 1));
+    p.setPen(QPen(Theme::panelBorderBrushFor(Theme::PanelKey::LeftBar, body), Theme::panelBorderWidth()));
     p.setBrush(bg);
     p.drawPath(shape);
 

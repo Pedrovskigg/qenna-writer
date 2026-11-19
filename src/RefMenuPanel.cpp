@@ -1133,7 +1133,8 @@ void RefMenuPanel::applyMainStyleSheet()
         QWidget#refMenuPanel { background: transparent; }
         QWidget#refFrame {
             background: %1;
-            border: 1px solid %3;
+            border: @panel-border-w solid %3;
+            border-color: @border-colors-refmenu;
             border-radius: @radius-panel;
         }
         QWidget#refHeader {
