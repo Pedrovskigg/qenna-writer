@@ -188,7 +188,7 @@
 #include "SettingsPanel.h"
 #include "ExportPanel.h"
 #include "Exporter.h"
-#include "ReaderPreviewPanel.h"
+#include "EbookReader.h"
 #include "SpellChecker.h"
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
@@ -3692,11 +3692,7 @@ void MainWindow::setupEditor()
         if (aiChatPanel) aiChatPanel->togglePanel();
     });
     auto* readerPreviewShortcut = new QShortcut(QKeySequence(Qt::Key_F8), this);
-    connect(readerPreviewShortcut, &QShortcut::activated, this, [this]() {
-        if (!editorHost) return;
-        const QString msId = editorHost->viewMode().manuscriptId;
-        if (!msId.isEmpty()) openReaderPreview(msId);
-    });
+    connect(readerPreviewShortcut, &QShortcut::activated, this, [this]() { openReaderPreview(QString()); });
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
         manuscriptPanel->closePanel();
@@ -4762,6 +4758,7 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::settingsRequested, this, &MainWindow::onSettingsRequested);
     connect(toolbar, &TopToolbar::exportRequested, this, &MainWindow::onExportRequested);
     connect(toolbar, &TopToolbar::themePanelRequested, this, &MainWindow::onThemePanelRequested);
+    connect(toolbar, &TopToolbar::readEbookRequested, this, [this]() { openReaderPreview(QString()); });
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &MainWindow::onThemeChanged);
     connect(EditorLayout::Manager::instance(), &EditorLayout::Manager::layoutChanged,
@@ -6154,7 +6151,7 @@ bool MainWindow::chromeBusy() const
         drawerListPanel, manuscriptPanel, projectDrawerPanel, refMenuPanel, pensarioPanel, statsPanel,
         aiChatPanel, ambiencePanel, helpPanel, remindersPanel, settingsPanel,
         themesPanel, projectInfoPanel, characterSheetPanel, globalSearchPanel,
-        timelinePanel, lousaPanel, groupsPanel, bondViewPanel, readerPreviewPanel,
+        timelinePanel, lousaPanel, groupsPanel, bondViewPanel,
         // Abertos pela LeftBar, mas filhos da janela (não são popup): sem eles
         // aqui, a barra recuava no modo focado com o cartão da Nova gaveta ou
         // a prévia do Info ainda em uso.
@@ -9817,6 +9814,49 @@ void MainWindow::onSettingsRequested()
     settingsPanel->activateWindow();
 }
 
+Exporter::DocStyle MainWindow::exportDocStyle() const
+{
+    Exporter::DocStyle style;
+    style.fontFamily = currentFontFamily;
+    style.fontSize = currentFontSize;
+    style.lineHeightPercent = currentLineHeight;
+    style.firstLineIndent = firstLineIndentEnabled;
+    style.spacingBefore = paragraphSpacingBefore;
+    style.spacingAfter = paragraphSpacingAfter;
+    return style;
+}
+
+void MainWindow::runExport(const Exporter::Selection& sel)
+{
+    Exporter exporter(projectModel, projectRoot, exportDocStyle());
+    QString err;
+    bool nothing = false;
+    const bool ok = exporter.run(sel, this, &err, &nothing);
+    if (ok) {
+        // Toast flutuante de sucesso (mesmo padrão da "Nova cena criada").
+        if (editorContainer) {
+            auto* toast = new QLabel(tr("Exportado com sucesso"), editorContainer);
+            toast->setObjectName(QStringLiteral("sceneToast"));
+            toast->setAlignment(Qt::AlignCenter);
+            toast->setStyleSheet(Theme::qss(QStringLiteral(
+                "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
+                " border-radius: @radius-control; padding: 6px 16px;"
+                " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
+                .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
+            toast->adjustSize();
+            const QPoint center = editorContainer->rect().center();
+            toast->move(center.x() - toast->width() / 2,
+                        editorContainer->height() - toast->height() - 32);
+            toast->show();
+            toast->raise();
+            QTimer::singleShot(1800, toast, [toast]() { toast->deleteLater(); });
+        }
+    } else if (!nothing && !err.isEmpty()) {
+        QMessageBox::warning(this, tr("Exportar"), err);
+    }
+    // Cancelado no diálogo de destino: silêncio.
+}
+
 void MainWindow::onExportRequested()
 {
     if (!projectModel || !hasProjectLoaded()) return;
@@ -9826,35 +9866,18 @@ void MainWindow::onExportRequested()
 
     auto* panel = new ExportPanel(projectModel, this);
     panel->setAttribute(Qt::WA_DeleteOnClose);
-    {
-        // A folha da prévia é montada pelo exportador de verdade, com o
-        // estilo de parágrafo do projeto; as palavras vêm do contador do app.
-        Exporter::DocStyle style;
-        style.fontFamily = currentFontFamily;
-        style.fontSize = currentFontSize;
-        style.lineHeightPercent = currentLineHeight;
-        style.firstLineIndent = firstLineIndentEnabled;
-        style.spacingBefore = paragraphSpacingBefore;
-        style.spacingAfter = paragraphSpacingAfter;
-        panel->chapterWords = [this](const QString& id) { return wordCounter ? wordCounter->countChapter(id) : 0; };
-        panel->setPreviewSource(projectRoot, style);
-    }
+    // A folha da prévia é montada pelo exportador de verdade, com o estilo de
+    // parágrafo do projeto; as palavras vêm do contador do app.
+    panel->chapterWords = [this](const QString& id) { return wordCounter ? wordCounter->countChapter(id) : 0; };
+    panel->setPreviewSource(projectRoot, exportDocStyle());
     connect(panel, &ExportPanel::bibleRequested, this, [this](Exporter::Format fmt) {
-        Exporter::DocStyle style;
-        style.fontFamily = currentFontFamily;
-        style.fontSize = currentFontSize;
-        style.lineHeightPercent = currentLineHeight;
-        style.firstLineIndent = firstLineIndentEnabled;
-        style.spacingBefore = paragraphSpacingBefore;
-        style.spacingAfter = paragraphSpacingAfter;
-
         Exporter::BibleSources src;
         src.glossary = glossaryStore;
         src.construtor = construtorStore;
         src.territorios = territorioStore;
         src.mapPins = mapPinsStore;
 
-        Exporter exporter(projectModel, projectRoot, style);
+        Exporter exporter(projectModel, projectRoot, exportDocStyle());
         QString err;
         if (exporter.runBible(src, fmt, this, &err)) {
             showEditorToast(tr("Bíblia do universo exportada"));
@@ -9862,43 +9885,7 @@ void MainWindow::onExportRequested()
             QMessageBox::warning(this, tr("Exportar"), err);
         }
     });
-    connect(panel, &ExportPanel::exportRequested, this,
-            [this](const Exporter::Selection& sel) {
-        Exporter::DocStyle style;
-        style.fontFamily = currentFontFamily;
-        style.fontSize = currentFontSize;
-        style.lineHeightPercent = currentLineHeight;
-        style.firstLineIndent = firstLineIndentEnabled;
-        style.spacingBefore = paragraphSpacingBefore;
-        style.spacingAfter = paragraphSpacingAfter;
-        Exporter exporter(projectModel, projectRoot, style);
-        QString err;
-        bool nothing = false;
-        const bool ok = exporter.run(sel, this, &err, &nothing);
-        if (ok) {
-            // Toast flutuante de sucesso (mesmo padrão da "Nova cena criada").
-            if (editorContainer) {
-                auto* toast = new QLabel(tr("Exportado com sucesso"), editorContainer);
-                toast->setObjectName(QStringLiteral("sceneToast"));
-                toast->setAlignment(Qt::AlignCenter);
-                toast->setStyleSheet(Theme::qss(QStringLiteral(
-                    "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
-                    " border-radius: @radius-control; padding: 6px 16px;"
-                    " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
-                    .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
-                toast->adjustSize();
-                const QPoint center = editorContainer->rect().center();
-                toast->move(center.x() - toast->width() / 2,
-                            editorContainer->height() - toast->height() - 32);
-                toast->show();
-                toast->raise();
-                QTimer::singleShot(1800, toast, [toast]() { toast->deleteLater(); });
-            }
-        } else if (!nothing && !err.isEmpty()) {
-            QMessageBox::warning(this, tr("Exportar"), err);
-        }
-        // Cancelado no diálogo de destino: silêncio.
-    });
+    connect(panel, &ExportPanel::exportRequested, this, &MainWindow::runExport);
     panel->exec();
 }
 
@@ -11383,31 +11370,37 @@ void MainWindow::showCartoPanel()
     leftBar->setActiveFixedAction(LeftBar::WorldMap);
 }
 
-ReaderPreviewPanel* MainWindow::ensureReaderPreviewPanel()
-{
-    if (!readerPreviewPanel) {
-        Exporter::DocStyle style;
-        style.fontFamily = currentFontFamily;
-        style.fontSize = currentFontSize;
-        style.lineHeightPercent = currentLineHeight;
-        style.firstLineIndent = firstLineIndentEnabled;
-        style.spacingBefore = paragraphSpacingBefore;
-        style.spacingAfter = paragraphSpacingAfter;
-        readerPreviewPanel = new ReaderPreviewPanel(projectModel, projectRoot, style, this);
-    }
-    return readerPreviewPanel;
-}
-
 void MainWindow::openReaderPreview(const QString& manuscriptId)
 {
-    if (!projectModel || manuscriptId.isEmpty()) return;
-    // Garante que o disco reflete as edições atuais antes de ler pro preview.
+    if (!projectModel || !hasProjectLoaded()) return;
+    QString msId = manuscriptId;
+    if (msId.isEmpty() && editorHost) msId = editorHost->viewMode().manuscriptId;
+    if (msId.isEmpty()) {
+        for (const Manuscript& ms : projectModel->manuscripts())
+            if (!projectModel->orderedChaptersForManuscript(ms.id).isEmpty()) { msId = ms.id; break; }
+    }
+    if (msId.isEmpty()) {
+        showEditorToast(tr("Escreva um capítulo pra ler como e-book"));
+        return;
+    }
+    // Garante que o disco reflete as edições atuais antes de ler.
     if (projectSaver) projectSaver->saveProject();
-    ReaderPreviewPanel* panel = ensureReaderPreviewPanel();
-    panel->setManuscript(manuscriptId);
-    panel->show();
-    panel->raise();
-    panel->activateWindow();
+
+    // O manuscrito inteiro, como sai no EPUB.
+    Exporter::Selection sel;
+    sel.format = Exporter::Format::Epub;
+    sel.dropCap = QSettings().value(QStringLiteral("ui/exportDropCap"), true).toBool();
+    const QList<const Chapter*> chs = projectModel->orderedChaptersForManuscript(msId);
+    for (const Chapter* c : chs) sel.chapterIds.insert(c->id);
+    QString title = projectModel->manuscriptEffectiveTitle(msId);
+    if (title.trimmed().isEmpty()) title = tr("Manuscrito");
+    const QString subtitle = chs.size() == 1 ? tr("%1 · 1 capítulo").arg(title)
+                                             : tr("%1 · %2 capítulos").arg(title).arg(chs.size());
+    auto exporter = std::make_shared<Exporter>(projectModel, projectRoot, exportDocStyle());
+    auto* room = new EbookRoom(exporter, sel, subtitle, QStringLiteral("ebook/lastPos/%1").arg(msId), this);
+    room->setAttribute(Qt::WA_DeleteOnClose);
+    connect(room, &EbookRoom::exportRequested, this, &MainWindow::runExport);
+    room->open();
 }
 
 QString MainWindow::docTextForLink(const QString& linkKey, int maxWords)

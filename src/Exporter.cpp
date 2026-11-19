@@ -1,5 +1,6 @@
 #include "Exporter.h"
 
+#include "BookSeams.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
@@ -31,6 +32,8 @@
 #include <QAbstractTextDocumentLayout>
 #include <QFontMetricsF>
 #include <QPainter>
+#include <QPalette>
+#include <QHash>
 #include <QPageLayout>
 #include <QPageSize>
 #include <QPdfWriter>
@@ -92,56 +95,6 @@ void stripMarkers(QTextDocument& doc) {
     }
 }
 
-// Preview em preto-e-branco: em vez de apagar o marca-texto (como
-// stripMarkers), converte o fundo colorido pra um cinza de luminância
-// equivalente — o usuário quer VER que ali tinha um marcador, só sem cor.
-void desaturateMarkerBackgrounds(QTextDocument& doc) {
-    struct Range { int from; int to; QTextCharFormat fmt; };
-    QList<Range> ranges;
-    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
-        for (auto it = blk.begin(); !it.atEnd(); ++it) {
-            const QTextFragment frag = it.fragment();
-            if (!frag.isValid()) continue;
-            QTextCharFormat fmt = frag.charFormat();
-            if (fmt.background().style() == Qt::NoBrush) continue;
-            const int gray = qGray(fmt.background().color().rgb());
-            fmt.setBackground(QColor(gray, gray, gray));
-            ranges.append({ frag.position(), frag.position() + frag.length(), fmt });
-        }
-    }
-    for (const Range& r : ranges) {
-        QTextCursor c(&doc);
-        c.setPosition(r.from);
-        c.setPosition(r.to, QTextCursor::KeepAnchor);
-        c.setCharFormat(r.fmt);
-    }
-}
-
-// Preview em preto-e-branco: dessatura toda imagem embutida no documento
-// (capa e imagens de corpo). Funciona tanto pra imagem inserida via
-// QTextCursor::insertImage (cover, resource pré-registrado) quanto pra <img
-// data:...> vindo de insertHtml (o próprio Qt decodifica e cacheia o recurso
-// sob o nome/URL da tag na primeira vez que doc.resource() é chamado).
-void desaturateImages(QTextDocument& doc) {
-    QSet<QString> names;
-    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
-        for (auto it = blk.begin(); !it.atEnd(); ++it) {
-            const QTextFragment frag = it.fragment();
-            if (!frag.isValid()) continue;
-            const QTextCharFormat fmt = frag.charFormat();
-            if (fmt.isImageFormat()) names.insert(fmt.toImageFormat().name());
-        }
-    }
-    for (const QString& name : names) {
-        const QUrl url(name);
-        const QImage img = doc.resource(QTextDocument::ImageResource, url).value<QImage>();
-        if (img.isNull()) continue;
-        const QImage gray = img.convertToFormat(QImage::Format_Grayscale8)
-                                .convertToFormat(QImage::Format_RGB32);
-        doc.addResource(QTextDocument::ImageResource, url, gray);
-    }
-}
-
 // ── Helpers do EPUB ──
 QString escXml(const QString& s) {
     QString o = s;
@@ -170,6 +123,83 @@ bool parseDataUrl(const QString& url, QString& mimeOut, QByteArray& bytesOut) {
     mimeOut = header.section(QChar(';'), 0, 0);
     bytesOut = QByteArray::fromBase64(url.mid(comma + 1).toLatin1());
     return !bytesOut.isEmpty();
+}
+
+// O toHtml() do Qt cola em cada parágrafo as medidas do editor (margem de
+// 12 px, recuo zero, -qt-*) e em cada trecho a cor preta forçada. No EPUB isso
+// passa por cima do CSS do livro: some o recuo, os parágrafos ganham vão de
+// página da web e o preto fixo pode sumir no modo noturno do leitor. Sobra só
+// o que é do texto: negrito, itálico, sublinhado, marcador, alinhamento.
+QString cleanBodyXhtml(const QString& body) {
+    static const QRegularExpression styleRe(QStringLiteral("\\sstyle=\"([^\"]*)\""));
+    QString out;
+    out.reserve(body.size());
+    int last = 0;
+    auto it = styleRe.globalMatch(body);
+    while (it.hasNext()) {
+        const auto m = it.next();
+        out += body.mid(last, m.capturedStart() - last);
+        QStringList keep;
+        for (const QString& decl : m.captured(1).split(QChar(';'), Qt::SkipEmptyParts)) {
+            const int colon = decl.indexOf(QChar(':'));
+            if (colon < 0) continue;
+            const QString prop = decl.left(colon).trimmed().toLower();
+            if (prop.startsWith(QLatin1String("margin")) || prop.startsWith(QLatin1String("-qt-"))
+                || prop == QLatin1String("text-indent") || prop == QLatin1String("color")
+                || prop == QLatin1String("font-family") || prop == QLatin1String("font-size"))
+                continue;
+            keep << decl.trimmed();
+        }
+        if (!keep.isEmpty()) out += QStringLiteral(" style=\"%1;\"").arg(keep.join(QStringLiteral("; ")));
+        last = m.capturedEnd();
+    }
+    out += body.mid(last);
+    return out;
+}
+
+// Marca o primeiro parágrafo com texto do capítulo (class="first", sem recuo,
+// como nos livros) e, se pedido, embrulha a primeira letra na capitular. Fala
+// de travessão ou aspas não ganha capitular (fica estranho); o parágrafo
+// continua sem recuo. Devolve a letra embrulhada (vazio = sem capitular).
+QString markFirstParagraph(QString& body, bool dropCap) {
+    int pos = 0;
+    while ((pos = body.indexOf(QLatin1String("<p"), pos)) >= 0) {
+        const QChar after = pos + 2 < body.size() ? body.at(pos + 2) : QChar();
+        if (after != QChar('>') && !after.isSpace()) { pos += 2; continue; }   // <pre>, <param>...
+        const int gt = body.indexOf(QChar('>'), pos);
+        const int end = body.indexOf(QLatin1String("</p>"), gt);
+        if (gt < 0 || end < 0) return QString();
+        // o primeiro caractere de texto do parágrafo
+        int i = gt + 1, textAt = -1;
+        while (i < end) {
+            const QChar c = body.at(i);
+            if (c == QChar('<')) { const int close = body.indexOf(QChar('>'), i); if (close < 0) break; i = close + 1; continue; }
+            if (c.isSpace()) { ++i; continue; }
+            if (c == QChar('&') && body.mid(i, 6) == QLatin1String("&#160;")) { i += 6; continue; }
+            textAt = i;
+            break;
+        }
+        if (textAt < 0) { pos = end + 4; continue; }   // parágrafo vazio: o próximo
+        body.insert(pos + 2, QStringLiteral(" class=\"first\""));
+        textAt += 14;
+        const QChar c = body.at(textAt);
+        if (!dropCap || !c.isLetterOrNumber()) return QString();
+        const int len = (c.isHighSurrogate() && textAt + 1 < body.size()) ? 2 : 1;
+        const QString letter = body.mid(textAt, len);
+        body.insert(textAt + len, QStringLiteral("</span>"));
+        body.insert(textAt, QStringLiteral("<span class=\"dropcap\">"));
+        return letter;
+    }
+    return QString();
+}
+
+QString romanNumeral(int n) {
+    static const int v[] = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+    static const char* s[] = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+    QString r;
+    for (int i = 0; i < 13 && n > 0; ++i)
+        while (n >= v[i]) { r += QLatin1String(s[i]); n -= v[i]; }
+    return r;
 }
 }
 
@@ -1934,7 +1964,7 @@ QString Exporter::itemBodyXhtml(const QString& rawHtml, bool includeMarkers,
                  QStringLiteral("<br/>"));
     body.replace(QRegularExpression(QStringLiteral("<hr>"), QRegularExpression::CaseInsensitiveOption),
                  QStringLiteral("<hr/>"));
-    return body;
+    return cleanBodyXhtml(body);
 }
 
 const Manuscript* Exporter::singleManuscriptInSelection(const Selection& sel) const {
@@ -1952,51 +1982,195 @@ const Manuscript* Exporter::singleManuscriptInSelection(const Selection& sel) co
     return found;
 }
 
+QList<Exporter::EpubPart> Exporter::epubParts(const Selection& sel) const {
+    QList<EpubPart> parts;
+    if (!m_model) return parts;
+    for (const Manuscript& ms : m_model->manuscripts())
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+            if (!sel.chapterIds.contains(ch->id)) continue;
+            EpubPart p;
+            p.chapter = ch;
+            p.title = ch->title.trimmed().isEmpty() ? m_model->chapterDisplayLabel(*ch) : ch->title;
+            if (p.title.trimmed().isEmpty()) p.title = subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo"));
+            parts.append(p);
+        }
+    for (const Drawer& d : m_model->drawers()) {
+        std::function<void(const QString&)> walk = [&](const QString& folderId) {
+            for (const DrawerItem& di : d.items) {
+                if ((di.folderId.isEmpty() ? QString() : di.folderId) != folderId) continue;
+                if (!sel.itemIds.contains(di.id)) continue;
+                EpubPart p;
+                p.item = &di;
+                p.title = di.title.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Documento")) : di.title;
+                parts.append(p);
+            }
+            for (const Folder& f : d.folders)
+                if ((f.parentId.isEmpty() ? QString() : f.parentId) == folderId) walk(f.id);
+        };
+        walk(QString());
+    }
+    return parts;
+}
+
+QString Exporter::bookLanguage(QString* tocLabel, QString* coverLabel) const {
+    // É o idioma em que o texto foi ESCRITO, não o da interface: o e-reader usa
+    // isso pra hifenização, voz de leitura e dicionário. O corretor do projeto
+    // é a melhor pista que existe (segue o idioma do app quando o autor não
+    // escolheu outro). "Índice" e "Capa" seguem o livro pelo mesmo motivo — um
+    // livro em italiano com sumário em português é defeito do arquivo.
+    QString bookLang = m_model ? m_model->spellLanguage() : QString();
+    if (bookLang.isEmpty()) bookLang = QStringLiteral("pt_BR");
+    bookLang.replace(QLatin1Char('_'), QLatin1Char('-'));
+    const QString langPrefix = bookLang.left(2).toLower();
+    QString toc = QStringLiteral("Índice"), cover = QStringLiteral("Capa");
+    if (langPrefix == QLatin1String("en"))      { toc = QStringLiteral("Contents");           cover = QStringLiteral("Cover"); }
+    else if (langPrefix == QLatin1String("es")) { toc = QStringLiteral("Índice");             cover = QStringLiteral("Portada"); }
+    else if (langPrefix == QLatin1String("it")) { toc = QStringLiteral("Indice");             cover = QStringLiteral("Copertina"); }
+    else if (langPrefix == QLatin1String("fr")) { toc = QStringLiteral("Table des matières"); cover = QStringLiteral("Couverture"); }
+    else if (langPrefix == QLatin1String("de")) { toc = QStringLiteral("Inhalt");             cover = QStringLiteral("Cover"); }
+    if (tocLabel) *tocLabel = toc;
+    if (coverLabel) *coverLabel = cover;
+    return bookLang;
+}
+
+// A abertura do capítulo no livro, no estilo que o projeto escolheu pro editor
+// (Fios, Nó, Numeral, Romano, Margem, Fleurão). Só texto e CSS simples, pra
+// sair igual no Kindle, no celular e na prévia do Qenna: os fios viram
+// travessões, o nó vira o ponto, o fleurão vira o ❦.
+QString Exporter::chapterOpeningHtml(const Chapter& ch, qreal basePx,
+                                     const QString& muted, const QString& ink) const {
+    // basePx <= 0: EPUB (em, relativo à letra do próprio elemento); > 0: prévia (px).
+    auto len = [basePx](double x, double elementSize) {
+        return basePx > 0 ? QString::number(x * basePx, 'f', 1) + QStringLiteral("px")
+                          : QString::number(x / elementSize, 'f', 3) + QStringLiteral("em");
+    };
+    const QString label = m_model->chapterDisplayLabel(ch);
+    const QString kind = m_model->chapterTypeName(ch);
+    QString number;
+    int numberInt = 0;
+    if (label.size() > kind.size() && label.startsWith(kind)) {
+        number = label.mid(kind.size()).trimmed();
+        bool ok = false;
+        numberInt = number.toInt(&ok);
+        if (!ok) {
+            static const QHash<QChar, int> val = { { 'I', 1 }, { 'V', 5 }, { 'X', 10 }, { 'L', 50 },
+                                                    { 'C', 100 }, { 'D', 500 }, { 'M', 1000 } };
+            int prev = 0;
+            for (int i = number.size() - 1; i >= 0; --i) {
+                const int v = val.value(number.at(i).toUpper(), 0);
+                numberInt += v < prev ? -v : v;
+                prev = qMax(prev, v);
+            }
+        }
+    }
+    const QString title = BookSeams::ownTitle(ch.title, label);
+    const QString esc = label.toHtmlEscaped();
+
+    struct Piece { QString html; double size; bool italic = false; bool heading = false; double spacing = 0; bool mutedColor = false; };
+    QList<Piece> pieces;
+    auto caps = [&](const QString& t, double size = 0.72) { pieces.append({ t.toUpper().toHtmlEscaped(), size, false, false, 0.22, true }); };
+    auto head = [&](const QString& rich, double size = 1.5, bool italic = false) { pieces.append({ rich, size, italic, true, 0, false }); };
+    const QString dash = QStringLiteral("<span style=\"color:%1;\">—</span>").arg(muted);
+    const BookSeams::Style style = BookSeams::style();
+    switch (style) {
+    case BookSeams::Knot:
+        pieces.append({ QStringLiteral("●"), 1.0, false, false, 0, true });
+        if (!title.isEmpty()) { caps(label); head(title.toHtmlEscaped()); }
+        else head(esc);
+        break;
+    case BookSeams::Numeral:
+        if (!number.isEmpty()) {
+            pieces.append({ number.toHtmlEscaped(), 2.8, true, false, 0, false });
+            pieces.append({ (title.isEmpty() ? kind : title).toUpper().toHtmlEscaped(), 0.9, false, true, 0.18, false });
+        } else head(esc);
+        break;
+    case BookSeams::Roman:
+        if (numberInt > 0) {
+            pieces.append({ QStringLiteral("·&#160;&#160;%1&#160;&#160;·").arg(romanNumeral(numberInt)), 1.3, false, false, 0.06, false });
+            head((title.isEmpty() ? kind.toLower() : title).toHtmlEscaped(), title.isEmpty() ? 1.15 : 1.4, true);
+        } else if (!title.isEmpty()) { caps(label); head(title.toHtmlEscaped(), 1.4, true); }
+        else head(esc, 1.4, true);
+        break;
+    case BookSeams::Margin:
+        if (!title.isEmpty()) { caps(QStringLiteral("— ") + label); head(title.toHtmlEscaped()); }
+        else head(dash + QStringLiteral("&#160;") + esc);
+        break;
+    case BookSeams::Fleuron:
+        pieces.append({ QStringLiteral("❦"), 1.5, false, false, 0, true });
+        if (!title.isEmpty()) { caps(label); head(title.toHtmlEscaped(), 1.45, true); }
+        else head(esc, 1.45);
+        break;
+    case BookSeams::Threads:
+    default:
+        if (!title.isEmpty()) { caps(QStringLiteral("— ") + label + QStringLiteral(" —")); head(title.toHtmlEscaped()); }
+        else head(dash + QStringLiteral("&#160;&#160;") + esc + QStringLiteral("&#160;&#160;") + dash);
+        break;
+    }
+    const QString align = style == BookSeams::Margin ? QStringLiteral("left") : QStringLiteral("center");
+    QString out;
+    for (int i = 0; i < pieces.size(); ++i) {
+        const Piece& pc = pieces.at(i);
+        const double top = i == 0 ? 2.6 : (pc.heading ? 0.35 : 0.25);
+        const double bottom = i == pieces.size() - 1 ? 2.0 : 0.0;
+        const QString tag = pc.heading ? QStringLiteral("h1") : QStringLiteral("p");
+        QString css = QStringLiteral("margin:%1 0 %2 0; text-indent:0px; text-align:%3; font-size:%4; line-height:125%; font-weight:normal; color:%5;")
+            .arg(len(top, pc.size), len(bottom, pc.size), align, len(pc.size, 1.0), pc.mutedColor ? muted : ink);
+        if (pc.italic) css += QStringLiteral(" font-style:italic;");
+        if (pc.spacing > 0) css += QStringLiteral(" letter-spacing:%1;").arg(len(pc.size * pc.spacing, pc.size));
+        out += QStringLiteral("<%1 style=\"%2\">%3</%1>\n").arg(tag, css, pc.html);
+    }
+    return out;
+}
+
+QString Exporter::epubCss() const {
+    // Sem cor no corpo: quem decide é o leitor (claro, sépia, noturno).
+    const QString lh = QString::number(qMax(1.2, m_style.lineHeightPercent / 100.0), 'f', 2);
+    const QString para = m_style.firstLineIndent
+        ? QStringLiteral("p { margin: 0; text-indent: 1.5em; text-align: justify; }\n")
+        : QStringLiteral("p { margin: 0 0 0.8em; text-indent: 0; text-align: justify; }\n");
+    return QStringLiteral("body { font-family: Georgia, 'Times New Roman', serif; line-height: ") + lh
+        + QStringLiteral("; margin: 0 5%; }\n") + para
+        + QStringLiteral("p.first { text-indent: 0; }\n"
+                         ".dropcap { float: left; font-size: 3.4em; line-height: 0.8; margin: 0.06em 0.08em 0 0; }\n"
+                         "h1 { text-indent: 0; }\n"
+                         "h1.chapter-title { text-align: center; font-weight: normal; font-size: 1.5em; margin: 1.7em 0 1.3em; }\n"
+                         "strong, b { font-weight: bold; } em, i { font-style: italic; }\n"
+                         "u { text-decoration: underline; } s, del { text-decoration: line-through; }\n"
+                         "img { max-width: 100%; height: auto; display: block; margin: 1em auto; }\n"
+                         "nav h1 { text-align: center; font-weight: normal; font-size: 1.5em; margin: 1.7em 0 1em; }\n"
+                         "nav ol { list-style: none; padding: 0; margin: 0; }\n"
+                         "nav li { margin: 0.5em 0; text-indent: 0; }\n"
+                         "nav a { text-decoration: none; color: inherit; }\n");
+}
+
 QByteArray Exporter::buildEpub(const Selection& sel) const {
-    struct Item { QString id; QString title; QString filename; QString body; };
+    struct Item { QString id; QString title; QString filename; QString body; QString opening; };
     QList<Item> items;
     QList<QPair<QString, QByteArray>> images; // path relativo (OEBPS/...) → bytes
     QStringList imageMimes;
     int imgCounter = 0;
     int counter = 0;
 
-    // Capítulos por manuscrito, em ordem.
-    for (const Manuscript& ms : m_model->manuscripts()) {
-        QList<const Chapter*> chaps;
-        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
-            if (sel.chapterIds.contains(ch->id)) chaps.append(ch);
-        }
-        for (const Chapter* ch : chaps) {
-            ++counter;
-            Item it;
+    // Capítulos (com a abertura no estilo do editor e a capitular) e depois
+    // os documentos de gaveta, na ordem do livro.
+    for (const EpubPart& part : epubParts(sel)) {
+        ++counter;
+        Item it;
+        it.title = part.title;
+        if (part.chapter) {
             it.id = QStringLiteral("ch_%1").arg(counter);
-            it.title = ch->title.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title;
-            it.filename = it.id + QStringLiteral(".xhtml");
-            it.body = itemBodyXhtml(chapterHtmlPrimary(*ch), sel.includeMarkers,
+            it.body = itemBodyXhtml(chapterHtmlPrimary(*part.chapter), sel.includeMarkers,
                                     images, imageMimes, imgCounter);
-            items.append(it);
+            markFirstParagraph(it.body, sel.dropCap);
+            it.opening = chapterOpeningHtml(*part.chapter, 0, QStringLiteral("#888888"), QStringLiteral("inherit"));
+        } else {
+            it.id = QStringLiteral("doc_%1").arg(counter);
+            it.body = itemBodyXhtml(itemHtml(*part.item), sel.includeMarkers,
+                                    images, imageMimes, imgCounter);
+            markFirstParagraph(it.body, false);
         }
-    }
-
-    // Documentos de gaveta selecionados (recursivo nas pastas).
-    for (const Drawer& d : m_model->drawers()) {
-        std::function<void(const QString&)> walk = [&](const QString& folderId) {
-            for (const DrawerItem& di : d.items) {
-                if ((di.folderId.isEmpty() ? QString() : di.folderId) != folderId) continue;
-                if (!sel.itemIds.contains(di.id)) continue;
-                ++counter;
-                Item it;
-                it.id = QStringLiteral("doc_%1").arg(counter);
-                it.title = di.title.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Documento")) : di.title;
-                it.filename = it.id + QStringLiteral(".xhtml");
-                it.body = itemBodyXhtml(itemHtml(di), sel.includeMarkers,
-                                        images, imageMimes, imgCounter);
-                items.append(it);
-            }
-            for (const Folder& f : d.folders)
-                if ((f.parentId.isEmpty() ? QString() : f.parentId) == folderId) walk(f.id);
-        };
-        walk(QString());
+        it.filename = it.id + QStringLiteral(".xhtml");
+        items.append(it);
     }
 
     if (items.isEmpty()) return {};
@@ -2017,28 +2191,8 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         + QStringLiteral("Z");
 
     // ── Idioma do livro ──
-    // É o idioma em que o texto foi ESCRITO, não o da interface: o e-reader usa
-    // isso pra hifenização, voz de leitura e dicionário. O corretor do projeto
-    // é a melhor pista que existe (segue o idioma do app quando o autor não
-    // escolheu outro). "Índice" e "Capa" seguem o livro pelo mesmo motivo — um
-    // livro em italiano com sumário em português é defeito do arquivo.
-    QString bookLang = m_model->spellLanguage();
-    if (bookLang.isEmpty()) bookLang = QStringLiteral("pt_BR");
-    bookLang.replace(QLatin1Char('_'), QLatin1Char('-'));
-    const QString langPrefix = bookLang.left(2).toLower();
-    QString tocLabel = QStringLiteral("Índice");
-    QString coverLabel = QStringLiteral("Capa");
-    if (langPrefix == QLatin1String("en")) {
-        tocLabel = QStringLiteral("Contents");            coverLabel = QStringLiteral("Cover");
-    } else if (langPrefix == QLatin1String("es")) {
-        tocLabel = QStringLiteral("Índice");              coverLabel = QStringLiteral("Portada");
-    } else if (langPrefix == QLatin1String("it")) {
-        tocLabel = QStringLiteral("Indice");              coverLabel = QStringLiteral("Copertina");
-    } else if (langPrefix == QLatin1String("fr")) {
-        tocLabel = QStringLiteral("Table des matières");  coverLabel = QStringLiteral("Couverture");
-    } else if (langPrefix == QLatin1String("de")) {
-        tocLabel = QStringLiteral("Inhalt");              coverLabel = QStringLiteral("Cover");
-    }
+    QString tocLabel, coverLabel;
+    const QString bookLang = bookLanguage(&tocLabel, &coverLabel);
     const QString langAttr = QStringLiteral(" xml:lang=\"%1\" lang=\"%1\"").arg(bookLang);
 
     // ── Capa ──
@@ -2081,7 +2235,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     }
 
     // ── CSS ──
-    const QString css = previewCss(QColor(0x1a, 0x1a, 0x1a), QColor());
+    const QString css = epubCss();
 
     // ── Monta os XMLs ──
     QString manifest, spine, navList, ncxNav;
@@ -2129,6 +2283,9 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         + manifest + QStringLiteral("  </manifest>\n"
         "  <spine toc=\"ncx\">\n")
         + (hasCover ? QStringLiteral("    <itemref idref=\"cover-page\" linear=\"no\"/>\n") : QString())
+        // o sumário também como página do livro, logo depois da capa (a
+        // Amazon recomenda o sumário em HTML além do do menu)
+        + QStringLiteral("    <itemref idref=\"nav\"/>\n")
         + spine + QStringLiteral("  </spine>\n"
         "</package>\n");
 
@@ -2136,7 +2293,8 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<!DOCTYPE html>\n"
         "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\"") + langAttr + QStringLiteral(">\n"
-        "<head><meta charset=\"UTF-8\"/><title>") + tocLabel + QStringLiteral("</title></head>\n"
+        "<head><meta charset=\"UTF-8\"/><title>") + tocLabel + QStringLiteral("</title>"
+        "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head>\n"
         "<body>\n  <nav epub:type=\"toc\" id=\"toc\">\n    <h1>") + tocLabel + QStringLiteral("</h1>\n    <ol>\n")
         + navList + QStringLiteral("    </ol>\n  </nav>\n</body>\n</html>\n");
 
@@ -2150,13 +2308,14 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         "  <docTitle><text>") + escXml(title) + QStringLiteral("</text></docTitle>\n  <navMap>\n")
         + ncxNav + QStringLiteral("  </navMap>\n</ncx>\n");
 
-    auto pageXhtml = [&langAttr](const QString& t, const QString& body) {
+    auto pageXhtml = [&langAttr](const QString& t, const QString& body, const QString& opening) {
         return QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<!DOCTYPE html>\n"
             "<html xmlns=\"http://www.w3.org/1999/xhtml\"") + langAttr + QStringLiteral(">\n"
             "<head><meta charset=\"UTF-8\"/><title>") + escXml(t)
             + QStringLiteral("</title><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head>\n"
-            "<body>\n<h1 class=\"chapter-title\">") + escXml(t) + QStringLiteral("</h1>\n")
+            "<body>\n")
+            + (opening.isEmpty() ? QStringLiteral("<h1 class=\"chapter-title\">") + escXml(t) + QStringLiteral("</h1>\n") : opening)
             + body + QStringLiteral("\n</body>\n</html>\n");
     };
 
@@ -2173,7 +2332,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         "</container>\n"));
     zip.addFile(QStringLiteral("OEBPS/style.css"), css.toUtf8());
     for (const Item& it : items)
-        zip.addFile(QStringLiteral("OEBPS/") + it.filename, pageXhtml(it.title, it.body).toUtf8());
+        zip.addFile(QStringLiteral("OEBPS/") + it.filename, pageXhtml(it.title, it.body, it.opening).toUtf8());
     for (const auto& img : images)
         zip.addFile(QStringLiteral("OEBPS/") + img.first, img.second, /*compress=*/false);
     if (hasCover) {
@@ -2290,96 +2449,6 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
     f.write(zipBytes);
     f.close();
     return true;
-}
-
-QTextDocument* Exporter::buildPreviewDocument(const QString& manuscriptId,
-                                               bool includeMarkers,
-                                               const QColor& textColor,
-                                               const QColor& backgroundColor,
-                                               bool grayscale,
-                                               QObject* docParent) const {
-    if (!m_model || manuscriptId.isEmpty()) return nullptr;
-    const QList<const Chapter*> chapters = m_model->orderedChaptersForManuscript(manuscriptId);
-    if (chapters.isEmpty()) return nullptr;
-
-    auto* doc = new QTextDocument(docParent);
-    // Precisa ser setado ANTES de inserir conteúdo: insertHtml() só honra o
-    // stylesheet vigente no momento em que cada fragmento é parseado (h1,
-    // img, strong/em/u/s). Setar depois do loop de capítulos (como estava)
-    // é tarde demais — nenhuma regra chega a valer.
-    doc->setDefaultStyleSheet(previewCss(textColor, backgroundColor));
-    QTextCursor cur(doc);
-    bool wroteAnything = false;
-
-    // Capa, se houver — vira "página 0" do preview (device-frame) ou cabeçalho
-    // (modo janela), sem lógica extra: é só o primeiro conteúdo do documento.
-    QString coverMime;
-    QByteArray coverBytes;
-    const QString coverSrc = m_model->manuscriptEffectiveCoverDataUrl(manuscriptId);
-    if (parseDataUrl(coverSrc, coverMime, coverBytes)) {
-        const QImage img = QImage::fromData(coverBytes);
-        if (!img.isNull()) {
-            const QUrl coverRes(QStringLiteral("readerpreview://cover"));
-            doc->addResource(QTextDocument::ImageResource, coverRes, img);
-            QTextImageFormat imgFmt;
-            imgFmt.setName(coverRes.toString());
-            double w = img.width(), h = img.height();
-            const double maxW = 360.0;
-            if (w > maxW && w > 0) { h *= maxW / w; w = maxW; }
-            imgFmt.setWidth(w);
-            imgFmt.setHeight(h);
-
-            QTextBlockFormat coverBlock;
-            coverBlock.setAlignment(Qt::AlignHCenter);
-            cur.setBlockFormat(coverBlock);
-            cur.insertImage(imgFmt);
-            wroteAnything = true;
-        }
-    }
-
-    for (const Chapter* ch : chapters) {
-        // Quebra de página antes de cada capítulo, menos o primeiro conteúdo
-        // do documento (que já começa na "página 0"). Diferente do PDF: um
-        // e-reader pagina pelo fluxo de texto, não força quebra por capítulo
-        // — só a transição capa→capítulo 1 (ou início do documento) importa.
-        QTextBlockFormat titleBlock;
-        if (wroteAnything) titleBlock.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
-        if (wroteAnything) cur.insertBlock(titleBlock);
-        else cur.setBlockFormat(titleBlock);
-        wroteAnything = true;
-
-        QTextCharFormat titleChar;
-        titleChar.setFontWeight(QFont::Bold);
-        titleChar.setFontPointSize(16);
-        const QString title = ch->title.trimmed().isEmpty()
-            ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title;
-        cur.insertText(title, titleChar);
-
-        QTextBlockFormat bodyBlock;
-        cur.insertBlock(bodyBlock, QTextCharFormat());
-        cur.insertHtml(chapterHtmlPrimary(*ch));
-    }
-
-    applyParagraphStyle(*doc);
-    forceTextColor(*doc, textColor);
-    if (!includeMarkers) stripMarkers(*doc);
-    if (grayscale) {
-        desaturateImages(*doc);
-        desaturateMarkerBackgrounds(*doc);
-    }
-
-    // Fundo da página garantido via QTextFrameFormat no frame raiz — mais
-    // confiável que depender de "body { background-color }" no CSS: o frame
-    // raiz sempre cobre a largura inteira do documento, enquanto regras de
-    // nível body em fragmentos inseridos via insertHtml podem não se aplicar
-    // de forma uniforme. Documento e margem fixos garantem uma coluna de
-    // leitura consistente independente de peculiaridades do parser de HTML.
-    QTextFrameFormat rootFmt = doc->rootFrame()->frameFormat();
-    rootFmt.setBackground(backgroundColor);
-    doc->rootFrame()->setFrameFormat(rootFmt);
-    doc->setDocumentMargin(28);
-
-    return doc;
 }
 
 // ─────────────────────────── Prévia do painel ───────────────────────────
@@ -2613,4 +2682,190 @@ QImage Exporter::renderPreviewPage(const PagePreview& p, int index, int widthPx,
     p.doc->drawContents(&g, QRectF(0, double(index) * ch, p.contentPx.width(), ch));
     g.restore();
     return img;
+}
+
+// ============================================================ E-book como leitor
+// (E-reader Lab, 18/11/2026.) O livro inteiro num documento só: o sumário, e
+// cada parte começando numa tela nova, com a mesma abertura, o mesmo corpo
+// XHTML e a mesma capitular do EPUB. A fonte, o tamanho e as cores são do
+// leitor, como no Kindle; a capa fica de fora (a tela dela é desenhada inteira).
+
+int Exporter::EbookPreview::sectionAt(int screen) const {
+    const int d = screen - coverPages();
+    if (d < 0 || sections.isEmpty()) return -1;
+    int s = 0;
+    for (int i = 0; i < sections.size(); ++i)
+        if (sections.at(i).page <= d) s = i;
+    return s;
+}
+
+int Exporter::EbookPreview::linkAt(int docPage, const QPointF& pos) const {
+    if (!doc) return -1;
+    const QString a = doc->documentLayout()->anchorAt(QPointF(pos.x(), pos.y() + docPage * contentPx.height()));
+    if (!a.startsWith(QLatin1String("qenna-sec:"))) return -1;
+    return a.mid(10).toInt();
+}
+
+namespace {
+// A capitular da prévia: o Qt não flutua letra, mas flutua imagem. A letra é
+// desenhada do tamanho de três linhas (do topo da maiúscula da 1ª linha à
+// base da 3ª) e entra como <img align="left">, com o texto contornando.
+QImage dropCapImage(const QString& letter, const QString& family, qreal px, qreal lineStep,
+                    const QColor& ink, qreal* wOut, qreal* hOut) {
+    QFont f(family);
+    f.setPixelSize(qMax(6, qRound(px)));
+    const QFontMetricsF fm(f);
+    const qreal cap = qMax(1.0, fm.capHeight());
+    const qreal topGap = qMax(0.0, (lineStep - fm.height()) / 2.0) + fm.ascent() - cap;
+    const qreal target = 2 * lineStep + cap;
+    QFont big(family);
+    big.setPixelSize(qMax(8, qRound(px * target / cap)));
+    const QFontMetricsF bm(big);
+    // a largura é a da tinta da letra (não o avanço), mais um respiro
+    const QRectF inkBox = bm.tightBoundingRect(letter);
+    const qreal w = qMax(inkBox.right(), px * 0.5) + px * 0.3;
+    const qreal h = topGap + target + px * 0.12;
+    constexpr qreal k = 3.0;
+    QImage img(QSize(qCeil(w * k), qCeil(h * k)), QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::transparent);
+    QPainter p(&img);
+    p.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+    p.scale(k, k);
+    p.setFont(big);
+    p.setPen(ink);
+    p.drawText(QPointF(0, topGap + target), letter);
+    p.end();
+    *wOut = w;
+    *hOut = h;
+    return img;
+}
+} // namespace
+
+Exporter::EbookPreview Exporter::buildEbookPreview(const Selection& sel, const EbookLook& look,
+                                                   const QSizeF& contentPx) const {
+    EbookPreview b;
+    if (!m_model || contentPx.width() < 40 || contentPx.height() < 40) return b;
+    const QList<EpubPart> parts = epubParts(sel);
+    if (parts.isEmpty()) return b;
+
+    const Manuscript* soloMs = singleManuscriptInSelection(sel);
+    b.title = soloMs ? m_model->manuscriptEffectiveTitle(soloMs->id) : m_model->projectName();
+    bookLanguage(&b.tocLabel, nullptr);
+    {
+        QString mime;
+        QByteArray bytes;
+        const QString src = soloMs ? m_model->manuscriptEffectiveCoverDataUrl(soloMs->id) : m_model->projectCoverDataUrl();
+        if (parseDataUrl(src, mime, bytes)) b.cover = QImage::fromData(bytes);
+    }
+    b.ink = look.ink;
+    b.contentPx = contentPx;
+
+    const qreal px = look.fontPx;
+    const qreal lineStep = px * look.lineHeight;
+    auto pxs = [](qreal v) { return QString::number(v, 'f', 1) + QStringLiteral("px"); };
+    const QString ink = look.ink.name(), muted = look.muted.name();
+
+    // Uma marca invisível no começo de cada parte: a quebra de tela e o ponto
+    // de onde se mede em que tela ela começa.
+    auto mark = [](int s) {
+        return QStringLiteral("<p style=\"page-break-before:always; margin:0; font-size:1px; line-height:1px;\">"
+                              "<a name=\"qenna-s%1\">&#8203;</a></p>\n").arg(s);
+    };
+
+    QString html;
+    // ── O sumário (no EPUB é a página nav.xhtml, logo depois da capa) ──
+    b.sections.append({ EbookSection::Toc, b.tocLabel, 0, 0, 0 });
+    html += QStringLiteral("<p style=\"margin:0; font-size:1px; line-height:1px;\"><a name=\"qenna-s0\">&#8203;</a></p>\n");
+    html += QStringLiteral("<h1 style=\"margin:%1 0 %2 0; text-align:center; font-size:%3; font-weight:normal; line-height:125%; color:%4;\">%5</h1>\n")
+        .arg(pxs(px * 1.5 * 1.7), pxs(px * 1.5), pxs(px * 1.5), ink, b.tocLabel.toHtmlEscaped());
+    for (int k = 0; k < parts.size(); ++k)
+        html += QStringLiteral("<p style=\"margin:%1 0px %1 0px; text-indent:0px; text-align:left;\"><a href=\"qenna-sec:%2\" style=\"color:%3; text-decoration:none;\">%4</a></p>\n")
+            .arg(pxs(px * 0.5)).arg(k + 1).arg(ink, parts.at(k).title.toHtmlEscaped());
+
+    // ── As partes ──
+    QList<QPair<QString, QImage>> resources;
+    QList<QPair<QString, QByteArray>> images;
+    QStringList imageMimes;
+    int imgCounter = 0, chapterNo = 0;
+    for (int k = 0; k < parts.size(); ++k) {
+        const EpubPart& part = parts.at(k);
+        EbookSection s;
+        s.name = part.title;
+        const QString raw = part.chapter ? chapterHtmlPrimary(*part.chapter) : itemHtml(*part.item);
+        s.words = WordCounter::countWordsInHtml(raw);
+        QString body = itemBodyXhtml(raw, sel.includeMarkers, images, imageMimes, imgCounter);
+        html += mark(k + 1);
+        if (part.chapter) {
+            s.kind = EbookSection::Chapter;
+            s.number = ++chapterNo;
+            html += chapterOpeningHtml(*part.chapter, px, muted, ink);
+            const QString letter = markFirstParagraph(body, sel.dropCap);
+            if (!letter.isEmpty()) {
+                qreal w = 0, h = 0;
+                const QString url = QStringLiteral("qenna-dropcap:%1").arg(k);
+                resources.append({ url, dropCapImage(letter, look.fontFamily, px, lineStep, look.ink, &w, &h) });
+                // o espaço logo depois da letra some no leitor (começo de linha
+                // ao lado da capitular); aqui ele sairia, então vai junto
+                const QString img = QStringLiteral("<img src=\"%1\" width=\"%2\" height=\"%3\" align=\"left\"/>")
+                    .arg(url, QString::number(w, 'f', 1), QString::number(h, 'f', 1));
+                const QString span = QStringLiteral("<span class=\"dropcap\">%1</span>").arg(letter);
+                if (body.contains(span + QLatin1Char(' '))) body.replace(span + QLatin1Char(' '), img);
+                else body.replace(span, img);
+            }
+        } else {
+            s.kind = EbookSection::Item;
+            html += QStringLiteral("<h1 style=\"margin:%1 0 %2 0; text-align:center; font-size:%3; font-weight:normal; line-height:125%; color:%4;\">%5</h1>\n")
+                .arg(pxs(px * 1.5 * 1.7), pxs(px * 1.5 * 1.3), pxs(px * 1.5), ink, part.title.toHtmlEscaped());
+            markFirstParagraph(body, false);
+        }
+        html += body;
+        b.sections.append(s);
+    }
+
+    auto doc = std::make_shared<QTextDocument>();
+    b.doc = doc;
+    doc->setDocumentMargin(0);
+    QFont f(look.fontFamily);
+    f.setPixelSize(qMax(6, qRound(px)));
+    doc->setDefaultFont(f);
+    doc->setDefaultStyleSheet(QStringLiteral(
+        "p { margin: 0px 0px %1 0px; text-indent: %2; text-align: justify; line-height: %3; }\n"
+        "p.first { text-indent: 0px; }\n"
+        "img { margin: 0px; }\n")
+        .arg(m_style.firstLineIndent ? QStringLiteral("0px") : pxs(px * 0.8),
+             m_style.firstLineIndent ? pxs(px * 1.5) : QStringLiteral("0px"),
+             pxs(lineStep)));
+    doc->setHtml(html);
+    for (const auto& r : resources) doc->addResource(QTextDocument::ImageResource, QUrl(r.first), r.second);
+    for (const auto& img : images) doc->addResource(QTextDocument::ImageResource, QUrl(img.first), QImage::fromData(img.second));
+    doc->setPageSize(contentPx);
+    b.docPages = doc->pageCount();
+
+    // Em que tela cada parte começa: o bloco da marca dela.
+    QAbstractTextDocumentLayout* lay = doc->documentLayout();
+    for (QTextBlock blk = doc->begin(); blk.isValid(); blk = blk.next()) {
+        for (auto it = blk.begin(); !it.atEnd(); ++it) {
+            const QStringList names = it.fragment().charFormat().anchorNames();
+            for (const QString& n : names) {
+                if (!n.startsWith(QLatin1String("qenna-s"))) continue;
+                const int si = n.mid(7).toInt();
+                if (si >= 0 && si < b.sections.size())
+                    b.sections[si].page = int(lay->blockBoundingRect(blk).top() / contentPx.height() + 0.001);
+            }
+        }
+    }
+    return b;
+}
+
+void Exporter::renderEbookPage(QPainter& g, const EbookPreview& b, int docPage) {
+    if (b.isEmpty()) return;
+    const qreal H = b.contentPx.height();
+    g.save();
+    g.setClipRect(QRectF(QPointF(0, 0), b.contentPx), Qt::IntersectClip);
+    g.translate(0, -docPage * H);
+    QAbstractTextDocumentLayout::PaintContext ctx;
+    ctx.clip = QRectF(0, docPage * H, b.contentPx.width(), H);
+    ctx.palette.setColor(QPalette::Text, b.ink);
+    b.doc->documentLayout()->draw(&g, ctx);
+    g.restore();
 }

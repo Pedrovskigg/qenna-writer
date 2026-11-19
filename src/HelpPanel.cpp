@@ -1021,8 +1021,16 @@ QString HelpPanel::exportContent() const
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
         .arg(tr("A prévia."),
              tr("Muda na hora com cada opção. Folheie com as setinhas embaixo dela ou com a roda do mouse em "
-                "cima da folha. O EPUB aparece numa tela de e-reader; o formato de editora mostra a página de "
-                "rosto; com um arquivo por capítulo, você vê o primeiro."));
+                "cima da folha. O formato de editora mostra a página de rosto; com um arquivo por capítulo, você "
+                "vê o primeiro."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>%1</b><br>%2</p>")
+        .arg(tr("No EPUB, a prévia vira um leitor."),
+             tr("O livro inteiro, da capa ao glossário, como fica pra quem lê: escolha o aparelho (e-reader de "
+                "tinta, celular ou tablet), a cor do papel, o tamanho e a letra, e o texto se rearruma como no "
+                "Kindle. Embaixo, a trilha leva direto à capa, ao índice ou a qualquer capítulo. \"Letra "
+                "capitular\" liga a primeira letra grande de cada capítulo, e \"Abrir a prévia grande\" abre a "
+                "sala de leitura em tela cheia (a mesma do \"Ler como e-book\" no menu do Q, ou F8)."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Formato."),

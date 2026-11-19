@@ -1280,9 +1280,11 @@ void TopToolbar::showBackstage()
         { openProjectButton, QStringLiteral("loadproject.svg"),  QString(), tr("Abrir projeto"), tr("Abre uma pasta de projeto do Qenna."), QString() },
         { saveProjectButton, QStringLiteral("save-project.svg"), QString(), tr("Salvar"),        tr("Grava o projeto agora."), QStringLiteral("Ctrl+S") },
         { exportButton,      QStringLiteral("download.svg"),     QString(), tr("Exportar"),      tr("ODT, PDF, EPUB e DOCX. Roteiro também sai em Fountain."), QString() },
+        { readEbookButton,   QStringLiteral("ereader.svg"),      QString(), tr("Ler como e-book"), tr("O livro inteiro como fica no Kindle, no celular ou no tablet."), QStringLiteral("F8") },
         { nullptr, QString(), QString(), QString(), QString(), QString() },
         { helpButton,        QString(), QStringLiteral("?"),     tr("Ajuda"),         tr("O guia das funções do app."), QString() },
-        { settingsButton,    QStringLiteral("settings.svg"),     QString(), tr("Configurações"), tr("Editor, interface, backup e o resto das preferências."), QString() },
+        { themePanelButton,  QStringLiteral("theme-panel.svg"),  QString(), tr("Temas"),         tr("Troca o visual do app: temas prontos, animados ou criados por você."), QString() },
+        { settingsButton,   QStringLiteral("settings.svg"),     QString(), tr("Configurações"), tr("Editor, interface, backup e o resto das preferências."), QString() },
     };
     auto* pop = new Backstage(this, items);
     pop->adjustSize();

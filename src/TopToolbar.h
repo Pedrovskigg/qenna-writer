@@ -188,6 +188,7 @@ signals:
     void settingsRequested();
     void fullscreenToggled(bool enabled);
     void themePanelRequested();
+    void readEbookRequested();   // "Ler como e-book" (menu do Q)
 
 private:
     QToolButton *homeButton;
@@ -214,6 +215,7 @@ private:
     QToolButton *reminderButton;
     QToolButton *immersiveSoundButton;
     QToolButton *themePanelButton;
+    QToolButton *readEbookButton = nullptr;   // escondido: só o menu do Q usa
     QToolButton *settingsButton;
     QToolButton *fullscreenButton;
     QToolButton *refMenuButton;

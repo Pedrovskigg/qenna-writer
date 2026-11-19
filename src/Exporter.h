@@ -1,11 +1,13 @@
 #pragma once
 
+#include <QColor>
 #include <QImage>
 #include <QList>
 #include <QRectF>
 #include <QSet>
 #include <QSizeF>
 #include <QString>
+#include <functional>
 #include <memory>
 #include <QVector>
 #include <QStringList>
@@ -18,8 +20,8 @@ class GlossaryStore;
 class ConstrutorStore;
 class TerritorioStore;
 class MapPinsStore;
-class QColor;
 class QObject;
+class QPainter;
 struct Chapter;
 struct DrawerItem;
 struct Manuscript;
@@ -72,6 +74,7 @@ public:
         // submissionApplies().
         bool submissionFormat = false;
         bool sceneNumbers = false;    // roteiro: número da cena nas margens
+        bool dropCap = true;          // EPUB: letra capitular no começo de cada capítulo
         SubmissionInfo submission;
     };
 
@@ -146,12 +149,46 @@ public:
     // Desenha a página `index` na largura pedida (px lógicos), papel incluso.
     static QImage renderPreviewPage(const PagePreview& p, int index, int widthPx, qreal dpr);
 
-    QTextDocument* buildPreviewDocument(const QString& manuscriptId,
-                                         bool includeMarkers,
-                                         const QColor& textColor,
-                                         const QColor& backgroundColor,
-                                         bool grayscale,
-                                         QObject* docParent = nullptr) const;
+    // ---- E-book como leitor (E-reader Lab, 18/11/2026) ----
+    // O livro inteiro como o EPUB vai sair (capa, sumário, aberturas de
+    // capítulo, capitular, gavetas), paginado na tela de um leitor. O mesmo
+    // corpo XHTML do EPUB entra aqui; só a fonte, o tamanho e as cores são do
+    // leitor, como no Kindle.
+    struct EbookLook {
+        QString fontFamily;
+        qreal fontPx = 16;        // tamanho do texto, em px da tela do leitor
+        qreal lineHeight = 1.6;   // entrelinha (fator)
+        QColor ink, muted;        // tinta do texto e dos rótulos
+    };
+    struct EbookSection {
+        enum Kind { Toc, Chapter, Item };
+        Kind kind = Chapter;
+        QString name;     // como aparece no sumário
+        int page = 0;     // tela do documento onde começa (sem a capa)
+        int words = 0;
+        int number = 0;   // capítulo numerado: 1, 2, 3...; 0 = sem número
+    };
+    struct EbookPreview {
+        std::shared_ptr<QTextDocument> doc;
+        QImage cover;             // vazio = o livro não tem capa
+        QSizeF contentPx;         // a área do texto numa tela
+        QList<EbookSection> sections;
+        int docPages = 0;
+        QString title, tocLabel;
+        QColor ink;
+        bool isEmpty() const { return !doc || docPages <= 0; }
+        int coverPages() const { return cover.isNull() ? 0 : 1; }
+        int pages() const { return docPages + coverPages(); }
+        // a seção da tela (contando a capa): -1 = capa
+        int sectionAt(int screen) const;
+        // a tela (contando a capa) onde a seção começa
+        int screenOf(int section) const { return section < 0 || section >= sections.size() ? 0 : sections.at(section).page + coverPages(); }
+        // o link do sumário naquele ponto da tela de documento, ou -1
+        int linkAt(int docPage, const QPointF& pos) const;
+    };
+    EbookPreview buildEbookPreview(const Selection& sel, const EbookLook& look, const QSizeF& contentPx) const;
+    // Desenha a tela de documento `docPage` com a origem no canto do texto.
+    static void renderEbookPage(QPainter& g, const EbookPreview& b, int docPage);
 
 private:
     struct OutFile {
@@ -250,6 +287,16 @@ private:
     // EPUB 3: um único arquivo com todos os itens selecionados como capítulos
     // navegáveis (ignora manuscriptMode), capa, metadados e índice.
     QByteArray buildEpub(const Selection& sel) const;
+    // As partes do EPUB na ordem do livro: capítulos escolhidos (manuscrito
+    // por manuscrito) e depois os documentos de gaveta.
+    struct EpubPart { const Chapter* chapter = nullptr; const DrawerItem* item = nullptr; QString title; };
+    QList<EpubPart> epubParts(const Selection& sel) const;
+    // A abertura do capítulo no estilo que o projeto usa no editor (BookSeams).
+    // basePx <= 0 = EPUB (medidas em em); > 0 = prévia (px). muted e ink são as cores.
+    QString chapterOpeningHtml(const Chapter& ch, qreal basePx, const QString& muted, const QString& ink) const;
+    QString epubCss() const;
+    // O idioma do livro (o do corretor) e os rótulos de sumário e capa nele.
+    QString bookLanguage(QString* tocLabel, QString* coverLabel) const;
 
     // Manuscrito cujos capítulos aparecem na seleção, SE for o único com
     // capítulos selecionados; nullptr se 0 ou 2+ manuscritos representados

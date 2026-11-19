@@ -16,6 +16,8 @@ class QCheckBox;
 class QTimer;
 class QToolButton;
 class ExportPreviewView;
+class EbookView;
+class EbookLookBar;
 
 // Modal "Exportar" (rework de 15/11/2026, escolhido no Exportar Lab: a
 // "Impressão"). À esquerda, a folha do que vai sair, montada pelo exportador de
@@ -65,6 +67,10 @@ private:
     void stepPage(int delta);
     void refreshNav();
     int selectedWords(QString* firstManuscriptId = nullptr, int* firstManuscriptWords = nullptr) const;
+    // EPUB: a prévia vira um leitor (E-reader Lab, 18/11/2026)
+    bool isEpub() const { return m_format == QLatin1String("epub"); }
+    void refreshStrip();
+    void openReadingRoom();
 
     enum Role { IdRole = Qt::UserRole + 1, KindRole, MsRole };
     enum Kind { KindHeader, KindGroup, KindChapter, KindItem };
@@ -101,6 +107,20 @@ private:
     QLabel* m_summary = nullptr;
     QPushButton* m_exportBtn = nullptr;
     QPushButton* m_bibleBtn = nullptr;
+
+    QWidget* m_ebookTools = nullptr;
+    EbookLookBar* m_ebookBar = nullptr;
+    EbookView* m_ebookView = nullptr;
+    QWidget* m_ebookStrip = nullptr;
+    QPushButton* m_stripCover = nullptr;
+    QPushButton* m_stripToc = nullptr;
+    QPushButton* m_stripPart = nullptr;
+    QWidget* m_dropCapRow = nullptr;
+    QCheckBox* m_dropCapSwitch = nullptr;
+    QWidget* m_bigGroup = nullptr;
+    std::shared_ptr<Exporter::EbookPreview> m_ebook;
+    QString m_root;
+    Exporter::DocStyle m_style;
 
     Exporter::SubmissionInfo m_submission;
     QString m_format = QStringLiteral("pdf");

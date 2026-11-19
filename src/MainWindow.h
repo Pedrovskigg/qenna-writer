@@ -17,6 +17,7 @@
 #include "SceneBreaks.h"
 #include "PageBackgroundUi.h"
 #include "TopToolbar.h"
+#include "Exporter.h"
 
 #include <QColor>
 #include <QHash>
@@ -87,7 +88,6 @@ class MemoryAddPopup;
 class ConstrutorStore;
 class ConstrutorMentionAddPopup;
 class TerritorioWindow;
-class ReaderPreviewPanel;
 class TerritorioMentionAddPopup;
 class MainMenuDialog;
 class UpdateBanner;
@@ -406,14 +406,15 @@ private:
     TerritorioWindow* ensureTerritorioWindow();
     void showCartoPanel();
     void connectCartoProject();
-    // Cria (lazy) e devolve o painel de preview de e-reader — feature de uso
-    // ocasional, não vale pagar custo de boot criando eager como os painéis
-    // sempre visíveis (wordCountPanel etc.).
-    ReaderPreviewPanel* ensureReaderPreviewPanel();
-    // Ponto de entrada único do preview (menu de contexto do manuscrito,
-    // atalho F8, botão do ExportPanel). Salva o projeto antes de abrir, pro
-    // disco refletir edições (mesmo racional do onExportRequested).
+    // A sala de leitura do e-book (EbookRoom): "Ler como e-book" no menu do Q,
+    // F8 e o botão de e-reader do Manuscrito. Salva o projeto antes de abrir,
+    // pro disco refletir as edições (mesmo racional do onExportRequested).
+    // Manuscrito vazio = o do capítulo aberto (ou o primeiro).
     void openReaderPreview(const QString& manuscriptId);
+    // O estilo de parágrafo do projeto, pro Exporter.
+    Exporter::DocStyle exportDocStyle() const;
+    // Exporta de verdade (diálogo de destino, toast, erro).
+    void runExport(const Exporter::Selection& sel);
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
     // maxWords <= 0 = texto inteiro (o resumo pela IA no Preencher da Timeline)
@@ -650,7 +651,6 @@ private:
     TerritorioMentionAddPopup *territorioMentionAddPopup = nullptr;
     TerritorioStore *territorioStore = nullptr;
     TerritorioWindow *territorioWindow = nullptr;
-    ReaderPreviewPanel *readerPreviewPanel = nullptr;
     // Memória sendo criada: preenchida em addSelectionToMemory() (texto + fonte)
     // e completada no confirmed do popup (nome + destino).
     std::optional<MemoriesStore::Memory> m_pendingMemory;

@@ -412,6 +412,9 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     bindIcon(themePanelButton, QStringLiteral("theme-panel.svg"));
     themePanelButton->setToolTip(tr("Temas"));
     connect(themePanelButton, &QToolButton::clicked, this, &TopToolbar::themePanelRequested);
+    readEbookButton = new QToolButton(this);
+    readEbookButton->hide();
+    connect(readEbookButton, &QToolButton::clicked, this, &TopToolbar::readEbookRequested);
 
     settingsButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(settingsButton, QStringLiteral("settings.svg"));

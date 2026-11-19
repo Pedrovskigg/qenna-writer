@@ -92,10 +92,8 @@ qt_add_executable(qenna-writer
     src/MiniCounterWidget.h
     src/CounterFaceWidget.cpp
     src/CounterFaceWidget.h
-    src/ReaderPreviewPanel.cpp
-    src/ReaderPreviewPanel.h
-    src/ReaderPreviewDeviceView.cpp
-    src/ReaderPreviewDeviceView.h
+    src/EbookReader.cpp
+    src/EbookReader.h
     src/WordCounterCalendar.cpp
     src/WordCounterCalendar.h
     src/WritingStatsDialog.cpp

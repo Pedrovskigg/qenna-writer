@@ -1,8 +1,10 @@
 #include "ExportPanel.h"
 
+#include "EbookReader.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QDialogButtonBox>
@@ -190,12 +192,30 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     auto* well = new QWidget(this);
     well->setObjectName(QStringLiteral("exportWell"));
     auto* wl = new QVBoxLayout(well);
-    wl->setContentsMargins(0, 0, 0, 16);
+    wl->setContentsMargins(0, 0, 0, 12);
     wl->setSpacing(10);
+    // EPUB: a barra do leitor (aparelho, papel, tamanho, letra)
+    m_ebookTools = new QWidget(well);
+    m_ebookTools->setObjectName(QStringLiteral("exportEbookTools"));
+    {
+        auto* th = new QHBoxLayout(m_ebookTools);
+        th->setContentsMargins(16, 10, 16, 10);
+        m_ebookBar = new EbookLookBar(EbookLookBar::DevicePart | EbookLookBar::PaperPart
+                                      | EbookLookBar::SizePart | EbookLookBar::FontPart, m_ebookTools);
+        th->addWidget(m_ebookBar);
+        th->addStretch(1);
+        connect(m_ebookBar, &EbookLookBar::lookChanged, this, [this]() { schedulePreview(); });
+    }
+    wl->addWidget(m_ebookTools);
     m_view = new ExportPreviewView(well);
     m_view->emptyText = tr("Escolha o que vai sair.");
     m_view->onStep = [this](int d) { stepPage(d); };
     wl->addWidget(m_view, 1);
+    m_ebookView = new EbookView(well);
+    m_ebookView->setMaxScale(1.0);
+    m_ebookView->setEmptyText(tr("Escolha o que vai sair."));
+    connect(m_ebookView, &EbookView::screenChanged, this, [this]() { refreshNav(); refreshStrip(); });
+    wl->addWidget(m_ebookView, 1);
     auto* nav = new QHBoxLayout;
     nav->setSpacing(12);
     nav->addStretch(1);
@@ -218,6 +238,48 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     nav->addWidget(m_nextBtn);
     nav->addStretch(1);
     wl->addLayout(nav);
+    // EPUB: a trilha das partes (capa, sumário e a parte da tela, que abre a
+    // lista de todas; no máximo 4 pílulas por linha)
+    m_ebookStrip = new QWidget(well);
+    {
+        auto* sh = new QHBoxLayout(m_ebookStrip);
+        sh->setContentsMargins(16, 0, 16, 0);
+        sh->setSpacing(6);
+        sh->addStretch(1);
+        auto chip = [this, sh](const QString& text) {
+            auto* b = new QPushButton(text, m_ebookStrip);
+            b->setObjectName(QStringLiteral("exportChip"));
+            b->setCheckable(true);
+            b->setCursor(Qt::PointingHandCursor);
+            sh->addWidget(b);
+            return b;
+        };
+        m_stripCover = chip(tr("Capa"));
+        m_stripToc = chip(tr("Sumário"));
+        m_stripPart = chip(QString());
+        connect(m_stripCover, &QPushButton::clicked, this, [this]() { m_ebookView->setScreen(0); refreshStrip(); });
+        connect(m_stripToc, &QPushButton::clicked, this, [this]() {
+            if (m_ebook && !m_ebook->sections.isEmpty()) m_ebookView->setScreen(m_ebook->screenOf(0));
+            refreshStrip();
+        });
+        connect(m_stripPart, &QPushButton::clicked, this, [this]() {
+            refreshStrip();
+            if (!m_ebook) return;
+            QMenu menu(this);
+            const int cur = m_ebook->sectionAt(m_ebookView->screen());
+            for (int i = 1; i < m_ebook->sections.size(); ++i) {
+                const auto& s = m_ebook->sections.at(i);
+                QAction* a = menu.addAction(s.kind == Exporter::EbookSection::Chapter
+                    ? QStringLiteral("%1. %2").arg(s.number).arg(s.name) : s.name);
+                a->setCheckable(true);
+                a->setChecked(i == cur);
+                connect(a, &QAction::triggered, this, [this, i]() { m_ebookView->setScreen(m_ebook->screenOf(i)); });
+            }
+            menu.exec(m_stripPart->mapToGlobal(QPoint(0, m_stripPart->height() + 4)));
+        });
+        sh->addStretch(1);
+    }
+    wl->addWidget(m_ebookStrip);
     root->addWidget(well, 1);
 
     // ── A coluna ──
@@ -397,6 +459,37 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
         m_markersSwitch->setToolTip(tr("Os trechos marcados no texto saem grifados no arquivo."));
         connect(m_markersSwitch, &QCheckBox::toggled, this, [this]() { refreshSummary(); schedulePreview(); });
         v->addWidget(m_markersRow);
+        // EPUB: a letra capitular no começo de cada capítulo
+        m_dropCapRow = switchRow(side, tr("Letra capitular"), m_dropCapSwitch);
+        m_dropCapSwitch->setChecked(QSettings().value(QStringLiteral("ui/exportDropCap"), true).toBool());
+        m_dropCapSwitch->setToolTip(tr("A primeira letra de cada capítulo grande, ocupando três linhas, como nos livros impressos."));
+        connect(m_dropCapSwitch, &QCheckBox::toggled, this, [this](bool on) {
+            QSettings().setValue(QStringLiteral("ui/exportDropCap"), on);
+            schedulePreview();
+        });
+        v->addWidget(m_dropCapRow);
+    }
+
+    // EPUB: a sala de leitura, com o livro inteiro em tela cheia
+    {
+        QVBoxLayout* v = group(QString());
+        m_bigGroup = v->parentWidget();
+        auto* big = new QPushButton(side);
+        big->setObjectName(QStringLiteral("exportBig"));
+        big->setCursor(Qt::PointingHandCursor);
+        big->setMinimumHeight(48);
+        auto* bh = new QVBoxLayout(big);
+        bh->setContentsMargins(12, 7, 12, 7);
+        bh->setSpacing(1);
+        auto* t1 = new QLabel(tr("Abrir a prévia grande"), big);
+        t1->setObjectName(QStringLiteral("exportBigTitle"));
+        auto* t2 = new QLabel(tr("ler o livro inteiro como no Kindle"), big);
+        t2->setObjectName(QStringLiteral("exportHint"));
+        for (QLabel* l : { t1, t2 }) l->setAttribute(Qt::WA_TransparentForMouseEvents);
+        bh->addWidget(t1);
+        bh->addWidget(t2);
+        connect(big, &QPushButton::clicked, this, &ExportPanel::openReadingRoom);
+        v->addWidget(big);
     }
 
     // Formato de editora (livro) ou numerar as cenas (roteiro).
@@ -490,6 +583,8 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
 ExportPanel::~ExportPanel() = default;
 
 void ExportPanel::setPreviewSource(const QString& projectRoot, const Exporter::DocStyle& style) {
+    m_root = projectRoot;
+    m_style = style;
     m_exporter = std::make_unique<Exporter>(m_model, projectRoot, style);
     refreshSummary();   // as palavras (chapterWords) chegam junto com a fonte
     schedulePreview();
@@ -540,6 +635,16 @@ void ExportPanel::refreshOptions() {
     const bool paged = (m_format != QLatin1String("epub"));
     const bool fountain = (m_format == QLatin1String("fountain"));
 
+    // EPUB: a prévia vira o leitor, com a barra e a trilha; a capitular e a
+    // prévia grande só valem nele.
+    const bool epub = !paged;
+    if (m_ebookTools) m_ebookTools->setVisible(epub);
+    if (m_ebookStrip) m_ebookStrip->setVisible(epub);
+    if (m_view) m_view->setVisible(!epub);
+    if (m_ebookView) m_ebookView->setVisible(epub);
+    if (m_dropCapRow) m_dropCapRow->setVisible(epub);
+    if (m_bigGroup) m_bigGroup->setVisible(epub);
+
     // EPUB sai sempre num arquivo só; Fountain não leva marcador.
     if (m_singleBtn) m_singleBtn->setEnabled(paged);
     if (m_separateBtn) m_separateBtn->setEnabled(paged);
@@ -569,6 +674,8 @@ void ExportPanel::refreshOptions() {
         return;
     }
 
+    // No EPUB o formato de editora não existe (o texto reflui): some o grupo.
+    m_editorGroup->setVisible(paged);
     const bool usable = paged && m_single;
     m_editorSwitch->setEnabled(usable);
     if (!usable) { const QSignalBlocker b(m_editorSwitch); m_editorSwitch->setChecked(false); }
@@ -886,6 +993,7 @@ Exporter::Selection ExportPanel::currentSelection() const {
     sel.submissionFormat = !screenplay && switchOn;
     sel.sceneNumbers = screenplay && switchOn;
     sel.submission = m_submission;
+    sel.dropCap = !m_dropCapSwitch || m_dropCapSwitch->isChecked();
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {
         if ((*it)->checkState(0) == Qt::Checked) {
@@ -914,6 +1022,32 @@ void ExportPanel::schedulePreview() {
 
 void ExportPanel::rebuildPreview() {
     if (!m_exporter) { m_preview = Exporter::PagePreview(); m_view->setPage(nullptr, 0); refreshNav(); return; }
+    if (isEpub()) {
+        // o livro inteiro no leitor; volta pro mesmo ponto (parte e fração)
+        int sec = -1;
+        qreal frac = 0;
+        if (m_ebook && !m_ebook->isEmpty()) {
+            const int s = m_ebookView->screen();
+            sec = m_ebook->sectionAt(s);
+            const int a = sec < 0 ? 0 : m_ebook->screenOf(sec);
+            const int b = sec + 1 < m_ebook->sections.size() ? m_ebook->screenOf(sec + 1) - 1 : m_ebook->pages() - 1;
+            frac = b > a ? qreal(s - a) / (b - a) : 0;
+        }
+        const Ebook::Look look = m_ebookBar->look();
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        m_ebook = std::make_shared<Exporter::EbookPreview>(m_exporter->buildEbookPreview(
+            currentSelection(), Ebook::exporterLook(look), Ebook::contentSize(look.device)));
+        QApplication::restoreOverrideCursor();
+        m_ebookView->setBook(m_ebook, look);
+        if (sec >= 0 && sec < m_ebook->sections.size()) {
+            const int a = m_ebook->screenOf(sec);
+            const int b = sec + 1 < m_ebook->sections.size() ? m_ebook->screenOf(sec + 1) - 1 : m_ebook->pages() - 1;
+            m_ebookView->setScreen(a + qRound(frac * qMax(0, b - a)), false);
+        }
+        refreshNav();
+        refreshStrip();
+        return;
+    }
     int firstWords = 0;
     selectedWords(nullptr, &firstWords);
     m_preview = m_exporter->buildPagePreview(currentSelection(), firstWords);
@@ -923,6 +1057,7 @@ void ExportPanel::rebuildPreview() {
 }
 
 void ExportPanel::stepPage(int delta) {
+    if (isEpub()) { m_ebookView->step(delta); return; }
     if (m_preview.isEmpty()) return;
     m_page = qBound(0, m_page + delta, m_preview.pages - 1);
     m_view->setPage(&m_preview, m_page);
@@ -930,6 +1065,18 @@ void ExportPanel::stepPage(int delta) {
 }
 
 void ExportPanel::refreshNav() {
+    if (isEpub()) {
+        const bool has = m_ebook && !m_ebook->isEmpty();
+        m_prevBtn->setVisible(has);
+        m_nextBtn->setVisible(has);
+        m_navLabel->setVisible(has);
+        if (!has) return;
+        const int s = m_ebookView->screen(), n = m_ebook->pages();
+        m_prevBtn->setEnabled(s > 0);
+        m_nextBtn->setEnabled(s < n - 1);
+        m_navLabel->setText(tr("Tela %1 de %2 · o texto se ajusta à tela de cada leitor").arg(s + 1).arg(n));
+        return;
+    }
     const bool has = !m_preview.isEmpty();
     m_prevBtn->setVisible(has);
     m_nextBtn->setVisible(has);
@@ -950,6 +1097,51 @@ void ExportPanel::refreshNav() {
     else
         t = tr("Página %1 de %2").arg(m_page + 1).arg(m_preview.estimatedTotal);
     m_navLabel->setText(t);
+}
+
+void ExportPanel::refreshStrip() {
+    if (!m_ebookStrip) return;
+    const bool has = m_ebook && !m_ebook->isEmpty();
+    m_ebookStrip->setVisible(isEpub() && has);
+    if (!has) return;
+    const int sec = m_ebook->sectionAt(m_ebookView->screen());
+    m_stripCover->setVisible(m_ebook->coverPages() > 0);
+    m_stripCover->setChecked(sec < 0);
+    m_stripToc->setText(m_ebook->tocLabel);
+    m_stripToc->setChecked(sec == 0);
+    QString part = tr("Capítulos");
+    if (sec > 0) {
+        const auto& s = m_ebook->sections.at(sec);
+        part = s.kind == Exporter::EbookSection::Chapter ? QStringLiteral("%1. %2").arg(s.number).arg(s.name) : s.name;
+        const QFontMetrics fm(m_stripPart->font());
+        part = fm.elidedText(part, Qt::ElideRight, 200);
+    }
+    m_stripPart->setText(part + QStringLiteral("  ▾"));
+    m_stripPart->setChecked(sec > 0);
+}
+
+void ExportPanel::openReadingRoom() {
+    if (!m_exporter) return;
+    const Exporter::Selection sel = currentSelection();
+    if (sel.chapterIds.isEmpty() && sel.itemIds.isEmpty()) return;
+    QString name;
+    for (const QString& id : sel.chapterIds)
+        if (const Chapter* c = m_model->findChapter(id)) { name = m_model->manuscriptEffectiveTitle(c->manuscriptId); break; }
+    if (name.isEmpty()) name = tr("O que vai no EPUB");
+    auto exporter = std::make_shared<Exporter>(m_model, m_root, m_style);
+    auto* room = new EbookRoom(exporter, sel, name, QString(), this);
+    room->setAttribute(Qt::WA_DeleteOnClose);
+    if (QWidget* host = parentWidget()) room->setGeometry(host->window()->geometry());
+    connect(room, &EbookRoom::exportRequested, this, [this](const Exporter::Selection& s) {
+        emit exportRequested(s);
+        accept();
+    });
+    // o que mudou lá (aparelho, papel, letra) volta pra prévia daqui
+    connect(room, &QDialog::finished, this, [this]() {
+        m_ebookBar->setLook(Ebook::Look::load());
+        schedulePreview();
+    });
+    room->open();
 }
 
 void ExportPanel::applyTheme() {
@@ -1027,6 +1219,17 @@ void ExportPanel::applyTheme() {
         }
         #exportPanel QTreeWidget#exportTree::indicator:checked { background: %10; border-color: %10; }
         #exportPanel QTreeWidget#exportTree::indicator:indeterminate { background: %9; border-color: %10; }
+        #exportPanel #exportEbookTools { border-bottom: 1px solid %7; }
+        #exportPanel QPushButton#exportChip {
+            background: transparent; color: %5; border: 1px solid %2; border-radius: 12px; padding: 4px 11px; font-size: 11px;
+        }
+        #exportPanel QPushButton#exportChip:hover { color: %6; border-color: %5; }
+        #exportPanel QPushButton#exportChip:checked { background: %9; border-color: %10; color: %6; }
+        #exportPanel QPushButton#exportBig {
+            background: transparent; border: 1px dashed %2; border-radius: @radius-control; text-align: left;
+        }
+        #exportPanel QPushButton#exportBig:hover { border-color: %10; }
+        #exportPanel QLabel#exportBigTitle { color: %6; font-size: 12px; }
         #exportPanel QScrollBar:vertical { background: transparent; width: 8px; margin: 0; }
         #exportPanel QScrollBar::handle:vertical { background: %2; border-radius: 4px; min-height: 30px; }
         #exportPanel QScrollBar::add-line:vertical, #exportPanel QScrollBar::sub-line:vertical { height: 0; }
