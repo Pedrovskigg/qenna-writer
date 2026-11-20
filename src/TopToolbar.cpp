@@ -327,7 +327,10 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     searchButton->setObjectName(QStringLiteral("ttbTool"));
     bindIcon(searchButton, QStringLiteral("search.svg"));
     searchButton->setToolTip(tr("Buscar (Ctrl+Shift+F)"));
-    connect(searchButton, &QToolButton::clicked, this, &TopToolbar::searchRequested);
+    // Nas faixas de uma linha o Buscar vira campo ali mesmo; nas outras, o painel.
+    connect(searchButton, &QToolButton::clicked, this, [this]() {
+        if (!openInlineFind(false)) emit searchRequested();
+    });
 
     // ---------------- Grupo D: Tipografia ----------------
     fontButton->setObjectName(QStringLiteral("ttbFont"));

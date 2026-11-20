@@ -102,6 +102,21 @@ void FindBar::closeBar()
     emit closed();
 }
 
+void FindBar::setQuery(const QString& query)
+{
+    if (!m_input) return;
+    m_input->blockSignals(true);
+    m_input->setText(query);
+    m_input->blockSignals(false);
+    refreshMatches();
+}
+
+void FindBar::stepMatch(int dir)
+{
+    if (dir < 0) onPrev();
+    else onNext();
+}
+
 void FindBar::applyTheme()
 {
     setStyleSheet(Theme::qss(QStringLiteral(R"(
@@ -266,11 +281,13 @@ void FindBar::scrollToMatch(int idx)
     m_editor->setTextCursor(cur);
     m_editor->ensureCursorVisible();
     // Devolve o foco pro input (setTextCursor não rouba foco, mas defensivo).
-    if (m_input) m_input->setFocus();
+    // Escondida (quem busca é o campo da barra de cima), o foco fica onde está.
+    if (m_input && isVisible()) m_input->setFocus();
 }
 
 void FindBar::updateCountLabel()
 {
+    emit countChanged(m_matches.isEmpty() ? 0 : m_activeIndex + 1, int(m_matches.size()));
     if (!m_count) return;
     if (m_matches.isEmpty()) m_count->setText(QStringLiteral("0/0"));
     else m_count->setText(QStringLiteral("%1/%2").arg(m_activeIndex + 1).arg(m_matches.size()));

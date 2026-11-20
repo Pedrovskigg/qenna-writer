@@ -125,6 +125,7 @@ GlobalSearchPanel::GlobalSearchPanel(ProjectModel* model, DocCache* cache,
 
 void GlobalSearchPanel::openPanel()
 {
+    if (m_attached) setAttached(false);
     show();
     raise();
     m_input->setFocus();
@@ -141,6 +142,45 @@ void GlobalSearchPanel::openPanelWith(const QString& query)
 void GlobalSearchPanel::closePanel()
 {
     hide();
+}
+
+void GlobalSearchPanel::setAttached(bool on)
+{
+    m_attached = on;
+    m_input->setVisible(!on);
+    m_close->setVisible(!on);
+    if (!on) setFixedWidth(kPanelWidth);
+}
+
+void GlobalSearchPanel::setQuery(const QString& query)
+{
+    if (m_input->text() != query) m_input->setText(query);   // dispara a busca
+}
+
+void GlobalSearchPanel::navKey(int key)
+{
+    auto selectable = [this](int row) {
+        const QListWidgetItem* it = m_resultList->item(row);
+        return it && (it->flags() & Qt::ItemIsEnabled);
+    };
+    const int n = m_resultList->count();
+    if (key == Qt::Key_Up || key == Qt::Key_Down) {
+        const int dir = key == Qt::Key_Down ? 1 : -1;
+        int row = m_resultList->currentRow();
+        for (int i = 0; i < n; ++i) {
+            row = (row < 0 && dir > 0) ? 0 : row + dir;
+            if (row < 0) row = n - 1;
+            if (row >= n) row = 0;
+            if (selectable(row)) { m_resultList->setCurrentRow(row); return; }
+        }
+        return;
+    }
+    if (key == Qt::Key_Return || key == Qt::Key_Enter) {
+        int row = m_resultList->currentRow();
+        if (!selectable(row))
+            for (row = 0; row < n && !selectable(row); ++row) {}
+        if (row < n) onResultActivated(m_resultList->item(row));
+    }
 }
 
 void GlobalSearchPanel::applyTheme()
@@ -255,7 +295,8 @@ void GlobalSearchPanel::onResultActivated(QListWidgetItem* item)
 
     if (r.type == RTagName) {
         m_input->setText(QStringLiteral("#") + r.tagName);   // refina: mostra o que tem essa tag
-        m_input->setFocus();
+        if (m_attached) emit queryEdited(m_input->text());
+        else m_input->setFocus();
         return;
     }
     if (r.type == RTagged) {

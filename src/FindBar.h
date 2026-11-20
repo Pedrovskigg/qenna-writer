@@ -24,12 +24,19 @@ public:
 
     void applyTheme();
 
+    // Busca sem a caixinha (19/11/2026): o campo da barra de cima usa a mesma
+    // busca. setQuery refaz as ocorrências mesmo com o texto igual (o documento
+    // pode ter trocado); stepMatch anda 1 pra frente ou -1 pra trás.
+    void setQuery(const QString& query);
+    void stepMatch(int dir);
+
     // Snapshot da camada "find" pra o sistema de ExtraSelections do MainWindow.
     const QList<QTextEdit::ExtraSelection>& findSelections() const { return m_selections; }
 
 signals:
     void selectionsChanged();
     void closed();
+    void countChanged(int active, int total);   // active começa em 1; 0/0 sem ocorrência
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;

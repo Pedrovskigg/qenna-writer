@@ -65,6 +65,9 @@ qt_add_executable(qenna-writer
     src/ThemeExportDialog.h
     src/TopToolbar.cpp
     src/TopToolbarRibbon.cpp
+    src/TopToolbarFind.cpp
+    src/ThemeWelcome.cpp
+    src/ThemeWelcome.h
     src/TopToolbar.h
     src/IconUtils.cpp
     src/IconUtils.h

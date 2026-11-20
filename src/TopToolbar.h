@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QList>
 #include <QPair>
+#include <QPointer>
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -22,6 +23,7 @@ class ToolbarGroupWidget;
 class CarouselViewport;
 class QStackedWidget;
 class QWidget;
+class QCheckBox;
 
 class TopToolbar : public QWidget
 {
@@ -132,6 +134,22 @@ public:
     bool projectButtonsInRightBar() const { return !m_rightBarButtons.isEmpty(); }
     void setCurrentAlignment(Qt::Alignment alignment);
 
+    // Busca na própria barra (19/11/2026, ideia do Pe; TopToolbarFind.cpp).
+    // Nas faixas de uma linha o Buscar vira um campo ali mesmo: Enter procura
+    // no documento aberto; a caixinha "Livro inteiro" no fim do campo troca pra
+    // busca do projeto. Nos outros estilos o Buscar continua abrindo o painel.
+    bool canInlineFind() const;
+    bool openInlineFind(bool wholeBook);
+    void closeInlineFind();
+    bool inlineFindOpen() const { return m_inlineFindOpen; }
+    bool inlineFindWholeBook() const;
+    void setInlineFindWholeBook(bool on);
+    void setInlineFindText(const QString& text);
+    void setInlineFindCount(int active, int total);
+    QRect inlineFindGlobalRect() const;
+    // A lista do "Livro inteiro": clicar nela não conta como clicar fora.
+    void setInlineFindCompanion(QWidget* w);
+
 protected:
     bool event(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
@@ -189,6 +207,12 @@ signals:
     void fullscreenToggled(bool enabled);
     void themePanelRequested();
     void readEbookRequested();   // "Ler como e-book" (menu do Q)
+    // Campo de busca da barra: texto ou caixinha mudou; Enter/setas no documento;
+    // ↑ ↓ Enter na lista do livro inteiro; campo fechado.
+    void inlineFindChanged(const QString& text, bool wholeBook);
+    void inlineFindStep(int dir);
+    void inlineFindNavKey(int key);
+    void inlineFindClosed();
 
 private:
     QToolButton *homeButton;
@@ -336,6 +360,23 @@ private:
     QWidget* m_ribbonBody = nullptr;
     CarouselViewport* m_ribbonCarousel = nullptr;
     QStackedWidget* m_ribbonStack = nullptr;
+    // Busca na barra (TopToolbarFind.cpp).
+    void buildInlineFind();
+    void refreshInlineFindParts();
+    void styleInlineFind();
+    QString inlineFindQss() const;
+    QFrame* m_inlineFind = nullptr;
+    QToolButton* m_inlineFindIcon = nullptr;   // a lupa: clicar fecha
+    QObject* m_inlineFindOutside = nullptr;    // clique fora fecha
+    QPointer<QWidget> m_inlineFindCompanion;   // a lista do "Livro inteiro"
+    QLineEdit* m_inlineFindEdit = nullptr;
+    QLabel* m_inlineFindCount = nullptr;
+    QToolButton* m_inlineFindPrev = nullptr;
+    QToolButton* m_inlineFindNext = nullptr;
+    QFrame* m_inlineFindSep = nullptr;
+    QCheckBox* m_inlineFindBook = nullptr;
+    QToolButton* m_inlineFindClose = nullptr;
+    bool m_inlineFindOpen = false;
     QWidget* m_ribbonParking = nullptr;     // botões que a faixa não mostra (vivos, escondidos)
     QToolButton* m_ribbonAlign[4] = { nullptr, nullptr, nullptr, nullptr };
     QToolButton* m_ribbonScope = nullptr;

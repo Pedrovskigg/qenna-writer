@@ -198,6 +198,7 @@ private:
     void onAddImageRequested();
     void onNewProjectRequested();
     void onNewIdeaRequested();
+    void maybeOfferThemeWelcome();
     void onOpenProjectRequested();
     void onSettingsRequested();
     void onExportRequested();

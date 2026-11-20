@@ -528,7 +528,7 @@ QString TopToolbar::ribbonQss() const
     )")).arg(Theme::subtleBorder(), acc.name(), inkOn(acc).name(), acc.lighter(112).name(),
             Theme::textMuted(), Theme::textPrimary(), Theme::textBright(),
             Theme::panelBorder(), Theme::inputBackground())
-        + ribbonLookQss();
+        + ribbonLookQss() + inlineFindQss();
 }
 
 // As duas faixas com cara de Qenna (13/11/2026, lab Escala Word–Qenna).
@@ -710,6 +710,7 @@ void TopToolbar::buildRibbonChrome()
 
     m_ribbonParking = new QWidget(this);
     m_ribbonParking->hide();
+    buildInlineFind();
 
     // ---- Botões que só a faixa tem ----
     struct AlignOpt { Qt::Alignment a; QString icon; QString tip; };
@@ -869,6 +870,7 @@ void TopToolbar::applyBarStyle()
 {
     if (m_editMode) setEditMode(false);
     if (m_ribbonPeek) setRibbonPeek(false);
+    closeInlineFind();   // o campo só existe nas faixas de uma linha
     // Moldura de painel (clássica) ou de teto (faixa). Antes de medir: o
     // setStyleSheet re-pole os botões e reaplicaria geometria do QSS por cima.
     applyRootStyle();
@@ -914,6 +916,7 @@ void TopToolbar::rebuildRibbonPages()
         if (auto* c = b->findChild<QLabel*>(QStringLiteral("ribbonCaret"))) delete c;
         b->setProperty("ribbonCaret", QVariant());
     }
+    if (m_inlineFind) m_inlineFind->setParent(m_ribbonParking);
     while (m_ribbonStack->count() > 0) {
         QWidget* w = m_ribbonStack->widget(0);
         m_ribbonStack->removeWidget(w);
@@ -1006,6 +1009,12 @@ void TopToolbar::rebuildRibbonPages()
                 put(g, m_pageButton, Inline, tr("Página"), tab);
                 put(g, imageButton, Inline, tr("Imagem"), tab);
                 put(g, searchButton, Inline, tr("Buscar"), tab);
+                // O campo de busca mora logo depois do Buscar e toma o espaço vazio.
+                if (m_inlineFind && !m_rightBarButtons.contains(searchButton)) {
+                    g->addWidget(m_inlineFind, 100, Qt::AlignVCenter);
+                    m_inlineFind->setVisible(m_inlineFindOpen);
+                    searchButton->setVisible(!m_inlineFindOpen);
+                }
             }
         } else if (tab == 1) {   // Revisão
             put(group(tr("Revisar")), repetitionsButton, full ? Big : Inline, tr("Repetições"), tab);
@@ -1144,6 +1153,7 @@ void TopToolbar::rebuildRibbonPages()
     m_ribbon->setMinimumWidth(qMax(0, m_ribbonTargetWidth));
 
     reloadIcons();   // ícones no tamanho de cada botão (grande, pequeno, inline)
+    styleInlineFind();
     for (QToolButton* b : std::as_const(managed)) if (b) placeCaret(b);
     placeCaret(m_ribbonFile);
 

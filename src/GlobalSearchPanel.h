@@ -78,11 +78,20 @@ public:
     // oferece "buscar no texto do livro" quando o nome não acha nada).
     void openPanelWith(const QString& query);
     void closePanel();
+    // Pendurada no campo de busca da barra de cima (19/11/2026): sem o campo
+    // próprio nem o ✕; quem digita é a barra (setQuery) e as setas e o Enter
+    // chegam por navKey. A MainWindow dá a largura e a posição.
+    void setAttached(bool on);
+    bool isAttached() const { return m_attached; }
+    void setQuery(const QString& query);
+    void navKey(int key);
     void setProjectRoot(const QString& root) { m_projectRoot = root; }
     void applyTheme();
 
 signals:
     void openRequested(EditorHost::ViewMode viewMode, QString query);
+    // Pendurada: clicar numa tag refina a busca; a barra de cima mostra o texto novo.
+    void queryEdited(const QString& query);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -121,6 +130,7 @@ private:
     QVector<Result> m_results;
     QVector<TagEntry> m_tagEntries;
     bool m_tagMode = false;
+    bool m_attached = false;
 
     QTimer* m_debounce = nullptr;
 };

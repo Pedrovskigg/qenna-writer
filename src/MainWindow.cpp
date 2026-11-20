@@ -189,6 +189,7 @@
 #include "ExportPanel.h"
 #include "Exporter.h"
 #include "EbookReader.h"
+#include "ThemeWelcome.h"
 #include "SpellChecker.h"
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
@@ -855,6 +856,15 @@ MainWindow::MainWindow(QWidget *parent)
     , focusModeEnabled(false)
     , baseTextColor(QColor(Theme::editorTextColor()))
 {
+    // Escolha do tema no primeiro projeto (19/11/2026): quem já usava o Qenna
+    // antes dela (tem projeto recente ou já trocou de tema) não vê a janela.
+    {
+        QSettings s;
+        if (!s.contains(QStringLiteral("onboarding/themeChosen"))
+            && (!s.value(QStringLiteral("recentProjects/list")).toStringList().isEmpty()
+                || s.contains(QStringLiteral("theme/currentId"))))
+            s.setValue(QStringLiteral("onboarding/themeChosen"), true);
+    }
     baseWindowTitle = tr("Qenna Writer");
     setWindowTitle(baseWindowTitle);
 
@@ -3514,6 +3524,9 @@ void MainWindow::setupEditor()
     connect(findBar, &FindBar::closed, this, [this]() {
         if (editor) editor->setFocus();
     });
+    connect(findBar, &FindBar::countChanged, this, [this](int active, int total) {
+        if (toolbar) toolbar->setInlineFindCount(active, total);
+    });
 
     // GlobalSearchPanel (Ctrl+Shift+F) — busca no projeto inteiro.
     globalSearchPanel = new GlobalSearchPanel(projectModel, docCache, projectRoot, container);
@@ -3596,6 +3609,14 @@ void MainWindow::setupEditor()
                 && editorHost->scrollToChapter(vm.chapterId, vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
             if (!inBook) editorHost->setViewMode(vm);
         }
+        // Veio do campo da barra de cima: ele mesmo passa a buscar no documento
+        // aberto (desmarca o "Livro inteiro"), com as ocorrências na folha.
+        if (toolbar && toolbar->inlineFindOpen()) {
+            QTimer::singleShot(60, this, [this]() {
+                if (toolbar && toolbar->inlineFindOpen()) toolbar->setInlineFindWholeBook(false);
+            });
+            return;
+        }
         // Após carregar, dispara FindBar com a query pra mostrar onde está.
         if (!query.isEmpty() && findBar) {
             QTimer::singleShot(60, this, [this, query]() {
@@ -3619,12 +3640,15 @@ void MainWindow::setupEditor()
             characterSheetPanel->openFind();
             return;
         }
+        // Faixa de uma linha: o campo da própria barra.
+        if (toolbar && toolbar->openInlineFind(false)) return;
         if (!findBar) return;
         positionFindBar();
         findBar->openBar();
     });
     auto* globalSearchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+F")), this);
     connect(globalSearchShortcut, &QShortcut::activated, this, [this]() {
+        if (toolbar && toolbar->openInlineFind(true)) return;
         if (!globalSearchPanel) return;
         positionGlobalSearchPanel();
         globalSearchPanel->openPanel();
@@ -3635,6 +3659,42 @@ void MainWindow::setupEditor()
         if (!globalSearchPanel) return;
         positionGlobalSearchPanel();
         globalSearchPanel->openPanel();
+    });
+    // Campo de busca da barra de cima (19/11/2026, ideia do Pe): no documento,
+    // a busca do FindBar (escondido); com "Livro inteiro", a do projeto,
+    // pendurada embaixo do campo.
+    connect(toolbar, &TopToolbar::inlineFindChanged, this, [this](const QString& text, bool wholeBook) {
+        if (findBar && findBar->isVisible()) findBar->hide();   // a caixinha flutuante sai de cena
+        if (wholeBook) {
+            if (findBar) findBar->setQuery(QString());
+            if (!globalSearchPanel) return;
+            globalSearchPanel->setAttached(true);
+            globalSearchPanel->setQuery(text);
+            globalSearchPanel->show();
+            positionGlobalSearchPanel();
+        } else {
+            if (globalSearchPanel && globalSearchPanel->isAttached()) globalSearchPanel->closePanel();
+            if (findBar) findBar->setQuery(text);
+        }
+    });
+    connect(toolbar, &TopToolbar::inlineFindStep, this, [this](int dir) {
+        if (findBar) findBar->stepMatch(dir);
+    });
+    connect(toolbar, &TopToolbar::inlineFindNavKey, this, [this](int key) {
+        if (globalSearchPanel && globalSearchPanel->isAttached() && globalSearchPanel->isVisible())
+            globalSearchPanel->navKey(key);
+    });
+    connect(toolbar, &TopToolbar::inlineFindClosed, this, [this]() {
+        if (findBar) findBar->setQuery(QString());
+        if (globalSearchPanel && globalSearchPanel->isAttached()) {
+            globalSearchPanel->closePanel();
+            globalSearchPanel->setAttached(false);
+        }
+        if (editor) editor->setFocus();
+    });
+    toolbar->setInlineFindCompanion(globalSearchPanel);
+    connect(globalSearchPanel, &GlobalSearchPanel::queryEdited, this, [this](const QString& q) {
+        if (toolbar) toolbar->setInlineFindText(q);
     });
     auto* refSearchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+F")), this);
     connect(refSearchShortcut, &QShortcut::activated, this, [this]() {
@@ -4077,6 +4137,7 @@ void MainWindow::setupEditor()
     connect(manuscriptPanel, &ManuscriptPanel::previewEreaderRequested, this, &MainWindow::openReaderPreview);
     // Comando: o nome não achou — procura o texto no livro inteiro.
     connect(manuscriptPanel, &ManuscriptPanel::searchTextRequested, this, [this](const QString& query) {
+        if (toolbar && toolbar->openInlineFind(true)) { toolbar->setInlineFindText(query); return; }
         if (!globalSearchPanel) return;
         positionGlobalSearchPanel();
         globalSearchPanel->openPanelWith(query);
@@ -8863,6 +8924,7 @@ void MainWindow::onNewProjectRequested()
     // Fecha o Main Menu se estiver aberto e mostra a janela principal.
     if (mainMenuDialog && mainMenuDialog->isVisible()) mainMenuDialog->accept();
     if (!isVisible()) show();
+    maybeOfferThemeWelcome();
 }
 
 void MainWindow::onNewIdeaRequested()
@@ -8894,6 +8956,25 @@ void MainWindow::onNewIdeaRequested()
     if (!isVisible()) show();
     raise();
     activateWindow();
+    maybeOfferThemeWelcome();
+}
+
+// Primeiro projeto ou primeira ideia: a janela de escolher o tema (uma vez só).
+// A marca só é gravada na escolha; fechou o app no meio, ela volta no próximo.
+void MainWindow::maybeOfferThemeWelcome()
+{
+    if (QSettings().value(QStringLiteral("onboarding/themeChosen"), false).toBool()) return;
+    QTimer::singleShot(250, this, [this]() {
+        if (findChild<ThemeWelcome*>()) return;
+        auto* w = new ThemeWelcome(this);
+        connect(w, &ThemeWelcome::chosen, this, [this](const QString& id, bool random) {
+            QSettings().setValue(QStringLiteral("onboarding/themeChosen"), true);
+            Theme::Manager::instance()->setCurrent(id);
+            if (random)
+                showEditorToast(tr("O sorteio escolheu %1.").arg(Theme::Manager::instance()->current().name), 2600);
+        });
+        w->open();
+    });
 }
 
 void MainWindow::formalizeIdeaDraft()
@@ -9099,6 +9180,22 @@ void MainWindow::positionFindBar()
 void MainWindow::positionGlobalSearchPanel()
 {
     if (!globalSearchPanel || !editorContainer) return;
+    // Pendurada no campo da barra de cima: logo embaixo dele, da largura dele.
+    if (globalSearchPanel->isAttached()) {
+        const QRect field = toolbar ? toolbar->inlineFindGlobalRect() : QRect();
+        if (field.isEmpty()) return;
+        const int margin = 12;
+        const QPoint at = editorContainer->mapFromGlobal(field.bottomLeft());
+        const int w = qBound(420, field.width(), qMax(420, editorContainer->width() - margin * 2));
+        const int x = qBound(margin, at.x(), qMax(margin, editorContainer->width() - w - margin));
+        const int y = at.y() + 6;
+        const int h = qMax(160, qMin(460, editorContainer->height() - y - margin));
+        globalSearchPanel->setFixedWidth(w);
+        globalSearchPanel->resize(w, h);
+        globalSearchPanel->move(x, y);
+        if (globalSearchPanel->isVisible()) globalSearchPanel->raise();
+        return;
+    }
     globalSearchPanel->adjustSize();
     const int margin = 12;
     const int topInset = chromeInset(Qt::TopEdge);
