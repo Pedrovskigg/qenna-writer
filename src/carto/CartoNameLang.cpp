@@ -201,6 +201,26 @@ const NameLang& nameLang()
     return cache.insert(code, n).value();
 }
 
+QString townName(int n)
+{
+    // listas fixas (sem cache compartilhado: o mapa gera as cidades fora da thread da interface).
+    // Mesma ordem e mesmo espírito em todas as línguas; Lumen e Kethis não se traduzem.
+    static const char* const pt[16] = { "Pedravia", "Talhamar", "Ventania", "Corvélia", "Sal do Norte", "Ermo Rubro", "Lumen", "Orvalho",
+                                        "Brasa Alta", "Kethis", "Vau Cinzento", "Ameixal", "Torre Funda", "Rio Manso", "Altaneira", "Marisco" };
+    static const char* const en[16] = { "Stonehaven", "Tidemere", "Windholt", "Ravenmoor", "Northsalt", "Redwaste", "Lumen", "Dewfall",
+                                        "Highember", "Kethis", "Greyford", "Plumwick", "Deeptower", "Stillwater", "Highcrest", "Shellbrook" };
+    static const char* const es[16] = { "Pedravia", "Talamar", "Ventisca", "Corvilla", "Sal del Norte", "Yermo Rojo", "Lumen", "Rocío",
+                                        "Brasa Alta", "Kethis", "Vado Gris", "Ciruelal", "Torre Honda", "Río Manso", "Altanera", "Marisco" };
+    static const char* const it[16] = { "Pietravia", "Tagliamare", "Ventosa", "Corvella", "Sale del Nord", "Landa Rossa", "Lumen", "Rugiada",
+                                        "Brace Alta", "Kethis", "Guado Grigio", "Susineto", "Torre Fonda", "Rio Quieto", "Altanera", "Conchiglia" };
+    static const char* const fr[16] = { "Pierrefort", "Taillemer", "Ventaine", "Corbelle", "Sel-du-Nord", "Lande Rouge", "Lumen", "Rosée",
+                                        "Haute-Braise", "Kethis", "Gué-Gris", "Prunelaie", "Tour-Profonde", "Rivière-Calme", "Hauteroche", "Coquillage" };
+    const QString code = nameLanguage();
+    const char* const* list = code == QLatin1String("en") ? en : code == QLatin1String("es") ? es : code == QLatin1String("it") ? it
+                            : code == QLatin1String("fr") ? fr : pt;
+    return QString::fromUtf8(list[((n % 16) + 16) % 16]);
+}
+
 QString polishName(const QString& s)
 {
     if (nameLanguage() != QLatin1String("fr")) return s;

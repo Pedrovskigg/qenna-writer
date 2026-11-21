@@ -1,4 +1,5 @@
 #include "CartoInfo.h"
+#include "CartoNameLang.h"
 #include "CartoProf.h"
 
 #include "CartoEdit.h"
@@ -17,8 +18,6 @@ namespace {
 constexpr double INF = std::numeric_limits<double>::infinity();
 inline int clampi(int v, int a, int b) { return v < a ? a : v > b ? b : v; }
 
-const char* const kTownNames[] = { "Pedravia", "Talhamar", "Ventania", "Corvélia", "Sal do Norte", "Ermo Rubro", "Lumen", "Orvalho",
-                                   "Brasa Alta", "Kethis", "Vau Cinzento", "Ameixal", "Torre Funda", "Rio Manso", "Altaneira", "Marisco" };
 const char* const kRealmNames[] = { "Valdren", "Morvaun", "Aster", "Isk", "Corvin", "Sael" };
 const RGB kRealmColors[6] = { { 196, 72, 60 }, { 58, 104, 168 }, { 212, 160, 52 }, { 116, 74, 150 }, { 62, 140, 96 }, { 204, 106, 46 } };
 
@@ -433,7 +432,7 @@ std::unique_ptr<Info> buildInfo(World& w, int count)
         if (count > 0 && !isCap && std::isfinite(roadT[r].dist[c.i])) info->roads.push_back(smoothPath(trace(roadT[r], c.i)));
         const Pt p = toWorld(c.i);
         Town t; t.x = p[0]; t.y = p[1]; t.realm = count > 0 ? r : -1; t.capital = isCap;
-        t.name = QString::fromUtf8(kTownNames[n % 16]);
+        t.name = townName(n);   // no idioma do app (não fica salvo: o mapa regera a cada abertura)
         info->towns.push_back(t);
     }
     // estradas reais entre as capitais (só se houver caminho por terra)

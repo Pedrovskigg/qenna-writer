@@ -20,5 +20,6 @@ struct NameLang {
 const NameLang& nameLang();
 QString nameLanguage();                     // código do idioma dos nomes gerados
 QString polishName(const QString& s);       // acertos da língua (francês: "de Astal" → "d'Astal")
+QString townName(int n);                    // nome da n-ésima cidade gerada, no idioma dos nomes (16 por língua, repetem)
 
 } // namespace carto
