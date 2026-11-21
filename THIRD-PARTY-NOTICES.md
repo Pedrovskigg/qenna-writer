@@ -293,3 +293,11 @@ Unsplash by the institutions named below.
   - Vacancy, Vacancy Light, Signal Loss: photo by Olga Iacovlenco, https://unsplash.com/photos/uiyrzYXO8n0
   - Windward: photo by Birmingham Museums Trust, https://unsplash.com/photos/yRDu4_w4g4A
   - Zone System: photo by Ashish Kumar Senapati, https://unsplash.com/photos/uqHSe-zZN4A
+
+## Theme background photos (Tony Silva)
+
+The background image of these themes is a photograph by Tony Silva, sent
+directly to the author and used with permission (upscaled and color
+adjusted). It is not under an open license.
+
+  - Violet Hour, Fog Hour: photo by Tony Silva

@@ -17208,6 +17208,110 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
 
+    // ---- Theme Lab, leva 20 (2026-11-21): a foto do Tony Silva (lusco-fusco, mandada pelo WhatsApp, upscale 2x); ele escolheu os dois ----
+    // Violet Hour: A faixa do meio do céu, onde o azul vira lilás antes de chegar no laranja. A interface inteira é esse lilás escuro, e o laranja do horizonte continua no destaque.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("violet-hour");
+        t.name = QStringLiteral("Violet Hour");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#1a1628");
+        t.panelBackground = QStringLiteral("#211c33");
+        t.panelBorder = QStringLiteral("#463c66");
+        t.textPrimary = QStringLiteral("#beb4d7");
+        t.textMuted = QStringLiteral("#7d7496");
+        t.textBright = QStringLiteral("#f2f0fa");
+        t.hoverOverlay = QStringLiteral("rgba(190,180,215,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(190,180,215,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(190,180,215,0.1)");
+        t.accentDefault = QStringLiteral("#f0975a");
+        t.hoverStrong = QStringLiteral("rgba(190,180,215,0.12)");
+        t.borderStrong = QStringLiteral("rgba(190,180,215,0.22)");
+        t.focusBorder = QStringLiteral("rgba(190,180,215,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(190,180,215,0.3)");
+        t.selectionRing = QStringLiteral("#f2f0fa");
+        t.accentSuccess = QStringLiteral("#9cc8a8");
+        t.accentSuccessSoft = QStringLiteral("rgba(156,200,168,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(156,200,168,0.5)");
+        t.accentDanger = QStringLiteral("#ec8a8c");
+        t.accentDangerSoft = QStringLiteral("rgba(236,138,140,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(236,138,140,0.5)");
+        t.accentWarning = QStringLiteral("#eac084");
+        t.accentInfo = QStringLiteral("#98b0e8");
+        t.accentInfoSoft = QStringLiteral("rgba(152,176,232,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(152,176,232,0.55)");
+        t.editorBackground = QStringLiteral("#251f38");
+        t.editorTextColor = QStringLiteral("#beb4d7");
+        t.editorOpacity = 100;
+        t.panelOpacity = 80;
+        t.panelBlur = 16;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.pageGlowEnabled = false;
+        t.iconColor = QStringLiteral("#a49cbe");
+        t.docHeaderColor = QStringLiteral("#f0975a");
+        t.docHeaderFont = QStringLiteral("Cormorant Garamond");
+        t.backgroundMode = BgZoom;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-blue-hour.jpg"));
+        t.imageCredit = QStringLiteral("Tony Silva");
+        m_themes.append(t);
+    }
+    // Fog Hour: O único claro: o lilás-acinzentado do céu perto do horizonte vira papel. Vidro claro deixa a foto aparecer como névoa, a tinta é azul-noite e o destaque é um laranja queimado.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("fog-hour");
+        t.name = QStringLiteral("Fog Hour");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#9f95b0");
+        t.panelBackground = QStringLiteral("#e2deec");
+        t.panelBorder = QStringLiteral("#b8afcc");
+        t.textPrimary = QStringLiteral("#3a426f");
+        t.textMuted = QStringLiteral("#737896");
+        t.textBright = QStringLiteral("#14182c");
+        t.hoverOverlay = QStringLiteral("rgba(58,66,111,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(58,66,111,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(58,66,111,0.1)");
+        t.accentDefault = QStringLiteral("#9c4818");
+        t.hoverStrong = QStringLiteral("rgba(58,66,111,0.12)");
+        t.borderStrong = QStringLiteral("rgba(58,66,111,0.22)");
+        t.focusBorder = QStringLiteral("rgba(58,66,111,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.05)");
+        t.disabledText = QStringLiteral("rgba(58,66,111,0.3)");
+        t.selectionRing = QStringLiteral("#14182c");
+        t.accentSuccess = QStringLiteral("#3c7a4e");
+        t.accentSuccessSoft = QStringLiteral("rgba(60,122,78,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(60,122,78,0.5)");
+        t.accentDanger = QStringLiteral("#b23a44");
+        t.accentDangerSoft = QStringLiteral("rgba(178,58,68,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(178,58,68,0.5)");
+        t.accentWarning = QStringLiteral("#9a6a10");
+        t.accentInfo = QStringLiteral("#3a5ca8");
+        t.accentInfoSoft = QStringLiteral("rgba(58,92,168,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(58,92,168,0.55)");
+        t.editorBackground = QStringLiteral("#ece9f3");
+        t.editorTextColor = QStringLiteral("#3a426f");
+        t.editorOpacity = 100;
+        t.panelOpacity = 78;
+        t.panelBlur = 16;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(40,30,70,0.28)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.pageGlowEnabled = false;
+        t.iconColor = QStringLiteral("#4c5070");
+        t.docHeaderColor = QStringLiteral("#9c4818");
+        t.docHeaderFont = QStringLiteral("Cormorant Garamond");
+        t.backgroundMode = BgZoom;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-blue-hour.jpg"));
+        t.imageCredit = QStringLiteral("Tony Silva");
+        m_themes.append(t);
+    }
+
     // ---- Temas Animados (2026-10-14): clima na mesa, pintado pelo AnimBackground ----
     // Paletas e cenas aprovadas no Weather Lab (C:/mira-writing/anim-lab). animScene diz o
     // que a mesa desenha; animTod/animRain/animExtras são o padrão de fábrica do Personalizar.
@@ -20506,6 +20610,8 @@ void Manager::loadBundled()
         { QStringLiteral("hand-tinted"), QStringLiteral("estampados") },
         { QStringLiteral("mauve-ridges"), QStringLiteral("estampados") },
         { QStringLiteral("path-of-neo"), QStringLiteral("estampados") },
+        { QStringLiteral("violet-hour"), QStringLiteral("estampados") },
+        { QStringLiteral("fog-hour"), QStringLiteral("estampados") },
         { QStringLiteral("ash-rose"), QStringLiteral("estampados") },
         { QStringLiteral("fog-pine"), QStringLiteral("estampados") },
         { QStringLiteral("pewter-squall"), QStringLiteral("estampados") },
