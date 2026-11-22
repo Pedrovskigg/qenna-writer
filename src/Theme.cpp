@@ -2,6 +2,7 @@
 #include "AppPaths.h"
 
 #include "CrashLogger.h"
+#include "MetalTexture.h"
 
 #include <cmath>
 
@@ -14829,6 +14830,237 @@ void Manager::loadBundled()
     }
 
     // ---- Theme Lab, levas 15 a 19 (2026-11-16/17): as fotos do Unsplash que o Pe baixou, cruas, com tempero e macias; crédito do fotógrafo no painel ----
+    // ---- Metal Lab (22/11/2026): painéis e mesa de metal (Theme::panelMaterial / deskMaterial) ----
+    // Brushed Steel: Aço escovado: o risco fino corre na horizontal e o reflexo vira faixas verticais, como em panela de inox. Painel claro com texto escuro, mesa no mesmo aço mais escuro.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("brushed-steel");
+        t.name = QStringLiteral("Brushed Steel");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#3a3f45");
+        t.panelBackground = QStringLiteral("#a2a9b1");
+        t.panelBorder = QStringLiteral("#5a626b");
+        t.textPrimary = QStringLiteral("#14171a");
+        t.textMuted = QStringLiteral("#3e454c");
+        t.textBright = QStringLiteral("#050607");
+        t.hoverOverlay = QStringLiteral("rgba(20,23,26,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(20,23,26,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(20,23,26,0.1)");
+        t.accentDefault = QStringLiteral("#c8402a");
+        t.hoverStrong = QStringLiteral("rgba(20,23,26,0.12)");
+        t.borderStrong = QStringLiteral("rgba(20,23,26,0.22)");
+        t.focusBorder = QStringLiteral("rgba(20,23,26,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.08)");
+        t.disabledText = QStringLiteral("rgba(20,23,26,0.3)");
+        t.selectionRing = QStringLiteral("#050607");
+        t.accentSuccess = QStringLiteral("#2f7a4f");
+        t.accentSuccessSoft = QStringLiteral("rgba(47,122,79,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(47,122,79,0.5)");
+        t.accentDanger = QStringLiteral("#b8322a");
+        t.accentDangerSoft = QStringLiteral("rgba(184,50,42,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(184,50,42,0.5)");
+        t.accentWarning = QStringLiteral("#b07a1a");
+        t.accentInfo = QStringLiteral("#1f5fb8");
+        t.accentInfoSoft = QStringLiteral("rgba(31,95,184,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(31,95,184,0.55)");
+        t.editorBackground = QStringLiteral("#eceae6");
+        t.editorTextColor = QStringLiteral("#1e2124");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.6)");
+        t.pageShadowRadius = 28;
+        t.pageShadowOffset = 6;
+        t.pageGlowEnabled = false;
+        t.panelMaterial = QStringLiteral("brushed");
+        t.deskMaterial = QStringLiteral("brushed");
+        m_themes.append(t);
+    }
+    // Armor Plate: Chapa de blindagem: placas com emenda funda, bisel, chanfro e rebites, a cara de robô. Na mesa as placas grandes ficam desencontradas como um casco.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("armor-plate");
+        t.name = QStringLiteral("Armor Plate");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#1c2229");
+        t.panelBackground = QStringLiteral("#2e3640");
+        t.panelBorder = QStringLiteral("#3a444f");
+        t.textPrimary = QStringLiteral("#c8d0d8");
+        t.textMuted = QStringLiteral("#6e7a86");
+        t.textBright = QStringLiteral("#eef2f6");
+        t.hoverOverlay = QStringLiteral("rgba(200,208,216,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(200,208,216,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(200,208,216,0.1)");
+        t.accentDefault = QStringLiteral("#5ac8ff");
+        t.hoverStrong = QStringLiteral("rgba(200,208,216,0.12)");
+        t.borderStrong = QStringLiteral("rgba(200,208,216,0.22)");
+        t.focusBorder = QStringLiteral("rgba(200,208,216,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(200,208,216,0.3)");
+        t.selectionRing = QStringLiteral("#eef2f6");
+        t.accentSuccess = QStringLiteral("#7bc592");
+        t.accentSuccessSoft = QStringLiteral("rgba(123,197,146,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(123,197,146,0.5)");
+        t.accentDanger = QStringLiteral("#e05555");
+        t.accentDangerSoft = QStringLiteral("rgba(224,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(224,85,85,0.5)");
+        t.accentWarning = QStringLiteral("#d6a060");
+        t.accentInfo = QStringLiteral("#5ac8ff");
+        t.accentInfoSoft = QStringLiteral("rgba(90,200,255,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(90,200,255,0.55)");
+        t.editorBackground = QStringLiteral("#1a1f25");
+        t.editorTextColor = QStringLiteral("#c4ccd4");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.6)");
+        t.pageShadowRadius = 28;
+        t.pageShadowOffset = 6;
+        t.pageGlowEnabled = false;
+        t.panelMaterial = QStringLiteral("plate");
+        t.deskMaterial = QStringLiteral("plate");
+        m_themes.append(t);
+    }
+    // Chipped Paint: Chapa pintada e gasta: tinta vermelha por cima do aço, lascada nas quinas, com risco mostrando o metal. A mesa é de chapas azuis, lascando em cada emenda.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("chipped-paint");
+        t.name = QStringLiteral("Chipped Paint");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#1e3a6a");
+        t.panelBackground = QStringLiteral("#9a1e1e");
+        t.panelBorder = QStringLiteral("#5a1212");
+        t.textPrimary = QStringLiteral("#f4ece8");
+        t.textMuted = QStringLiteral("#e0b4ac");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(244,236,232,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(244,236,232,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(244,236,232,0.1)");
+        t.accentDefault = QStringLiteral("#5a9ae8");
+        t.hoverStrong = QStringLiteral("rgba(244,236,232,0.12)");
+        t.borderStrong = QStringLiteral("rgba(244,236,232,0.22)");
+        t.focusBorder = QStringLiteral("rgba(244,236,232,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(244,236,232,0.3)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#7ad09a");
+        t.accentSuccessSoft = QStringLiteral("rgba(122,208,154,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(122,208,154,0.5)");
+        t.accentDanger = QStringLiteral("#ff8a7a");
+        t.accentDangerSoft = QStringLiteral("rgba(255,138,122,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,138,122,0.5)");
+        t.accentWarning = QStringLiteral("#ffd27a");
+        t.accentInfo = QStringLiteral("#8ac0ff");
+        t.accentInfoSoft = QStringLiteral("rgba(138,192,255,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(138,192,255,0.55)");
+        t.editorBackground = QStringLiteral("#e8e2d6");
+        t.editorTextColor = QStringLiteral("#221c18");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.6)");
+        t.pageShadowRadius = 28;
+        t.pageShadowOffset = 6;
+        t.pageGlowEnabled = false;
+        t.panelMaterial = QStringLiteral("paint");
+        t.deskMaterial = QStringLiteral("paint");
+        m_themes.append(t);
+    }
+    // Chrome: Cromo esfumaçado: um espelho do ambiente, com céu claro em cima, o horizonte numa faixa escura e o chão embaixo. Na barra alta e fina o reflexo corre de lado, como num cilindro.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("chrome");
+        t.name = QStringLiteral("Chrome");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#1c2026");
+        t.panelBackground = QStringLiteral("#3a4048");
+        t.panelBorder = QStringLiteral("#5a626c");
+        t.textPrimary = QStringLiteral("#eef2f6");
+        t.textMuted = QStringLiteral("#a0a8b0");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(238,242,246,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(238,242,246,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(238,242,246,0.1)");
+        t.accentDefault = QStringLiteral("#ffb02a");
+        t.hoverStrong = QStringLiteral("rgba(238,242,246,0.12)");
+        t.borderStrong = QStringLiteral("rgba(238,242,246,0.22)");
+        t.focusBorder = QStringLiteral("rgba(238,242,246,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(238,242,246,0.3)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#7bc592");
+        t.accentSuccessSoft = QStringLiteral("rgba(123,197,146,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(123,197,146,0.5)");
+        t.accentDanger = QStringLiteral("#e05555");
+        t.accentDangerSoft = QStringLiteral("rgba(224,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(224,85,85,0.5)");
+        t.accentWarning = QStringLiteral("#ffb02a");
+        t.accentInfo = QStringLiteral("#7ab0e8");
+        t.accentInfoSoft = QStringLiteral("rgba(122,176,232,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(122,176,232,0.55)");
+        t.editorBackground = QStringLiteral("#14171b");
+        t.editorTextColor = QStringLiteral("#d4dae0");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.6)");
+        t.pageShadowRadius = 28;
+        t.pageShadowOffset = 6;
+        t.pageGlowEnabled = false;
+        t.panelMaterial = QStringLiteral("chrome");
+        t.deskMaterial = QStringLiteral("chrome");
+        m_themes.append(t);
+    }
+    // Heat Tint: Titânio queimado: aço escovado com as faixas de cor que o calor deixa no metal (palha, bronze, roxo e azul no meio), como em escapamento de moto. Mesa em titânio escovado escuro.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("heat-tint");
+        t.name = QStringLiteral("Heat Tint");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#26282c");
+        t.panelBackground = QStringLiteral("#4a4e54");
+        t.panelBorder = QStringLiteral("#5a5e66");
+        t.textPrimary = QStringLiteral("#e6e4e0");
+        t.textMuted = QStringLiteral("#9a9894");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(230,228,224,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(230,228,224,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(230,228,224,0.1)");
+        t.accentDefault = QStringLiteral("#c89a4a");
+        t.hoverStrong = QStringLiteral("rgba(230,228,224,0.12)");
+        t.borderStrong = QStringLiteral("rgba(230,228,224,0.22)");
+        t.focusBorder = QStringLiteral("rgba(230,228,224,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(230,228,224,0.3)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#9ab86a");
+        t.accentSuccessSoft = QStringLiteral("rgba(154,184,106,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(154,184,106,0.5)");
+        t.accentDanger = QStringLiteral("#e0705a");
+        t.accentDangerSoft = QStringLiteral("rgba(224,112,90,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(224,112,90,0.5)");
+        t.accentWarning = QStringLiteral("#d8a24a");
+        t.accentInfo = QStringLiteral("#7a9ae0");
+        t.accentInfoSoft = QStringLiteral("rgba(122,154,224,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(122,154,224,0.55)");
+        t.editorBackground = QStringLiteral("#1c1d21");
+        t.editorTextColor = QStringLiteral("#d2d0cc");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.6)");
+        t.pageShadowRadius = 28;
+        t.pageShadowOffset = 6;
+        t.pageGlowEnabled = false;
+        t.panelMaterial = QStringLiteral("heat");
+        t.deskMaterial = QStringLiteral("brushed");
+        m_themes.append(t);
+    }
     // Hardshell: O estojo rígido de guitarra aberto: casco preto por fora, forro de veludo amassado roxo por dentro, e os fechos dourados brilhando. A guitarra é você.
     {
         MiraTheme t;
@@ -20574,6 +20806,11 @@ void Manager::loadBundled()
         { QStringLiteral("reading-room"), QStringLiteral("estampados") },
         { QStringLiteral("cloud-sea"), QStringLiteral("estampados") },
         { QStringLiteral("hardshell"), QStringLiteral("colorful") },
+        { QStringLiteral("brushed-steel"), QStringLiteral("dark") },
+        { QStringLiteral("armor-plate"), QStringLiteral("dark") },
+        { QStringLiteral("chipped-paint"), QStringLiteral("colorful") },
+        { QStringLiteral("chrome"), QStringLiteral("dark") },
+        { QStringLiteral("heat-tint"), QStringLiteral("dark") },
         { QStringLiteral("hot-dog-stand"), QStringLiteral("colorful") },
         { QStringLiteral("ukiyo-e"), QStringLiteral("estampados") },
         { QStringLiteral("gilt-frame"), QStringLiteral("estampados") },
@@ -20915,6 +21152,8 @@ const QSet<QString>& knownThemeKeys()
         QStringLiteral("bgOverlaySize"),
         QStringLiteral("bgGrain"),
         QStringLiteral("bgGrainSize"),
+        QStringLiteral("panelMaterial"),
+        QStringLiteral("deskMaterial"),
         // Metadados de compartilhamento
         QStringLiteral("uuid"),
         QStringLiteral("author"),
@@ -20983,6 +21222,8 @@ QJsonObject themeToJson(const MiraTheme& t)
     // reexportado continuar idêntico ao de antes.
     if (!t.iconColor.isEmpty())      o["iconColor"] = t.iconColor;
     if (t.panelBlur > 0)             o["panelBlur"] = t.panelBlur;
+    if (!t.panelMaterial.isEmpty())  o["panelMaterial"] = t.panelMaterial;
+    if (!t.deskMaterial.isEmpty())   o["deskMaterial"] = t.deskMaterial;
     if (!t.panelBorderGradient.isEmpty()) {
         o["panelBorderGradient"] = t.panelBorderGradient;
         o["panelBorderGradientAngle"] = t.panelBorderGradientAngle;
@@ -21094,6 +21335,10 @@ MiraTheme themeFromJson(const QJsonObject& o)
     }
     t.iconColor = o.value("iconColor").toString();
     t.panelBlur = qBound(0, o.value("panelBlur").toInt(0), 60);
+    t.panelMaterial = o.value("panelMaterial").toString();
+    if (!Metal::isValid(t.panelMaterial)) t.panelMaterial.clear();
+    t.deskMaterial = o.value("deskMaterial").toString();
+    if (!Metal::isValid(t.deskMaterial)) t.deskMaterial.clear();
     t.panelBorderGradient = o.value("panelBorderGradient").toString();
     t.panelBorderGradientAngle = ((o.value("panelBorderGradientAngle").toInt(180) % 360) + 360) % 360;
     t.panelBorderWidth = qBound(1, o.value("panelBorderWidth").toInt(1), 4);
@@ -21586,6 +21831,8 @@ QString withPanelOpacity(const QString& css)
 
 QString panelBackgroundCssFor(const QString& key)
 {
+    // Com material de metal, quem pinta o fundo é a placa de baixo (PanelGlass).
+    if (!panelMaterial().isEmpty()) return QStringLiteral("transparent");
     return withPanelOpacity(panelBackgroundFor(key));
 }
 
@@ -21608,6 +21855,16 @@ QString iconColor()
 }
 bool hasIconColor() { return !Manager::instance()->current().iconColor.isEmpty(); }
 int panelBlur() { return qBound(0, Manager::instance()->current().panelBlur, 60); }
+QString panelMaterial()
+{
+    const QString m = Manager::instance()->current().panelMaterial;
+    return Metal::isValid(m) ? m : QString();
+}
+QString deskMaterial()
+{
+    const QString m = Manager::instance()->current().deskMaterial;
+    return Metal::isValid(m) ? m : QString();
+}
 QString docHeaderColor()
 {
     const QString c = Manager::instance()->current().docHeaderColor;

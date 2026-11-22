@@ -1,6 +1,7 @@
 #include "LeftBar.h"
 #include "LeftBarLabels.h"
 #include "LeftBarViews.h"
+#include "PanelGlass.h"
 #include "CarouselViewport.h"
 #include "IconUtils.h"
 #include "PanelMotion.h"
@@ -348,6 +349,7 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     m_named = new LeftBarNamed(this);
     m_named->setObjectName(QStringLiteral("leftBarNamed"));
     m_named->setAttribute(Qt::WA_StyledBackground, true);
+    PanelGlass::attach(m_named);   // vidro e metal atrás da barra com nomes
     m_named->hide();
     connect(m_named, &LeftBarNamed::emptyContextRequested, this, [this](const QPoint& g) { showStyleMenu(g); });
     connect(m_named, &LeftBarNamed::infoClicked, this, [this]() { if (QToolButton* b = m_fixedButtons.value(Info)) b->click(); });

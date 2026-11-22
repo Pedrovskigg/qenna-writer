@@ -251,7 +251,8 @@ void MiniCounterWidget::paintEvent(QPaintEvent*)
     QPainterPath outline;
     outline.addRoundedRect(shape, radius, radius);
 
-    p.fillPath(outline, bg);
+    // Com material de metal, a placa de baixo (PanelGlass) já pintou a textura.
+    if (Theme::panelMaterial().isEmpty()) p.fillPath(outline, bg);
 
     // "v1 unidade1 · v2 unidade2" a partir de x, centrado em cy.
     auto drawLine = [&](qreal x, qreal cy) {

@@ -292,7 +292,9 @@ qt_add_executable(qenna-writer
     src/ThemeScene.cpp
     src/ThemeScene.h
     src/PanelGlass.cpp
+    src/MetalTexture.cpp
     src/PanelGlass.h
+    src/MetalTexture.h
     src/ThemePreviewWidget.h
     src/ProjectInfoPanel.cpp
     src/ProjectInfoPanel.h

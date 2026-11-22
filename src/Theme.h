@@ -188,6 +188,13 @@ struct MiraTheme {
     QString animTod = QStringLiteral("theme");
     QString animRain = QStringLiteral("none");
     QStringList animExtras;
+    // Metal (22/11, Metal Lab, criado pro tema do Transformers): material com
+    // textura nos painéis e na mesa, em Metal::kinds() ("brushed", "plate",
+    // "paint", "chrome", "heat"). A cor base é a do painel / a da mesa. Vazio =
+    // cor lisa, como sempre. Com material, o fundo QSS dos painéis fica
+    // transparente e a placa de baixo (PanelGlass) pinta a textura.
+    QString panelMaterial;
+    QString deskMaterial;
 
     // --- Metadados de compartilhamento (arquivos .qtheme) ---
     // Nada disso muda a aparência do tema — é a identidade dele enquanto
@@ -430,6 +437,9 @@ QString iconColor();
 bool hasIconColor();
 // Desfoque do vidro, em px (0 = sem vidro).
 int panelBlur();
+// Material de metal dos painéis e da mesa (Metal::kinds()); vazio = cor lisa.
+QString panelMaterial();
+QString deskMaterial();
 // Título do DocHeader: cor e família da fonte, já com o padrão resolvido.
 QString docHeaderColor();
 bool hasDocHeaderColor();

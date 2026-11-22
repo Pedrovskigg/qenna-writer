@@ -3357,6 +3357,8 @@ void MainWindow::setupEditor()
                                                         projectDrawerPanel, pensarioPanel })
         PanelGlass::attach(w);
     if (auto* frame = refMenuPanel->findChild<QWidget*>(QStringLiteral("refFrame"))) PanelGlass::attach(frame);
+    // A barra da direita não tinha vidro; com material de metal o fundo QSS dela fica transparente e a placa pinta.
+    if (rightBar) PanelGlass::attach(rightBar);
     for (QWidget* w : wordCountPanel->findChildren<QWidget*>()) {
         if (w->objectName() == QLatin1String("wcpBody") || w->objectName() == QLatin1String("wcpFullBody")
             || w->inherits("MiniCounterWidget"))
@@ -10438,6 +10440,7 @@ void MainWindow::applyBackgroundFromTheme()
     // tudo, mesmo sem foto: tratam-se como a imagem daqui pra baixo.
     const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
     const bool painted = hasImage || animated || BackgroundOverlay::active(Theme::Manager::instance()->current())
+                         || !Theme::deskMaterial().isEmpty()   // mesa de metal
                          || deskPaintsPageShadow(); // a mesa pinta a sombra da folha (Mac)
 
     if (backgroundWidget) {

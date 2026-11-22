@@ -2,6 +2,7 @@
 
 #include "AnimBackground.h"
 #include "BackgroundOverlay.h"
+#include "MetalTexture.h"
 #include "PanelGlass.h"
 #include "Theme.h"
 
@@ -116,6 +117,11 @@ void BackgroundWidget::paintEvent(QPaintEvent* event)
     // 1) Cor sólida cobrindo (caso a imagem deixe áreas vazias).
     if (m_fill.isValid()) {
         p.fillRect(rect(), m_fill);
+    }
+    // 1b) Mesa de metal (Metal Lab, 22/11): a textura do material na cor da mesa.
+    if (const QString mat = Theme::deskMaterial(); !mat.isEmpty() && m_fill.isValid()) {
+        const QImage tex = Metal::texture(mat, m_fill, size(), devicePixelRatioF(), true);
+        if (!tex.isNull()) p.drawImage(QPointF(0, 0), tex);
     }
     // 2) Imagem em cima.
     paintImage(p);

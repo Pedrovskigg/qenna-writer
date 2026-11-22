@@ -1,6 +1,7 @@
 #include "PanelGlass.h"
 
 #include "Theme.h"
+#include "MetalTexture.h"
 
 #include <QEvent>
 #include <QImage>
@@ -64,13 +65,16 @@ public:
     QList<QPointer<QWidget>> panes;
 
     bool active() const { return Theme::panelBlur() > 0 && Theme::panelOpacity() < 100; }
+    // Metal (22/11): a mesma placa pinta a textura do material no lugar do vidro.
+    bool metal() const { return !Theme::panelMaterial().isEmpty(); }
+    bool showPanes() const { return metal() || !small.isNull(); }
 
     void schedule() { m_timer.start(); }
 
     void rebuild()
     {
         small = QImage();
-        if (window && active()) {
+        if (window && active() && !metal()) {
             const QSize full = window->size();
             QImage img(QSize(qMax(1, qRound(full.width() * kScale)), qMax(1, qRound(full.height() * kScale))),
                        QImage::Format_ARGB32_Premultiplied);
@@ -91,7 +95,7 @@ public:
         }
         for (const auto& pane : std::as_const(panes)) {
             if (!pane) continue;
-            pane->setVisible(!small.isNull() && pane->property("panelVisible").toBool());
+            pane->setVisible(showPanes() && pane->property("panelVisible").toBool());
             pane->update();
         }
     }
@@ -125,7 +129,7 @@ public:
         if (!m_panel) return;
         setGeometry(m_panel->geometry());
         setProperty("panelVisible", m_panel->isVisible());
-        setVisible(m_panel->isVisible() && !Backdrop::instance()->small.isNull());
+        setVisible(m_panel->isVisible() && Backdrop::instance()->showPanes());
         stackUnder(m_panel);
     }
 
@@ -151,6 +155,19 @@ protected:
     void paintEvent(QPaintEvent*) override
     {
         const auto* b = Backdrop::instance();
+        if (b->metal()) {
+            // Metal: a textura sob medida pro tamanho do painel (cacheada no Metal::texture).
+            QPainter p(this);
+            p.setRenderHint(QPainter::Antialiasing, true);
+            const qreal r = Theme::panelRadius();
+            QPainterPath clip;
+            clip.addRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), r, r);
+            p.setClipPath(clip);
+            const QImage tex = Metal::texture(Theme::panelMaterial(), Theme::toColor(Theme::panelBackground()), size(),
+                                              devicePixelRatioF(), false);
+            if (!tex.isNull()) p.drawImage(QPointF(0, 0), tex);
+            return;
+        }
         if (b->small.isNull() || !b->window) return;
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);

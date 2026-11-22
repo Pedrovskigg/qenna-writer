@@ -2,6 +2,7 @@
 
 #include "AnimBackground.h"
 #include "BackgroundOverlay.h"
+#include "MetalTexture.h"
 #include "PanelGlass.h"
 #include "PageBackgroundUi.h"
 
@@ -62,6 +63,7 @@ struct Pal {
     QColor bd2;
     int gAngle = 180;
     QImage glass;         // fundo + folha desfocados (a 1/4), quando o tema tem vidro
+    QString mat;          // material de metal dos painéis (Metal::kinds()), vazio = cor lisa
 
     QColor fill(const QString& key) const
     {
@@ -128,7 +130,17 @@ Pal palette(const Theme::MiraTheme& t)
     p.bd2 = col(t.panelBorderGradient, QColor());
     p.grad = p.bd2.isValid() && !t.panelBorderGradient.isEmpty();
     p.gAngle = t.panelBorderGradientAngle;
+    p.mat = Metal::isValid(t.panelMaterial) ? t.panelMaterial : QString();
     return p;
+}
+
+// Textura de metal no retângulo `b` da cena, na resolução real do pintor (a cena é desenhada em escala).
+void drawMetal(QPainter& p, const QRectF& b, const QString& kind, const QColor& base, bool desk)
+{
+    const QSize sz(qMax(2, qRound(b.width())), qMax(2, qRound(b.height())));
+    const qreal dpr = qBound<qreal>(0.25, std::abs(p.deviceTransform().m11()), 4.0);
+    const QImage tex = Metal::texture(kind, base, sz, dpr, desk);
+    if (!tex.isNull()) p.drawImage(QRectF(b.topLeft(), QSizeF(sz)), tex);
 }
 
 QFont uiFont(qreal px, int weight = QFont::Normal)
@@ -206,6 +218,17 @@ void panelShape(QPainter& p, const QPainterPath& path, const Pal& c, const QStri
         p.drawImage(b, c.glass, QRectF(b.x() / 4.0, b.y() / 4.0, b.width() / 4.0, b.height() / 4.0));
         p.restore();
     }
+    if (!c.mat.isEmpty()) {
+        // Metal: a textura no lugar da cor (a placa de baixo do app faz o mesmo)
+        p.save();
+        p.setClipPath(path, Qt::IntersectClip);
+        drawMetal(p, path.boundingRect(), c.mat, c.pn, false);
+        p.restore();
+        p.setPen(c.pen(key, path.boundingRect()));
+        p.setBrush(Qt::NoBrush);
+        p.drawPath(path);
+        return;
+    }
     p.setPen(c.pen(key, path.boundingRect()));
     p.setBrush(c.fill(key));
     p.drawPath(path);
@@ -221,6 +244,13 @@ void panelFill(QPainter& p, const QRectF& r, const Pal& c, const QString& key)
         p.setClipPath(path, Qt::IntersectClip);
         p.drawImage(r, c.glass, QRectF(r.x() / 4.0, r.y() / 4.0, r.width() / 4.0, r.height() / 4.0));
         p.restore();
+    }
+    if (!c.mat.isEmpty()) {
+        p.save();
+        p.setClipPath(path, Qt::IntersectClip);
+        drawMetal(p, r, c.mat, c.pn, false);
+        p.restore();
+        return;
     }
     p.setPen(Qt::NoPen);
     p.setBrush(c.fill(key));
@@ -238,6 +268,8 @@ void drawBackgroundImage(QPainter& p, const QRectF& r, const Theme::MiraTheme& t
 void drawBackground(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QColor& app, const QPixmap& bg, bool live = false)
 {
     p.fillRect(r, app);
+    // Mesa de metal, como o BackgroundWidget pinta.
+    if (Metal::isValid(t.deskMaterial)) drawMetal(p, r, t.deskMaterial, app, true);
     drawBackgroundImage(p, r, t, bg);
     // Temas Animados: o clima da mesa, como o app pinta.
     AnimBg::paintPreview(p, r, t, live);
@@ -1307,14 +1339,25 @@ void paintThumb(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const Q
     const qreal lineH = qMax(2.0, h * 4.0 / 86.0);
     // Topbar: um tico mais larga que a folha, centrada nela.
     const QRectF tb(r.left() + w * 0.15, r.top() + h * 0.07, w * 0.78, h * 0.08);
+    auto metalUnder = [&](const QRectF& b, qreal rad) {
+        if (c.mat.isEmpty()) return;
+        QPainterPath m;
+        m.addRoundedRect(b, rad, rad);
+        p.save();
+        p.setClipPath(m, Qt::IntersectClip);
+        drawMetal(p, b, c.mat, c.pn, false);
+        p.restore();
+    };
+    metalUnder(tb, tb.height() / 2);
     p.setPen(c.pen(Theme::PanelKey::TopToolbar, tb, c.bw > 1.2 ? 1.5 : 1));
-    p.setBrush(opaque(c.fill(Theme::PanelKey::TopToolbar)));
+    p.setBrush(c.mat.isEmpty() ? QBrush(opaque(c.fill(Theme::PanelKey::TopToolbar))) : QBrush(Qt::NoBrush));
     p.drawRoundedRect(tb, tb.height() / 2, tb.height() / 2);
     // Lateral
     const QRectF lb(r.left() + w * 0.04, r.top() + h * 0.20, w * 0.07, h * 0.72);
     const qreal lr = qMin(5.0 * h / 86.0, lb.width() / 2);
+    metalUnder(lb, lr);
     p.setPen(c.pen(Theme::PanelKey::LeftBar, lb, c.bw > 1.2 ? 1.5 : 1));
-    p.setBrush(opaque(c.fill(Theme::PanelKey::LeftBar)));
+    p.setBrush(c.mat.isEmpty() ? QBrush(opaque(c.fill(Theme::PanelKey::LeftBar))) : QBrush(Qt::NoBrush));
     p.drawRoundedRect(lb, lr, lr);
     // Folha, quase encostando na topbar
     const QRectF pg(r.left() + w * 0.22, r.top() + h * 0.17, w * 0.64, h * 0.83 + 1);

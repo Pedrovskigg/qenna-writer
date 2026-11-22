@@ -1,4 +1,5 @@
 #include "ThemeEditorDialog.h"
+#include "MetalTexture.h"
 #include "PageBackgroundUi.h"
 
 #include "ColorPopover.h"
@@ -8,6 +9,7 @@
 #include <QAbstractButton>
 #include <QApplication>
 #include <QComboBox>
+#include <functional>
 #include <QCursor>
 #include <QFileDialog>
 #include <QGridLayout>
@@ -1188,6 +1190,27 @@ void ThemeEditorDialog::rebuildControls()
     auto add = [this](QWidget* w) { if (w) m_controlsLay->addWidget(w, 0, Qt::AlignVCenter); };
     auto& t = m_theme;
 
+    // Material de metal (Metal Lab, 22/11): rótulo em cima, lista embaixo (6 opções > 4 pílulas).
+    auto materialBox = [this](const QString& label, const QString& current, std::function<void(const QString&)> set) {
+        auto* box = new QWidget(m_controls);
+        auto* bl = new QVBoxLayout(box);
+        bl->setContentsMargins(0, 0, 0, 0);
+        bl->setSpacing(4);
+        auto* lab = new QLabel(label, box);
+        lab->setObjectName(QStringLiteral("ctlLabel"));
+        auto* combo = new QComboBox(box);
+        combo->addItem(Metal::label(QString()), QString());
+        for (const QString& k : Metal::kinds()) combo->addItem(Metal::label(k), k);
+        combo->setCurrentIndex(qMax(0, combo->findData(current)));
+        connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, combo, set](int) {
+            pushUndo();
+            set(combo->currentData().toString());
+            refreshPreview();
+        });
+        bl->addWidget(lab);
+        bl->addWidget(combo, 0, Qt::AlignLeft);
+        return box;
+    };
     switch (m_group) {
     case Background: {
         // Duas abas, como na Folha: com foto e degradê tudo numa faixa só
@@ -1198,6 +1221,7 @@ void ThemeEditorDialog::rebuildControls()
             break;
         }
         add(swatch(QStringLiteral("appBackground")));
+        add(materialBox(tr("Material da mesa"), t.deskMaterial, [this](const QString& k) { m_theme.deskMaterial = k; }));
         if (t.backgroundImage.isEmpty()) {
             add(imageButton());
         } else {
@@ -1311,6 +1335,7 @@ void ThemeEditorDialog::rebuildControls()
             if (!m_panelBorderTab) {
                 add(swatch(QStringLiteral("panelBackground")));
                 add(swatch(QStringLiteral("textPrimary")));
+                add(materialBox(tr("Material"), t.panelMaterial, [this](const QString& k) { m_theme.panelMaterial = k; }));
                 add(slider(tr("Arredondamento"), 0, 24, t.panelRadius, tr("px"), [this](int v) { m_theme.panelRadius = v; }));
                 add(slider(tr("Opacidade"), 0, 100, t.panelOpacity, QStringLiteral("%"), [this](int v) { m_theme.panelOpacity = v; }));
                 add(slider(tr("Vidro"), 0, 30, t.panelBlur, tr("px"), [this](int v) { m_theme.panelBlur = v; }));
