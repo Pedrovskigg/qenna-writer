@@ -985,6 +985,14 @@ void WordCountPanel::refreshFromSettings()
     m_updatingFromSettings = false;
 }
 
+void WordCountPanel::setSelectionWords(int n)
+{
+    n = qMax(0, n);
+    if (n == m_selWords) return;
+    m_selWords = n;
+    refresh();
+}
+
 void WordCountPanel::refresh()
 {
     if (!m_counter) return;
@@ -1016,8 +1024,20 @@ void WordCountPanel::refresh()
         return loc.toString(m_counter->countActiveScopeWords());
     };
 
-    const QString v1 = slotValue(s.compactSlot1, s.compactSlot1Scope);
-    const QString v2 = slotValue(s.compactSlot2, s.compactSlot2Scope);
+    QString v1 = slotValue(s.compactSlot1, s.compactSlot1Scope);
+    QString v2 = slotValue(s.compactSlot2, s.compactSlot2Scope);
+
+    // Seleção no editor: o espaço que mostra palavras (o primeiro, se nenhum
+    // mostrar) passa a contar só o trecho selecionado, até a seleção sumir.
+    const auto isWords = [](const QString& m) {
+        return m == QStringLiteral("words") || m == QStringLiteral("words-session");
+    };
+    const int selSlot = m_selWords <= 0 ? 0
+        : isWords(s.compactSlot1) ? 1 : isWords(s.compactSlot2) ? 2 : 1;
+    const QString selValue = loc.toString(m_selWords);
+    QString title1 = m_slot1Title, title2 = m_slot2Title;
+    if (selSlot == 1) { v1 = selValue; title1 = tr("Seleção"); }
+    if (selSlot == 2) { v2 = selValue; title2 = tr("Seleção"); }
 
     int goalPct = 0;
     if (s.goalType == QStringLiteral("time")) {
@@ -1078,11 +1098,13 @@ void WordCountPanel::refresh()
         }
         d.value1 = v1;
         d.value2 = v2;
-        d.fullLabel1 = m_slot1Title;
-        d.fullLabel2 = m_slot2Title;
+        d.fullLabel1 = title1;
+        d.fullLabel2 = title2;
         d.showGoal = s.compactShowGoalBar;
         d.unit1 = unitShort(s.compactSlot1);
         d.unit2 = unitShort(s.compactSlot2);
+        if (selSlot == 1) { d.label1 = title1; d.unit1 = tr("selecionadas"); }
+        if (selSlot == 2) { d.label2 = title2; d.unit2 = tr("selecionadas"); }
         d.pct = goalPct;
         d.pctCaption = tr("da meta");
         d.goalLine = goalLine;
@@ -1110,7 +1132,7 @@ void WordCountPanel::refresh()
         d.daysCaption = tr("%1 de %2 dias").arg(met).arg(20);
         m_face->setData(d);
         m_face->setToolTip(QStringLiteral("%1: %2\n%3: %4")
-            .arg(m_slot1Title, v1, m_slot2Title, v2));
+            .arg(title1, v1, title2, v2));
     }
 
     // Contador mínimo: o rótulo longo (linha/pílula) omite a unidade quando o
@@ -1124,12 +1146,14 @@ void WordCountPanel::refresh()
             if (metric == QStringLiteral("time-session"))  return shortLabel ? tr("hoje") : QString();
             return tr("palavras");
         };
-        const MiniCounterWidget::Slot a{ v1, unitFor(s.compactSlot1, false), unitFor(s.compactSlot1, true) };
-        const MiniCounterWidget::Slot b{ v2, unitFor(s.compactSlot2, false), unitFor(s.compactSlot2, true) };
+        MiniCounterWidget::Slot a{ v1, unitFor(s.compactSlot1, false), unitFor(s.compactSlot1, true) };
+        MiniCounterWidget::Slot b{ v2, unitFor(s.compactSlot2, false), unitFor(s.compactSlot2, true) };
+        if (selSlot == 1) a = { v1, tr("selecionadas"), tr("selecionadas") };
+        if (selSlot == 2) b = { v2, tr("selecionadas"), tr("selecionadas") };
         m_mini->setData(a, b, goalPct, s.compactShowGoalBar, week, weekGoal);
 
         QString tip = QStringLiteral("%1: %2\n%3: %4")
-            .arg(m_slot1Title, v1, m_slot2Title, v2);
+            .arg(title1, v1, title2, v2);
         if (s.compactShowGoalBar)
             tip += QStringLiteral("\n") + goalLine;
         m_mini->setToolTip(tip);

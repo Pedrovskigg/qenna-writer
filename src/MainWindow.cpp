@@ -3290,6 +3290,22 @@ void MainWindow::setupEditor()
     wordCountPanel->raise();
     connect(wordCountPanel, &WordCountPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
 
+    // Palavras do trecho selecionado (ideia do Pe, 21/11/2026): o contador
+    // mostra a seleção enquanto ela existir. Espera o arrasto assentar 120 ms
+    // pra não recontar a cada pixel num livro inteiro aberto.
+    if (editor) {
+        auto* selTimer = new QTimer(this);
+        selTimer->setSingleShot(true);
+        selTimer->setInterval(120);
+        connect(selTimer, &QTimer::timeout, this, [this]() {
+            if (!editor || !wordCountPanel) return;
+            const QTextCursor c = editor->textCursor();
+            wordCountPanel->setSelectionWords(c.hasSelection()
+                ? WordCounter::countWordsInPlain(c.selectedText()) : 0);
+        });
+        connect(editor, &QTextEdit::selectionChanged, selTimer, [selTimer]() { selTimer->start(); });
+    }
+
     // Abas dos documentos abertos (15/11/2026, Abas Lab): escondidas no canto de baixo, sobem com o mouse.
     docTabs = new DocTabs(container);
     docTabs->activate = [this](int i) { if (editorHost) editorHost->openDocAt(i); };

@@ -40,6 +40,10 @@ public:
     // Limita a altura do scroll para o conteúdo não passar atrás da toolbar.
     void setAvailableHeight(int h);
 
+    // Palavras do trecho selecionado no editor (0 = sem seleção). Enquanto
+    // houver seleção, o espaço de "Palavras" do contador mostra a seleção.
+    void setSelectionWords(int n);
+
 public slots:
     void refresh();
     void refreshFromSettings();
@@ -86,6 +90,7 @@ private:
     // Títulos completos dos slots ("Palavras (atual)"): cards do clássico e tooltips.
     QString m_slot1Title;
     QString m_slot2Title;
+    int m_selWords = 0;
     MiniCounterWidget* m_mini = nullptr;
     QString m_compactStyle;
     int m_scalePercent = 100;
