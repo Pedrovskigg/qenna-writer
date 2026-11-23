@@ -1,4 +1,4 @@
-<img width="1600" height="485" alt="Qenna Writer" src="docs/img/wordmark.webp" />
+<img width="1600" height="533" alt="Qenna Writer: the writing app for people who write whole worlds. Manuscript, maps, galaxies, timeline, board, free." src="docs/img/hero-banner.webp" />
 
 Qenna Writer (formerly Mira Writing, briefly Qiyva Writer) is a complete
 C++/Qt rebuild of the original Mira Writing (JSX) — same project, new name
@@ -63,6 +63,29 @@ biome of every patch of ground.
   2× or 3× for the front of the book.
 
 <img width="1500" height="880" alt="Explore mode: a kingdom outlined on the map, the tree of groups and a document open beside it" src="docs/img/map-explore.webp" />
+
+## The Board
+
+<img width="2000" height="1200" alt="The Board: three acts as areas, notes and index cards, a chapter card, red string between the clues, the cast with their portraits and a row of reference images" src="docs/img/board-full.webp" />
+
+Your plot, pinned to the wall. The Board is a blank canvas for the parts
+that aren't prose yet: post-its, index cards, images and linked documents
+connected however the plot actually connects, not a mind-map with fixed
+nodes.
+
+- **Your cast, with their faces.** Drag a character in from the drawer and
+  the photo from their sheet comes along. Pull red string from pin to pin,
+  name it, give it a colour.
+- **Chapters on the board.** Drop one in and click **open →** to go
+  straight back to the text.
+- Areas for each act, comments, stamps, a pen, sketch sheets, and any card
+  can become a timeline event later.
+
+<img width="49%" alt="Character cards with painted portraits, linked by coloured strings" src="docs/img/board-cast.webp" /> <img width="49%" alt="Image cards with captions: paintings and a landscape photo" src="docs/img/board-mood.webp" />
+
+Or take it as far as you want: a whole act as a wall of images.
+
+<img width="1600" height="762" alt="A whole act laid out on the Board as a wall of images, with the synopsis written on top" src="docs/img/board-wild.webp" />
 
 ## Tech stack
 
