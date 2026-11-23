@@ -140,6 +140,12 @@
   /* ---------- hero ---------- */
   .hero { padding-block: 40px 0; padding-inline: 20px; text-align: center; }
   .hero .mark { width: min(745px, 100%); margin: 0 auto 28px; }
+  .hero .banner { display: block; width: min(1200px, 100%); margin: 0 auto 30px; }
+  .hero .banner img { display: block; width: 100%; height: auto;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+    mask-composite: intersect; }
   .thesis {
     font-size: clamp(25px, 4vw, 37px);
     font-weight: 600; letter-spacing: -.015em;
@@ -354,7 +360,10 @@
 </header>
 
 <section class="hero">
-  <img class="mark" src="../img/wordmark.webp" alt="Qenna — cada letra do nome desenhada como um mundo diferente: fantasia, thriller, ficção científica, romance e terror" width="1500" height="455" fetchpriority="high">
+  <picture class="banner">
+    <source media="(max-width: 700px)" srcset="../img/hero-banner-pt-m.webp" width="1760" height="1000">
+    <img src="../img/hero-banner-pt.webp" alt="Qenna Writer: o app de escrita para quem escreve mundos inteiros. Manuscrito, mapas, galáxias, linha do tempo, lousa, grátis. Telas dos mapas, da Lousa, do Mapa Galáctico, da linha do tempo, de um planeta com anel orbital e do painel de temas." width="3000" height="1000" fetchpriority="high">
+  </picture>
   <p class="thesis">O livro inteiro num programa só.</p>
   <div class="cta-row">
     <div class="cta-pair">

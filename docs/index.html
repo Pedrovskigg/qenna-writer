@@ -140,6 +140,12 @@
   /* ---------- hero ---------- */
   .hero { padding-block: 40px 0; padding-inline: 20px; text-align: center; }
   .hero .mark { width: min(745px, 100%); margin: 0 auto 28px; }
+  .hero .banner { display: block; width: min(1200px, 100%); margin: 0 auto 30px; }
+  .hero .banner img { display: block; width: 100%; height: auto;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent), linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+    mask-composite: intersect; }
   .thesis {
     font-size: clamp(25px, 4vw, 37px);
     font-weight: 600; letter-spacing: -.015em;
@@ -344,7 +350,10 @@
 </header>
 
 <section class="hero">
-  <img class="mark" src="img/wordmark.webp" alt="Qenna — each letter of the name drawn as a different world: fantasy, thriller, science fiction, romance and horror" width="1500" height="455" fetchpriority="high">
+  <picture class="banner">
+    <source media="(max-width: 700px)" srcset="img/hero-banner-m.webp" width="1760" height="1000">
+    <img src="img/hero-banner.webp" alt="Qenna Writer: the writing app for people who write whole worlds. Manuscript, maps, galaxies, timeline, board, free. Screenshots of the maps, the Board, the Galaxy Map, the Timeline, a planet with an orbital ring and the themes panel." width="3000" height="1000" fetchpriority="high">
+  </picture>
   <p class="thesis">The whole book in one place.</p>
   <div class="cta-row">
     <div class="cta-pair">
