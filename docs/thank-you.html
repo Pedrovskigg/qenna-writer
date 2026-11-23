@@ -410,6 +410,7 @@
   html.mac span[data-os="mac"] { display: inline; }
   html.mac [data-os="win"] { display: none; }
 </style>
+<script data-goatcounter="https://qennawriter.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <header class="bar" id="bar">
@@ -508,6 +509,13 @@
       var f = document.createElement('iframe');
       f.style.display = 'none';
       f.src = mac ? DMG : EXE;
+      // Conta o download no GoatCounter (o script carrega async; espera até 10 s).
+      var tries = 0, ev = setInterval(function () {
+        if (window.goatcounter && window.goatcounter.count) {
+          clearInterval(ev);
+          window.goatcounter.count({ path: mac ? 'download-mac' : 'download-windows', title: mac ? 'Download Mac' : 'Download Windows', event: true });
+        } else if (++tries > 50) clearInterval(ev);
+      }, 200);
       document.body.appendChild(f);
     }
     try {
