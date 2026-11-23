@@ -87,6 +87,93 @@ Or take it as far as you want: a whole act as a wall of images.
 
 <img width="1600" height="762" alt="A whole act laid out on the Board as a wall of images, with the synopsis written on top" src="docs/img/board-wild.webp" />
 
+## The editor
+
+Fully themeable and built for more than the basics. Leave comments and
+annotations, create documents straight from the text, add images and tag
+other documents with `@`. Focus Mode hides every bar and leaves only the
+page.
+
+<img width="1300" height="682" alt="The editor in a dark theme with a photographic background" src="docs/img/shot-neon.webp" />
+<img width="49%" alt="The editor in a light theme" src="docs/img/shot-light.webp" /> <img width="49%" alt="Focus Mode: every bar hidden, only the page left" src="docs/img/shot-focus.webp" />
+
+The **Reference panel** opens beside the page: any chapter, scene or sheet
+held open next to what you're writing, without switching windows.
+
+<img width="1300" height="680" alt="Reference panel holding another chapter open beside the page" src="docs/img/shot-reference.webp" />
+
+## Drawers and multiple manuscripts
+
+Drawers for characters, settings, objects, lore, anything, with folders and
+subfolders and no limit on how many. **Several manuscripts in one project**:
+write a whole saga in the same place and look up a detail from book two
+while you're writing book six.
+
+<img width="300" alt="Drawers for characters, settings, objects and lore" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/panel-drawer.webp" /> <img width="66%" alt="Character drawer open beside the editor" src="docs/img/shot-characters.webp" />
+
+## Characters
+
+Sheets with the fields you want and a layout you pick (Tabs, Magazine, Case
+file, Infobox or Dossier). Relationships between characters, presence
+detected across chapters and scenes, and every line of dialogue logged
+under whoever said it.
+
+<img width="1500" height="938" alt="A character sheet in the Case file layout: photo, short fields and long sections with an index" src="docs/img/sheet-casefile.webp" />
+<img width="32%" alt="Character relationships and bonds" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/bonds.webp" /> <img width="32%" alt="Character statistics: scenes, lines and who they share the page with" src="docs/img/panel-stats2.webp" /> <img width="32%" alt="Dialogue log, each line under whoever said it" src="docs/img/dialogo.webp" />
+
+## The Pensarium
+
+A floating panel (F4) for what you notice along the way: save a passage as
+a memory, comment on a highlighted line, jot down loose notes, and find the
+book's dialogue sorted by who said it.
+
+<img width="49%" alt="Pensarium memories: passages saved for later, with their chapter" src="docs/img/panel-memories.webp" /> <img width="49%" alt="Pensarium notes" src="docs/img/panel-note.webp" />
+<img width="806" height="319" alt="A comment on a highlighted passage" src="docs/img/panel-comment.webp" />
+
+## Outline Mode and scenes
+
+**Outline Mode** opens the whole manuscript as bands of cards: how each
+chapter starts, its word count, lines of dialogue, the dialogue/narration
+split and who's on stage. None of it is a field you fill in; it's read
+from what you already wrote. Chapters split into scenes, nested under each
+chapter in the sidebar.
+
+<img width="1140" height="677" alt="Outline Mode: chapter cards with word counts, dialogue lines and the dialogue-to-narration split" src="docs/img/shot-outline.webp" />
+<img width="1500" height="788" alt="Chapter list with scenes nested under each chapter" src="docs/img/shot-chapters.webp" />
+
+## Timeline
+
+Built from the dates and summaries already sitting in your chapters, with
+flashback lines, branches and markers. Several views, spiral included.
+
+<img width="1300" height="684" alt="Timeline built from the dates in the chapters, with branching lines" src="docs/img/panel-timeline.webp" />
+<img width="1100" height="673" alt="Timeline, spiral view" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/timeline-espiral.webp" />
+
+## Builder and Glossary
+
+The **Builder** (beta) is for systems: religions, magic, politics,
+technology, with rules and sections that keep the story consistent. The
+**Glossary** keeps every invented word with its definition.
+
+<img width="258" height="404" alt="The Builder, a worldbuilding and magic system tool" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/builder.webp" />
+
+## Goals and statistics
+
+Word or time goals, streaks, stars you can trade for days off, Pomodoro
+sprints, and a Statistics panel that reads the manuscript on its own:
+character participation, words per chapter, a summary of the project.
+
+<img width="45%" alt="Project statistics: character participation, words per chapter, project summary" src="docs/img/panel-stats.webp" /> <img width="45%" alt="Writing goals calendar and streaks" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/panel-streak.webp" />
+
+## Export, sound and themes
+
+Export to DOCX, ODT, PDF and EPUB. Immersive Sound for ambient tracks and
+focus music. And more than 500 built-in themes, or one built from scratch
+in the Theme Creator: background image, editor, panel and text colours.
+
+<img width="1198" height="759" alt="The themes panel, with search, categories and a preview of each one" src="docs/img/panel-themes.webp" />
+<img width="49%" alt="The Theme Creator: background image, gradient, vignette and grain" src="docs/img/panel-theme-creator.webp" /> <img width="49%" alt="Export to DOCX, ODT, PDF or EPUB" src="https://raw.githubusercontent.com/Pedrovskigg/Qenna-Writer-releases/main/img/panel-export.webp" />
+
 ## Tech stack
 
 - C++17, Qt 6.8 (Core, Gui, Widgets, Svg, Multimedia, Network, TextToSpeech)
