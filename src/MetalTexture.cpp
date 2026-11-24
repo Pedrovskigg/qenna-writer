@@ -381,8 +381,26 @@ QString label(const QString& kind)
     return QCoreApplication::translate("Metal", "Nenhum (cor lisa)");
 }
 
-QImage texture(const QString& kind, const QColor& base, const QSize& size, qreal dpr, bool desk)
+QImage texture(const QString& kind, const QColor& base, const QSize& size, qreal dpr, bool desk, int strength)
 {
+    strength = qBound(1, strength, 100);
+    if (strength < 100) {
+        // a textura cheia (do cache) por cima da cor lisa, com a opacidade pedida
+        static QHash<QString, QImage> soft;
+        const QString sk = QStringLiteral("%1|%2|%3x%4|%5|%6|%7").arg(kind, base.name(QColor::HexArgb)).arg(size.width()).arg(size.height())
+                               .arg(dpr, 0, 'f', 2).arg(desk ? 1 : 0).arg(strength);
+        auto si = soft.constFind(sk);
+        if (si != soft.constEnd()) return *si;
+        const QImage full = texture(kind, base, size, dpr, desk, 100);
+        if (full.isNull()) return {};
+        QImage out(full.size(), QImage::Format_ARGB32_Premultiplied);
+        out.setDevicePixelRatio(full.devicePixelRatio());
+        out.fill(base);
+        { QPainter p(&out); p.setOpacity(strength / 100.0); p.drawImage(QPointF(0, 0), full); }
+        if (soft.size() > 40) soft.clear();
+        soft.insert(sk, out);
+        return out;
+    }
     if (!isValid(kind) || size.width() < 2 || size.height() < 2) return {};
     static QHash<QString, QImage> cache;
     const QString key = QStringLiteral("%1|%2|%3x%4|%5|%6").arg(kind, base.name(QColor::HexArgb)).arg(size.width()).arg(size.height())

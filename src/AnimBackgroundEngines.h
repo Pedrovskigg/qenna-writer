@@ -48,6 +48,8 @@ public:
     virtual void paint(QPainter& p, const Pal& pal, Ctx& c) = 0;
     // A janela mudou de tamanho: por padrão monta de novo.
     virtual void resized(Ctx& c) { init(c); }
+    // Algo aconteceu no app (ex.: "document" = abriu outro capítulo ou documento). Cena que liga, reage.
+    virtual void event(const QString&) {}
 };
 
 namespace fx {

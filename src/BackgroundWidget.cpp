@@ -28,6 +28,7 @@ BackgroundWidget::BackgroundWidget(QWidget* parent)
     connect(m_timer, &QTimer::timeout, this, &BackgroundWidget::tick);
     // Personalizar, intensidade ou o liga/desliga mudaram: remonta a mesa.
     connect(AnimBg::Notifier::instance(), &AnimBg::Notifier::changed, this, &BackgroundWidget::refreshAnimation);
+    connect(AnimBg::Notifier::instance(), &AnimBg::Notifier::sceneEvent, this, [this](const QString& name) { if (m_anim) m_anim->event(name); });
     // Voltou pro Qenna: o relógio recomeça daqui, sem pular o tempo parado.
     connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState) { m_clock.restart(); });
 }

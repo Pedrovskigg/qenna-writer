@@ -195,6 +195,8 @@ struct MiraTheme {
     // transparente e a placa de baixo (PanelGlass) pinta a textura.
     QString panelMaterial;
     QString deskMaterial;
+    // Intensidade da textura dos painéis, 1..100 (23/11, Optimus Write: aço escovado a 20%).
+    int panelMaterialStrength = 100;
 
     // --- Metadados de compartilhamento (arquivos .qtheme) ---
     // Nada disso muda a aparência do tema — é a identidade dele enquanto
@@ -440,6 +442,7 @@ int panelBlur();
 // Material de metal dos painéis e da mesa (Metal::kinds()); vazio = cor lisa.
 QString panelMaterial();
 QString deskMaterial();
+int panelMaterialStrength();   // 1..100
 // Título do DocHeader: cor e família da fonte, já com o padrão resolvido.
 QString docHeaderColor();
 bool hasDocHeaderColor();

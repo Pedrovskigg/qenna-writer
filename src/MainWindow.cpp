@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "AnimBackground.h"
 #include "GroupPicker.h"
 #include "PovPicker.h"
 #include "SheetDialogs.h"
@@ -1157,6 +1158,8 @@ void MainWindow::setupEditor()
     // Persiste o último doc aberto por projeto — restaurado no próximo load.
     // Ignora Disabled (estado transitório durante troca de projeto).
     connect(editorHost, &EditorHost::viewModeChanged, this, &MainWindow::updateDocCachePinnedKeys);
+    // Tema Animado que reage à troca de documento (Echelon: visão noturna por 2 s)
+    connect(editorHost, &EditorHost::viewModeChanged, this, []() { AnimBg::sceneEvent(QStringLiteral("document")); });
     auto syncTimelineLocation = [this]() {
         if (!timelinePanel) return;
         const auto vm = editorHost->scopeViewMode();   // no livro inteiro: o capítulo do cursor

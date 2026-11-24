@@ -64,6 +64,7 @@ struct Pal {
     int gAngle = 180;
     QImage glass;         // fundo + folha desfocados (a 1/4), quando o tema tem vidro
     QString mat;          // material de metal dos painéis (Metal::kinds()), vazio = cor lisa
+    int matK = 100;       // intensidade da textura dos painéis (1..100)
 
     QColor fill(const QString& key) const
     {
@@ -131,15 +132,16 @@ Pal palette(const Theme::MiraTheme& t)
     p.grad = p.bd2.isValid() && !t.panelBorderGradient.isEmpty();
     p.gAngle = t.panelBorderGradientAngle;
     p.mat = Metal::isValid(t.panelMaterial) ? t.panelMaterial : QString();
+    p.matK = qBound(1, t.panelMaterialStrength, 100);
     return p;
 }
 
 // Textura de metal no retângulo `b` da cena, na resolução real do pintor (a cena é desenhada em escala).
-void drawMetal(QPainter& p, const QRectF& b, const QString& kind, const QColor& base, bool desk)
+void drawMetal(QPainter& p, const QRectF& b, const QString& kind, const QColor& base, bool desk, int strength = 100)
 {
     const QSize sz(qMax(2, qRound(b.width())), qMax(2, qRound(b.height())));
     const qreal dpr = qBound<qreal>(0.25, std::abs(p.deviceTransform().m11()), 4.0);
-    const QImage tex = Metal::texture(kind, base, sz, dpr, desk);
+    const QImage tex = Metal::texture(kind, base, sz, dpr, desk, strength);
     if (!tex.isNull()) p.drawImage(QRectF(b.topLeft(), QSizeF(sz)), tex);
 }
 
@@ -222,7 +224,7 @@ void panelShape(QPainter& p, const QPainterPath& path, const Pal& c, const QStri
         // Metal: a textura no lugar da cor (a placa de baixo do app faz o mesmo)
         p.save();
         p.setClipPath(path, Qt::IntersectClip);
-        drawMetal(p, path.boundingRect(), c.mat, c.pn, false);
+        drawMetal(p, path.boundingRect(), c.mat, c.pn, false, c.matK);
         p.restore();
         p.setPen(c.pen(key, path.boundingRect()));
         p.setBrush(Qt::NoBrush);
@@ -248,7 +250,7 @@ void panelFill(QPainter& p, const QRectF& r, const Pal& c, const QString& key)
     if (!c.mat.isEmpty()) {
         p.save();
         p.setClipPath(path, Qt::IntersectClip);
-        drawMetal(p, r, c.mat, c.pn, false);
+        drawMetal(p, r, c.mat, c.pn, false, c.matK);
         p.restore();
         return;
     }
@@ -1345,7 +1347,7 @@ void paintThumb(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const Q
         m.addRoundedRect(b, rad, rad);
         p.save();
         p.setClipPath(m, Qt::IntersectClip);
-        drawMetal(p, b, c.mat, c.pn, false);
+        drawMetal(p, b, c.mat, c.pn, false, c.matK);
         p.restore();
     };
     metalUnder(tb, tb.height() / 2);

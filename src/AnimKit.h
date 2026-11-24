@@ -106,5 +106,7 @@ std::unique_ptr<Layer> makeGenresA(const QString& scene);
 std::unique_ptr<Layer> makeGenresB(const QString& scene);
 // Sunset in VIce (Miami anos 80, a baía no pôr do sol), em AnimOceanDrive.cpp
 std::unique_ptr<Layer> makeOceanDrive(const QString& scene);
+// Leva 9 (Echelon, Bullet Time) e Optimus Write (shapeshift), em AnimLeva9.cpp
+std::unique_ptr<Layer> makeLeva9(const QString& scene);
 
 } // namespace AnimBg

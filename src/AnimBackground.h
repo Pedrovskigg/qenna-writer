@@ -58,6 +58,10 @@ double clockHour();
 // Ordem das camadas no Personalizar.
 QStringList extraIds();
 
+// Evento do app que algumas cenas usam ("document" = abriu outro capítulo ou documento: o Echelon liga a
+// visão noturna por 2 segundos). A mesa repassa pra cena do tema atual.
+void sceneEvent(const QString& name);
+
 // Avisa quem pinta (mesa, prévia) que algo mudou: preferência ou Personalizar.
 class Notifier : public QObject {
     Q_OBJECT
@@ -65,6 +69,7 @@ public:
     static Notifier* instance();
 signals:
     void changed();
+    void sceneEvent(const QString& name);
 private:
     Notifier() = default;
 };
@@ -96,6 +101,8 @@ public:
     // por unidade da cena (escala × devicePixelRatio): os caches internos são
     // feitos nessa resolução pra não borrar.
     void paint(QPainter& p, double pxPerUnit);
+    // Repassa um evento do app pras camadas (ver sceneEvent()).
+    void event(const QString& name);
 
 private:
     void tickHour();

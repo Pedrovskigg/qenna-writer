@@ -26,6 +26,7 @@ QString label(const QString& kind);
 
 // Textura no tamanho lógico `size`, com `dpr` pixels por ponto. desk = mesa
 // (placas grandes, desencontradas); senão, painel (uma placa por trecho).
-QImage texture(const QString& kind, const QColor& base, const QSize& size, qreal dpr, bool desk);
+// strength (1..100): abaixo de 100 a textura vai por cima da cor base só com essa opacidade.
+QImage texture(const QString& kind, const QColor& base, const QSize& size, qreal dpr, bool desk, int strength = 100);
 
 } // namespace Metal

@@ -2027,6 +2027,7 @@ std::unique_ptr<Layer> makeScene(const QString& id)
     if (auto l = makeGenresA(id)) return l;   // leva 7, gêneros (AnimGenresA/B.cpp)
     if (auto l = makeGenresB(id)) return l;   // Last Exit e Route 66 (AnimDesert.cpp)
     if (auto l = makeOceanDrive(id)) return l;   // Sunset in VIce (AnimOceanDrive.cpp)
+    if (auto l = makeLeva9(id)) return l;        // Echelon, Bullet Time, Optimus Write (AnimLeva9.cpp)
     if (auto l = makeLeva3(id)) return l;
     if (auto l = makeLeva4(id)) return l;
     if (auto l = makeLeva5(id)) return l;
@@ -2251,6 +2252,16 @@ void Stack::tickHour()
     Ctx& c = d->c;
     c.hour = clockHour();
     c.tod = d->cont ? QStringLiteral("real") : nearestTod(c.hour);
+}
+
+void Stack::event(const QString& name)
+{
+    d->each([&](Layer& l) { l.event(name); });
+}
+
+void sceneEvent(const QString& name)
+{
+    emit Notifier::instance()->sceneEvent(name);
 }
 
 void Stack::step(double dt)

@@ -164,7 +164,7 @@ protected:
             clip.addRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), r, r);
             p.setClipPath(clip);
             const QImage tex = Metal::texture(Theme::panelMaterial(), Theme::toColor(Theme::panelBackground()), size(),
-                                              devicePixelRatioF(), false);
+                                              devicePixelRatioF(), false, Theme::panelMaterialStrength());
             if (!tex.isNull()) p.drawImage(QPointF(0, 0), tex);
             return;
         }

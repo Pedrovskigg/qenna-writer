@@ -20044,6 +20044,208 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
     {
+        // Echelon (leva 9, 22/11, inspirado em Splinter Cell): pátio industrial de madrugada na garoa, dois holofotes
+        // varrendo o chão (a chuva aparece forte só no facho), guarda com lanterna, câmera com LED e os três pontinhos
+        // verdes num canto escuro. Interface quase preta e fria, o verde do óculos só no destaque e no título. Cena em AnimLeva9.cpp.
+        MiraTheme t;
+        t.id = QStringLiteral("anim-echelon");
+        t.name = QStringLiteral("Echelon");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#06080b");
+        t.panelBackground = QStringLiteral("#0b0f14");
+        t.panelBorder = QStringLiteral("#18212b");
+        t.textPrimary = QStringLiteral("#a7b3bc");
+        t.textMuted = QStringLiteral("#56636e");
+        t.textBright = QStringLiteral("#e4ecf0");
+        t.hoverOverlay = QStringLiteral("rgba(167,179,188,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(167,179,188,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(167,179,188,0.1)");
+        t.accentDefault = QStringLiteral("#7dff4a");
+        t.hoverStrong = QStringLiteral("rgba(167,179,188,0.12)");
+        t.borderStrong = QStringLiteral("rgba(167,179,188,0.22)");
+        t.focusBorder = QStringLiteral("rgba(167,179,188,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(167,179,188,0.3)");
+        t.selectionRing = QStringLiteral("#e4ecf0");
+        t.accentSuccess = QStringLiteral("#7dff4a");
+        t.accentSuccessSoft = QStringLiteral("rgba(125,255,74,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(125,255,74,0.5)");
+        t.accentDanger = QStringLiteral("#ff3b2f");
+        t.accentDangerSoft = QStringLiteral("rgba(255,59,47,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,59,47,0.5)");
+        t.accentWarning = QStringLiteral("#e8b43a");
+        t.accentInfo = QStringLiteral("#4aa8ff");
+        t.accentInfoSoft = QStringLiteral("rgba(74,168,255,0.2)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(74,168,255,0.5)");
+        t.editorBackground = QStringLiteral("#0d1217");
+        t.editorTextColor = QStringLiteral("#a6b2ba");
+        t.docHeaderColor = QStringLiteral("#7dff4a");
+        t.docHeaderFont = QStringLiteral("Share Tech Mono");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.backgroundMode = BgZoom;
+        t.animScene = QStringLiteral("echelon");
+        m_themes.append(t);
+    }
+    {
+        // Optimus Write (22/11, inspirado em Transformers; nome do Pe, id da cena "shapeshift"): a mesa é uma chapa lisa
+        // de aço escovado que de tempos em tempos se desmonta em peças (deslizam, dobram, giram, enrolam, partem, andam) e
+        // mostra o mecanismo de baixo: engrenagens cinza e preto, biela e pistão, cilindros, cabos com pulso e um núcleo azul.
+        // Painéis em aço escovado a 20%, folha Gunmetal, título em Chakra Petch. Cena em AnimLeva9.cpp.
+        MiraTheme t;
+        t.id = QStringLiteral("anim-shapeshift");
+        t.name = QStringLiteral("Optimus Write");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#17191c");
+        t.panelBackground = QStringLiteral("#0e1217");
+        t.panelBorder = QStringLiteral("#1e2630");
+        t.textPrimary = QStringLiteral("#c3c9d2");
+        t.textMuted = QStringLiteral("#6b727d");
+        t.textBright = QStringLiteral("#eef1f5");
+        t.hoverOverlay = QStringLiteral("rgba(195,201,210,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(195,201,210,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(195,201,210,0.1)");
+        t.accentDefault = QStringLiteral("#7aa2f7");
+        t.hoverStrong = QStringLiteral("rgba(195,201,210,0.12)");
+        t.borderStrong = QStringLiteral("rgba(195,201,210,0.22)");
+        t.focusBorder = QStringLiteral("rgba(195,201,210,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(195,201,210,0.3)");
+        t.selectionRing = QStringLiteral("#eef1f5");
+        t.accentSuccess = QStringLiteral("#2f8a4f");
+        t.accentSuccessSoft = QStringLiteral("rgba(47,138,79,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(47,138,79,0.5)");
+        t.accentDanger = QStringLiteral("#c8322a");
+        t.accentDangerSoft = QStringLiteral("rgba(200,50,42,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(200,50,42,0.5)");
+        t.accentWarning = QStringLiteral("#e8a23a");
+        t.accentInfo = QStringLiteral("#1f6fe0");
+        t.accentInfoSoft = QStringLiteral("rgba(31,111,224,0.2)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(31,111,224,0.5)");
+        t.editorBackground = QStringLiteral("#262b32");
+        t.editorTextColor = QStringLiteral("#bcc3cc");
+        t.docHeaderColor = QStringLiteral("#7fb2f0");
+        t.docHeaderFont = QStringLiteral("Chakra Petch");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.backgroundMode = BgZoom;
+        t.panelMaterial = QStringLiteral("brushed");
+        t.panelMaterialStrength = 20;
+        t.animScene = QStringLiteral("shapeshift");
+        m_themes.append(t);
+    }
+    {
+        // Relay Normandy (23–24/11, inspirado em Mass Effect): o relé de massa em 3D, visto de lado, com os braços vindo da
+        // esquerda e o núcleo azul na boca da meia-lua; de tempos em tempos uma nave salta por ele num risco de luz.
+        // Cor "Normandy": grafite frio de nave, com o ciano dos painéis de bordo. Cena em AnimLeva9.cpp.
+        MiraTheme t;
+        t.id = QStringLiteral("anim-relay-normandy");
+        t.name = QStringLiteral("Relay Normandy");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#0d1014");
+        t.panelBackground = QStringLiteral("#161b22");
+        t.panelBorder = QStringLiteral("#2a333e");
+        t.textPrimary = QStringLiteral("#cdd5de");
+        t.textMuted = QStringLiteral("#6e7a88");
+        t.textBright = QStringLiteral("#f2f6fa");
+        t.hoverOverlay = QStringLiteral("rgba(205,213,222,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(205,213,222,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(205,213,222,0.1)");
+        t.accentDefault = QStringLiteral("#5ad4e6");
+        t.hoverStrong = QStringLiteral("rgba(205,213,222,0.12)");
+        t.borderStrong = QStringLiteral("rgba(205,213,222,0.22)");
+        t.focusBorder = QStringLiteral("rgba(205,213,222,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(205,213,222,0.3)");
+        t.selectionRing = QStringLiteral("#f2f6fa");
+        t.accentSuccess = QStringLiteral("#5ad6a0");
+        t.accentSuccessSoft = QStringLiteral("rgba(90,214,160,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(90,214,160,0.5)");
+        t.accentDanger = QStringLiteral("#ff4a3a");
+        t.accentDangerSoft = QStringLiteral("rgba(255,74,58,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,74,58,0.5)");
+        t.accentWarning = QStringLiteral("#e8b43a");
+        t.accentInfo = QStringLiteral("#3aa8ff");
+        t.accentInfoSoft = QStringLiteral("rgba(58,168,255,0.2)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(58,168,255,0.5)");
+        t.editorBackground = QStringLiteral("#1c222b");
+        t.editorTextColor = QStringLiteral("#c9d2dc");
+        t.docHeaderColor = QStringLiteral("#6ee0ef");
+        t.docHeaderFont = QStringLiteral("Exo 2");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.backgroundMode = BgZoom;
+        t.animScene = QStringLiteral("relay");
+        m_themes.append(t);
+    }
+    {
+        // Relay Citadel (23–24/11, inspirado em Mass Effect): a mesma cena do relé; cor "Citadel", a opção clara, com folha
+        // branco-gelo e tinta azul-noite, interface ardósia e destaque azul. Cena em AnimLeva9.cpp.
+        MiraTheme t;
+        t.id = QStringLiteral("anim-relay-citadel");
+        t.name = QStringLiteral("Relay Citadel");
+        t.bundled = true;
+        t.panelRadius = 4;
+        t.appBackground = QStringLiteral("#1a2230");
+        t.panelBackground = QStringLiteral("#263244");
+        t.panelBorder = QStringLiteral("#3a4a62");
+        t.textPrimary = QStringLiteral("#dfe7f2");
+        t.textMuted = QStringLiteral("#8b9ab0");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(223,231,242,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(223,231,242,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(223,231,242,0.1)");
+        t.accentDefault = QStringLiteral("#3a8ae0");
+        t.hoverStrong = QStringLiteral("rgba(223,231,242,0.12)");
+        t.borderStrong = QStringLiteral("rgba(223,231,242,0.22)");
+        t.focusBorder = QStringLiteral("rgba(223,231,242,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(223,231,242,0.3)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#3aa070");
+        t.accentSuccessSoft = QStringLiteral("rgba(58,160,112,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(58,160,112,0.5)");
+        t.accentDanger = QStringLiteral("#d8402e");
+        t.accentDangerSoft = QStringLiteral("rgba(216,64,46,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(216,64,46,0.5)");
+        t.accentWarning = QStringLiteral("#d89a2a");
+        t.accentInfo = QStringLiteral("#3a8ae0");
+        t.accentInfoSoft = QStringLiteral("rgba(58,138,224,0.2)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(58,138,224,0.5)");
+        t.editorBackground = QStringLiteral("#e8eef5");
+        t.editorTextColor = QStringLiteral("#1a2638");
+        t.docHeaderColor = QStringLiteral("#2a6ac0");
+        t.docHeaderFont = QStringLiteral("Exo 2");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.5)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.backgroundMode = BgZoom;
+        t.animScene = QStringLiteral("relay");
+        m_themes.append(t);
+    }
+    {
         MiraTheme t;
         t.id = QStringLiteral("anim-canal");
         t.name = QStringLiteral("Canal Lights");
@@ -21153,6 +21355,7 @@ const QSet<QString>& knownThemeKeys()
         QStringLiteral("bgGrain"),
         QStringLiteral("bgGrainSize"),
         QStringLiteral("panelMaterial"),
+        QStringLiteral("panelMaterialStrength"),
         QStringLiteral("deskMaterial"),
         // Metadados de compartilhamento
         QStringLiteral("uuid"),
@@ -21223,6 +21426,7 @@ QJsonObject themeToJson(const MiraTheme& t)
     if (!t.iconColor.isEmpty())      o["iconColor"] = t.iconColor;
     if (t.panelBlur > 0)             o["panelBlur"] = t.panelBlur;
     if (!t.panelMaterial.isEmpty())  o["panelMaterial"] = t.panelMaterial;
+    if (t.panelMaterialStrength != 100) o["panelMaterialStrength"] = t.panelMaterialStrength;
     if (!t.deskMaterial.isEmpty())   o["deskMaterial"] = t.deskMaterial;
     if (!t.panelBorderGradient.isEmpty()) {
         o["panelBorderGradient"] = t.panelBorderGradient;
@@ -21336,6 +21540,7 @@ MiraTheme themeFromJson(const QJsonObject& o)
     t.iconColor = o.value("iconColor").toString();
     t.panelBlur = qBound(0, o.value("panelBlur").toInt(0), 60);
     t.panelMaterial = o.value("panelMaterial").toString();
+    t.panelMaterialStrength = qBound(1, o.value("panelMaterialStrength").toInt(100), 100);
     if (!Metal::isValid(t.panelMaterial)) t.panelMaterial.clear();
     t.deskMaterial = o.value("deskMaterial").toString();
     if (!Metal::isValid(t.deskMaterial)) t.deskMaterial.clear();
@@ -21859,6 +22064,10 @@ QString panelMaterial()
 {
     const QString m = Manager::instance()->current().panelMaterial;
     return Metal::isValid(m) ? m : QString();
+}
+int panelMaterialStrength()
+{
+    return qBound(1, Manager::instance()->current().panelMaterialStrength, 100);
 }
 QString deskMaterial()
 {

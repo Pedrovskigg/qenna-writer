@@ -1335,10 +1335,17 @@ void ThemeEditorDialog::rebuildControls()
             if (!m_panelBorderTab) {
                 add(swatch(QStringLiteral("panelBackground")));
                 add(swatch(QStringLiteral("textPrimary")));
-                add(materialBox(tr("Material"), t.panelMaterial, [this](const QString& k) { m_theme.panelMaterial = k; }));
+                add(materialBox(tr("Material"), t.panelMaterial, [this](const QString& k) {
+                    m_theme.panelMaterial = k;
+                    QTimer::singleShot(0, this, [this]() { rebuildControls(); });   // troca Vidro <-> Intensidade
+                }));
                 add(slider(tr("Arredondamento"), 0, 24, t.panelRadius, tr("px"), [this](int v) { m_theme.panelRadius = v; }));
                 add(slider(tr("Opacidade"), 0, 100, t.panelOpacity, QStringLiteral("%"), [this](int v) { m_theme.panelOpacity = v; }));
-                add(slider(tr("Vidro"), 0, 30, t.panelBlur, tr("px"), [this](int v) { m_theme.panelBlur = v; }));
+                // Com material o vidro não vale (a placa pinta o metal), então no lugar dele entra a intensidade do material.
+                if (Metal::isValid(t.panelMaterial))
+                    add(slider(tr("Intensidade do material"), 1, 100, t.panelMaterialStrength, QStringLiteral("%"), [this](int v) { m_theme.panelMaterialStrength = v; }));
+                else
+                    add(slider(tr("Vidro"), 0, 30, t.panelBlur, tr("px"), [this](int v) { m_theme.panelBlur = v; }));
                 break;
             }
             add(swatch(QStringLiteral("panelBorder")));
