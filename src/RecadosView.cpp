@@ -335,7 +335,7 @@ RecadosDialog::RecadosDialog(QWidget* parent)
 
         auto* foot = new QHBoxLayout();
         foot->setSpacing(10);
-        auto* sig = new QLabel(QStringLiteral("P.H. Lobato"), inner);
+        auto* sig = new QLabel(QStringLiteral("— P.H. Lobato"), inner);
         sig->setObjectName(QStringLiteral("recSig"));
         foot->addWidget(sig);
         foot->addStretch(1);
@@ -384,9 +384,9 @@ void RecadosDialog::applyTheme()
         #recadosDialog, QWidget#recInner, QScrollArea#recScroll { background: %1; }
         QLabel#recEyebrowBig { color: %4; font-size: 11px; font-weight: 600; letter-spacing: 1px; }
         QLabel#recEyebrowBig[fresh="true"] { color: %5; }
-        QLabel#recTitleBig { color: %3; font-family: 'Lora', Georgia, serif; font-size: 20px; font-weight: 600; }
-        QLabel#recBodyBig { color: %2; font-size: 14px; line-height: 150%; }
-        QLabel#recSig { color: %5; font-family: 'Caveat', 'Segoe Print', cursive; font-size: 24px; font-weight: 600; }
+        QLabel#recTitleBig { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 24px; font-weight: 600; }
+        QLabel#recBodyBig { color: %2; font-family: 'Crimson Pro', Georgia, serif; font-size: 17px; }
+        QLabel#recSig { color: %5; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; font-style: italic; }
         QFrame#recSep { background: %6; border: none; }
         QPushButton#recLink { background: transparent; color: %3; border: 1px solid %6; border-radius: @radius-control;
                               padding: 6px 14px; font-size: 13px; }

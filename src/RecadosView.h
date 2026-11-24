@@ -1,7 +1,8 @@
 #pragma once
 // A faixa de recados do menu principal (logo abaixo do título "Biblioteca") e a
 // janela que mostra os recados inteiros. Os dados vêm do RecadosFeed (Recados.h).
-// Desenho aprovado pelo Pe no Lab "Mural de Recados" (24/11/2026), opção C.
+// Desenho aprovado pelo Pe no Lab "Mural de Recados" (24/11/2026), opção C;
+// no leitor, tudo em Crimson Pro (escolha dele entre 5 fontes, mesmo dia).
 
 #include <QDialog>
 #include <QFrame>
