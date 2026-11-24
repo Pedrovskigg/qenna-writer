@@ -533,6 +533,11 @@ int main(int argc, char *argv[])
     // vazio numa instalação nova.
     WhatsNewDialog::markFreshInstall(QSettings().allKeys().isEmpty());
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
+#ifdef Q_OS_LINUX
+    // No Wayland a janela não carrega ícone próprio: o sistema acha o ícone e o
+    // nome pelo .desktop com este nome (resources/linux/qenna-writer.desktop).
+    QGuiApplication::setDesktopFileName(QStringLiteral("qenna-writer"));
+#endif
 
     CrashLogger::install();
 

@@ -1,0 +1,152 @@
+name: linux-build
+
+on:
+  push:
+    branches: [linux-build]
+  workflow_dispatch:
+
+jobs:
+  linux:
+    # Ubuntu 22.04: glibc 2.35. O AppImage só roda em sistema com glibc igual ou
+    # mais nova que a de onde foi compilado, então compilar no mais antigo que o
+    # Qt 6.8 aceita faz ele abrir em mais distros (Ubuntu 22.04+, Mint 21+,
+    # Fedora, Debian 12, Arch...).
+    runs-on: ubuntu-22.04
+    # rascunho de release só aparece pra quem pode escrever no repo (os sons)
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # O Hunspell não é versionado (ver cmake/Hunspell.cmake).
+      - name: Hunspell
+        run: git clone --depth 1 --branch v1.7.2 https://github.com/hunspell/hunspell.git third_party/hunspell
+
+      # Bibliotecas do sistema que o Qt usa pra abrir janela (X11/xcb), a voz
+      # (speech-dispatcher), o FUSE do linuxdeploy e o Xvfb + ImageMagick do
+      # teste com print.
+      - name: Pacotes do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build libgl1-mesa-dev libegl1 libfontconfig1 libfreetype6 \
+            libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
+            libxcb-xkb1 libxcb-xfixes0 libx11-xcb1 libdbus-1-3 libspeechd2 libfuse2 \
+            libpulse0 xvfb imagemagick file
+
+      - name: Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: 'qtmultimedia qtspeech'
+          cache: true
+
+      # Os sons ambiente (93 MB) não são versionados: vêm do .zip do rascunho
+      # de release "sons-mac" deste repo (os mesmos do instalador do Windows).
+      # Rascunho, e não release pública, porque a licença do Mixkit deixa usar
+      # os sons dentro do app, mas não redistribuir os arquivos soltos.
+      - name: Sons ambiente
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          URL=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.draft and .name == "sons-mac") | .assets[] | select(.name == "ambience-sounds.zip") | .url')
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" -o sons.zip "$URL"
+          mkdir -p src/assets
+          unzip -q sons.zip -d src/assets
+          ls src/assets/ambience-sounds | wc -l
+          rm sons.zip
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      # -k 0: segue compilando depois do primeiro erro, pra lista sair inteira
+      # numa rodada só.
+      - name: Build
+        run: |
+          set -o pipefail
+          cmake --build build -- -k 0 2>&1 | tee build.log
+
+      # AppImage: um arquivo só, que roda sem instalar nada. O linuxdeploy põe
+      # as bibliotecas do Qt (e os plugins de janela, som, imagem e voz) pra
+      # dentro. Os assets lidos do disco ficam ao lado do executável, como no
+      # Windows (ver appAssetsDir() em src/AppPaths.h).
+      - name: Empacotar
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: |
+          set -e
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          # as ferramentas ficam numa pasta à parte pra não irem junto no upload do *.AppImage
+          mkdir -p "$RUNNER_TEMP/ld"
+          wget -q -P "$RUNNER_TEMP/ld" https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q -P "$RUNNER_TEMP/ld" https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x "$RUNNER_TEMP"/ld/*.AppImage
+          export PATH="$RUNNER_TEMP/ld:$PATH"
+          rm -rf AppDir
+          mkdir -p AppDir/usr/bin
+          cp build/qenna-writer AppDir/usr/bin/
+          for d in logo fonts spell ambience-sounds theme-images thesaurus; do
+            if [ -d "build/$d" ]; then cp -r "build/$d" AppDir/usr/bin/; else echo "faltou o asset $d"; fi
+          done
+          export QMAKE="$QT_ROOT_DIR/bin/qmake"
+          export LD_LIBRARY_PATH="$QT_ROOT_DIR/lib:$LD_LIBRARY_PATH"
+          export EXTRA_QT_MODULES="texttospeech;svg"
+          export EXTRA_QT_PLUGINS="texttospeech;multimedia"
+          export OUTPUT="qenna-writer-linux.AppImage"
+          linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --executable AppDir/usr/bin/qenna-writer \
+            --desktop-file resources/linux/qenna-writer.desktop \
+            --icon-file resources/linux/qenna-writer.png \
+            --plugin qt --output appimage
+          ls -la *.AppImage
+          find AppDir/usr/plugins -maxdepth 1 -type d | sort
+
+      # O teste roda o AppImage pronto, numa tela de mentira (Xvfb), e com a
+      # pasta de assets do código fora do lugar: assim ele só acha fontes,
+      # temas e dicionários se eles estiverem dentro do pacote, como no PC de
+      # quem baixar.
+      - name: Abrir o app e tirar print
+        continue-on-error: true
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: |
+          mv src/assets src/assets-fora
+          mkdir -p shots grabs
+          Xvfb :99 -screen 0 1600x900x24 &
+          sleep 2
+          export DISPLAY=:99
+          QENNA_SMOKE="$PWD/grabs" ./qenna-writer-linux.AppImage > app.log 2>&1 &
+          PID=$!
+          for t in $(seq 1 38); do
+            sleep 1
+            case $t in 2|4|6|8|10|12|16|20|26|30|38) import -window root shots/tela-$(printf %02d $t)s.png || true ;; esac
+            kill -0 $PID 2>/dev/null || { echo "APP MORREU antes de ${t}s"; break; }
+          done
+          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 38s"; kill $PID; else wait $PID; echo "exit=$?"; fi
+          tail -60 app.log
+          mv src/assets-fora src/assets
+
+      - name: Resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-resultados
+          path: |
+            build.log
+            app.log
+            shots/
+            grabs/
+          if-no-files-found: ignore
+
+      - name: AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: qenna-writer-linux-appimage
+          path: "*.AppImage"
+          compression-level: 0

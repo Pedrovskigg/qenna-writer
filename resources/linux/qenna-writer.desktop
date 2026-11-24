@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Qenna Writer
+GenericName=Creative Writing Editor
+GenericName[pt_BR]=Editor de escrita criativa
+Comment=Write books, build worlds, map stories
+Comment[pt_BR]=Escreva livros, crie mundos, mapeie histórias
+Exec=qenna-writer %F
+Icon=qenna-writer
+Terminal=false
+Categories=Office;WordProcessor;
+Keywords=writing;novel;book;manuscript;worldbuilding;
+StartupWMClass=qenna-writer

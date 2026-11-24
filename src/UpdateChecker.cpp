@@ -15,6 +15,8 @@ namespace {
 // O instalador de cada sistema, entre os arquivos da release.
 #ifdef Q_OS_MACOS
 const QLatin1String kInstallerSuffix(".dmg");
+#elif defined(Q_OS_LINUX)
+const QLatin1String kInstallerSuffix(".AppImage");
 #else
 const QLatin1String kInstallerSuffix(".exe");
 #endif

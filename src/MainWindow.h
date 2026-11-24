@@ -350,6 +350,9 @@ private:
     void syncMenuUpdateBanner();
     void launchDownloadedInstaller(const QString& destPath);
     QString cachedUpdateSetup(const QString& version) const;
+#ifdef Q_OS_LINUX
+    bool linuxSelfUpdatePossible() const;
+#endif
     QString updateActionText() const;
     UpdateBanner* menuUpdateBanner() const;
 

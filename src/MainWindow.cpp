@@ -81,6 +81,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QProcess>
+#include <cstdio>
 #include <QProgressBar>
 #include <QStandardPaths>
 
@@ -8204,6 +8205,16 @@ void MainWindow::startUpdateDownload()
     if (m_updateToast) m_updateToast->hide();
     return;
 #endif
+#ifdef Q_OS_LINUX
+    // No Linux o app é um AppImage: um arquivo só, que se troca pelo novo.
+    // Fora de um AppImage (compilado na mão, pacote de distro) ou numa pasta
+    // sem permissão de escrita, não tem o que trocar: abre a página.
+    if (!linuxSelfUpdatePossible()) {
+        if (!m_updateDownloadUrl.isEmpty()) QDesktopServices::openUrl(QUrl(m_updateDownloadUrl));
+        if (m_updateToast) m_updateToast->hide();
+        return;
+    }
+#endif
     {
         const QString cached = cachedUpdateSetup(m_updateVersion);
         if (!cached.isEmpty()) { launchDownloadedInstaller(cached); return; }
@@ -8223,7 +8234,11 @@ void MainWindow::startUpdateDownload()
     if (!m_updateNam) m_updateNam = new QNetworkAccessManager(this);
 
     const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+#ifdef Q_OS_LINUX
+    const QString fileName = QStringLiteral("qenna-writer-%1.AppImage").arg(m_updateVersion);
+#else
     const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
+#endif
     const QString destPath = QDir(tempDir).filePath(fileName);
 
     auto* file = new QFile(destPath, this);
@@ -8349,11 +8364,46 @@ void MainWindow::launchDownloadedInstaller(const QString& destPath)
         std::this_thread::sleep_for(std::chrono::seconds(5));
         ::TerminateProcess(::GetCurrentProcess(), 0);
     }).detach();
+#elif defined(Q_OS_LINUX)
+    // O AppImage novo entra no lugar do que está rodando. No Linux dá pra
+    // trocar um arquivo em uso: o processo atual segue com o antigo (que só
+    // some do disco quando ele fecha) e quem abrir o caminho já pega o novo.
+    // Copia primeiro pra uma vizinha na mesma pasta e só então renomeia por
+    // cima, porque o rename na mesma pasta é tudo ou nada: se faltar disco
+    // no meio da cópia, o app que a pessoa tem continua inteiro.
+    {
+        const QString target = qEnvironmentVariable("APPIMAGE");
+        const QString staged = target + QStringLiteral(".novo");
+        const QFileDevice::Permissions exe = QFileDevice::ReadOwner | QFileDevice::WriteOwner
+            | QFileDevice::ExeOwner | QFileDevice::ReadGroup | QFileDevice::ExeGroup
+            | QFileDevice::ReadOther | QFileDevice::ExeOther;
+        QFile::remove(staged);
+        if (!QFile::copy(destPath, staged) || !QFile::setPermissions(staged, exe)
+            || ::rename(QFile::encodeName(staged).constData(), QFile::encodeName(target).constData()) != 0) {
+            QFile::remove(staged);
+            showUpdateDownloadError(tr("Não consegui substituir o aplicativo pela versão nova."));
+            return;
+        }
+        QFile::remove(destPath);
+        QSettings().remove(QStringLiteral("update/setupVersion"));
+        QProcess::startDetached(target, {});
+    }
 #else
     QProcess::startDetached(destPath, {});
 #endif
     qApp->quit();
 }
+
+#ifdef Q_OS_LINUX
+// Rodando de dentro de um AppImage que a pessoa pode sobrescrever?
+bool MainWindow::linuxSelfUpdatePossible() const
+{
+    const QString appImage = qEnvironmentVariable("APPIMAGE");
+    if (appImage.isEmpty()) return false;
+    const QFileInfo fi(appImage);
+    return fi.isFile() && QFileInfo(fi.absolutePath()).isWritable();
+}
+#endif
 
 // O instalador dessa versão já foi baixado inteiro numa tentativa anterior?
 QString MainWindow::cachedUpdateSetup(const QString& version) const
