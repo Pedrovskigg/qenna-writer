@@ -10,8 +10,12 @@
 
 #include "AnimCanvas.h"
 #include "MetalTexture.h"
+#include "galaxy/GalaxyCore.h"
 
 #include <QImage>
+#include <memory>
+#include <QAtomicInt>
+#include <QThreadPool>
 #include <QTransform>
 
 #include <algorithm>
@@ -1653,6 +1657,11 @@ public:
         painter.save();
         Cv x(painter);
         x.image(m_back, 0, 0);
+        if (m_planet.isNull() && m_planetJob && m_planetJob->done.loadAcquire()) m_planet = m_planetJob->img;
+        if (!m_planet.isNull()) {
+            x.lighter(); glowAt(x, m_px - m_pr * 0.2, m_py - m_pr * 0.12, m_pr * 1.45, "#3a7ad8", 0.22); x.over();
+            painter.drawImage(QRectF(m_px - m_pr, m_py - m_pr, m_pr * 2, m_pr * 2), m_planet);
+        }
         double charge = 0, k = 0;
         St ph = End;
         if (m_hasEv) {
@@ -1899,12 +1908,12 @@ private:
             const double s = std::pow(rnd(), 3) * 1.8 + 0.3;
             x.fillStyle(rgba(pickHex({ "#ffffff", "#cfe0ff", "#ffe8d0" }), R(0.25, 0.95))); x.fillRect(R(0, W), R(0, kH), s, s);
         }
-        {   // o planeta lá longe, do outro lado da folha
-            const double px = W - 180, py = 230, pr = 120;
-            x.fillStyle(QBrush(rad(px - pr * 0.45, py - pr * 0.3, pr * 0.1, px, py, pr, { { 0, hex("#4a6a8a") }, { 0.55, hex("#1a2a3e") }, { 1, hex("#05080e") } })));
-            x.begin(); x.arc(px, py, pr, 0, TAU); x.fill();
-            x.strokeStyle(rgba("#7ab4ff", 0.35)); x.lineWidth(3); x.begin(); x.arc(px, py, pr + 1, M_PI * 0.85, M_PI * 1.6); x.stroke();
-            x.fillStyle(rgba("#02030a", 0.55)); x.begin(); x.arc(px + pr * 0.35, py + pr * 0.2, pr * 0.95, 0, TAU); x.fill();
+        {   // o planeta do outro lado da folha: um mundo de verdade do Mapa Galáctico (a mesma textura e a mesma esfera
+            // sombreada do mapa). É feito UMA vez, numa linha de trabalho separada (não trava a abertura do tema), e depois
+            // pintado por quadro como uma imagem pronta: uma cópia de imagem por quadro, nada mais.
+            const QRectF& rz = c.zones.right;
+            m_pr = 118; m_px = rz.width() >= 160 ? rz.center().x() : W - 190; m_py = 250;
+            requestPlanet(qMax(64, int(std::lround(m_pr * 2 * c.px))));
         }
         const P3 cp = proj(COREP);
         x.fillStyle(QBrush(rad(cp.x, cp.y, 10, cp.x, cp.y, 480, { { 0, rgba(CORE, 0.2) }, { 1, rgba(CORE, 0) } }))); x.fillRect(0, 0, W, kH);
@@ -1956,6 +1965,39 @@ private:
         }
     }
 
+    // o planeta: um mundo temperado do Mapa Galáctico (semente fixa), pintado na esfera com a luz vindo de cima à esquerda
+    struct PlanetJob { QAtomicInt done; QImage img; };
+    static QImage makePlanet(int D)
+    {
+        galaxy::System sys;
+        sys.stars.push_back(galaxy::starOf(galaxy::StarKind::G, 1.0, 4242));
+        galaxy::refreshSystem(sys);
+        galaxy::Body* b = galaxy::addPlanet(sys, galaxy::Type::Temperado, (sys.hz[0] + sys.hz[1]) / 2, 20261124u);
+        if (!b) return {};
+        const galaxy::Texture tex = galaxy::bodyTexture(*b, 768, 384);
+        const galaxy::SphereTable tab = galaxy::sphereTable(D, 0.6, 0.25, b->frame);
+        QImage img(D, D, QImage::Format_RGBA8888);
+        img.fill(Qt::transparent);
+        const double lx = -0.72, ly = 0.42, lz = 0.55, n = std::sqrt(lx * lx + ly * ly + lz * lz);
+        const galaxy::V3 L{ lx / n, ly / n, lz / n };
+        galaxy::shadeSphere(img.bits(), tab, tex, 0.6, &L, galaxy::atmOf(*b));
+        return img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    }
+    void requestPlanet(int D)
+    {
+        static QHash<int, std::shared_ptr<PlanetJob>> jobs;   // compartilhado: trocar Normandy <-> Citadel não refaz
+        if (m_planetJob && m_planetD == D) return;
+        m_planetD = D; m_planet = QImage();
+        auto it = jobs.find(D);
+        if (it == jobs.end()) {
+            if (jobs.size() > 4) jobs.clear();
+            auto job = std::make_shared<PlanetJob>();
+            it = jobs.insert(D, job);
+            QThreadPool::globalInstance()->start([job, D]() { job->img = makePlanet(D); job->done.storeRelease(1); });
+        }
+        m_planetJob = *it;
+    }
+
     void ship(Cv& x, double sx, double sy, double ang, double s, double glow)
     {
         x.save(); x.translate(sx, sy); x.rotate(ang); x.scale(s, s);
@@ -1979,6 +2021,10 @@ private:
     double m_t = 0, m_nextEv = 6;
     QString m_key;
     QPixmap m_back;
+    QImage m_planet;
+    std::shared_ptr<PlanetJob> m_planetJob;
+    int m_planetD = 0;
+    double m_px = 0, m_py = 0, m_pr = 118;
     std::vector<Win> m_wins;
     std::vector<Dust> m_dust;
     bool m_hasEv = false;
