@@ -25,6 +25,8 @@
 #include <QComboBox>
 #include <QContextMenuEvent>
 #include <QAbstractAnimation>
+#include "Recados.h"
+#include "RecadosView.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QRegularExpression>
@@ -1400,6 +1402,17 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     }
     header->addLayout(toggleWrap);
     col->addWidget(m_header);
+
+    // --- Recados do autor: uma linha logo abaixo do título, em qualquer vista
+    // (é o único lugar que existe igual nas seis). Some quando não há recado
+    // ou quando a pessoa fecha no ×; ver Recados.h.
+    m_recadosStrip = new RecadosStrip(this);
+    connect(m_recadosStrip, &RecadosStrip::readRequested, this, [this]() {
+        RecadosDialog dlg(this);
+        dlg.exec();
+    });
+    col->addWidget(m_recadosStrip);
+    RecadosFeed::instance()->fetch();
 
     // --- Área da vista ativa: cada vista é montada do zero em
     // populateActiveView; só a Pilha é um widget fixo (ela guarda estado de

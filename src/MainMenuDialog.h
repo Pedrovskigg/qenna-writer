@@ -41,6 +41,7 @@ struct LibraryHooks;
 // Aparece automaticamente no startup quando não há projeto carregado, e
 // é invocado também quando o usuário pede "Carregar projeto" pela barra.
 class UpdateBanner;
+class RecadosStrip;
 
 class MainMenuDialog : public QDialog {
     Q_OBJECT
@@ -151,6 +152,7 @@ private:
     QLabel* m_headingLabel = nullptr;
     QLabel* m_countLabel = nullptr;
     UpdateBanner* m_updateBanner = nullptr;
+    RecadosStrip* m_recadosStrip = nullptr;
     QWidget* m_header = nullptr;          // título + botões das vistas (some sem projeto)
     QList<QPushButton*> m_viewBtns;       // índice = ViewMode
     QWidget* m_viewHost = nullptr;        // onde a vista ativa mora

@@ -1,0 +1,279 @@
+<meta charset="utf-8">
+<title>Blog — Qenna Writer</title>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/icon-96.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+<style>
+  :root {
+    --paper: #f1eee3;
+    --paper-white: #faf8f0;
+    --ink: #26231d;
+    --ink-soft: #5f5a4d;
+    --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16);
+    --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f;
+    --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0d0c0b; --paper-white: #161514; --ink: #edebe8;
+      --ink-soft: #a5a29d; --ink-faint: #6f6c67;
+      --rule: rgba(255,255,255,.13); --rule-strong: rgba(255,255,255,.24);
+      --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0d0c0b; --paper-white: #161514; --ink: #edebe8;
+    --ink-soft: #a5a29d; --ink-faint: #6f6c67;
+    --rule: rgba(255,255,255,.13); --rule-strong: rgba(255,255,255,.24);
+    --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+  }
+  :root[data-theme="light"] {
+    --paper: #f1eee3; --paper-white: #faf8f0; --ink: #26231d;
+    --ink-soft: #5f5a4d; --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16); --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f; --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Seravek, 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif; }
+  .mono  { font-family: 'SF Mono', 'Cascadia Mono', Consolas, 'Courier New', monospace; }
+  a { color: var(--blue); text-decoration-color: var(--blue-soft); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--blue); }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+
+  header.bar {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 920px; margin: 0 auto; padding: 28px 24px 0; font-size: 13px;
+  }
+  .wordmark {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 12.5px; letter-spacing: .12em; color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .bar-links { display: flex; gap: 22px; }
+  .bar-links a { color: var(--ink-soft); text-decoration: none; }
+  .bar-links a:hover { color: var(--ink); text-decoration: underline; }
+
+  .leaf {
+    background: var(--paper-white);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    margin: 40px auto;
+    padding: 56px 64px;
+  }
+  @media (max-width: 640px) { .leaf { padding: 40px 26px; } }
+
+  .leaf-head {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px; margin-bottom: 36px;
+    display: flex; justify-content: space-between;
+  }
+
+  h1.title {
+    font-size: clamp(30px, 4.6vw, 40px);
+    font-weight: 500;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  p.dek {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .essay p {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .essay p:last-child { margin-bottom: 0; }
+  .essay strong { color: var(--ink); font-weight: 600; }
+  .essay h2 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .essay ul.plain {
+    margin: 0 0 18px;
+    padding: 0;
+    list-style: none;
+  }
+  .essay ul.plain li {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+  .essay ul.plain li::before { content: '—'; position: absolute; left: 0; color: var(--ink-faint); }
+  .essay ul.names {
+    margin: 0 0 18px;
+    padding: 0 0 0 20px;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 18px;
+  }
+  .essay ul.names li { margin-bottom: 4px; }
+
+  .repo-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 20px;
+    margin: 4px 0 18px;
+  }
+  .repo-box a { font-size: 15px; }
+  pre.code {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 12px 16px;
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 10px 0 0;
+    color: var(--ink);
+  }
+
+  .signoff { text-align: center; }
+  .signoff blockquote {
+    margin: 0 auto;
+    max-width: 42ch;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: clamp(18px, 2.4vw, 22px);
+    line-height: 1.55;
+    font-style: italic;
+    text-wrap: balance;
+  }
+  .signoff cite {
+    display: block;
+    margin-top: 18px;
+    font-style: normal;
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--ink-faint);
+  }
+
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 20px 24px 64px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    font-size: 12.5px; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-faint); }
+  .footer-links { display: flex; gap: 18px; }
+
+  .post .leaf-head time { color: var(--ink-faint); }
+  .post h2 { font-size: clamp(22px, 3.2vw, 27px); font-weight: 500; margin: 0 0 14px; line-height: 1.25; text-wrap: balance; color: var(--ink); }
+  .post img { display: block; width: 100%; max-height: 360px; object-fit: cover; margin: 0 0 20px; border: 1px solid var(--rule); }
+  .post .foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 22px; }
+  .post .sig { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; font-style: italic; color: var(--ink-faint); font-size: 15px; }
+  .post .go { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; border: 1px solid var(--rule-strong); padding: 7px 14px; text-decoration: none; color: var(--ink); }
+  .post .go:hover { border-color: var(--blue); color: var(--blue); }
+  .empty { text-align: center; color: var(--ink-faint); font-style: italic; }
+</style>
+
+<header class="bar">
+  <a class="wordmark" href="/">QENNA WRITER</a>
+  <nav class="bar-links">
+    <a href="/">Home</a>
+    <a href="/about.html">About</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer">Source</a>
+    <a href="/pt/blog.html">PT</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="leaf">
+    <div class="leaf-head"><span>Blog</span><span>Qenna Writer</span></div>
+    <h1 class="title serif">Notes from the person who makes Qenna</h1>
+    <p class="dek">News, ideas and thank-yous, straight from P.H. Lobato. The same notes show up inside the app, on the main menu.</p>
+  </div>
+  <div id="posts"><div class="leaf empty">Loading notes…</div></div>
+</div>
+
+<footer>
+  <span>© Qenna Writer — Qenna Writer License. Made by one person, in the open.</span>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer">Source</a>
+    <a href="https://www.instagram.com/qennawriter/">Instagram</a>
+  </div>
+</footer>
+<script>
+// Mesma lista que o app mostra na faixa do menu principal (docs/recados.json).
+(function () {
+  var LANG = 'en', LOCALE = 'en-US';
+  var T = {"none": "No notes here yet.", "fail": "Could not load the notes right now. Please try again in a moment.", "note": "Note"};
+  var box = document.getElementById('posts');
+  function pick(v) {
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    return v[LANG] || v.en || v.pt || '';
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  fetch('/recados.json', { cache: 'no-cache' }).then(function (r) {
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  }).then(function (data) {
+    var list = (data.recados || []).filter(function (x) { return x.id && pick(x.title); });
+    list.sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    box.textContent = '';
+    if (!list.length) { box.appendChild(el('div', 'leaf empty', T.none)); return; }
+    list.forEach(function (x) {
+      var art = el('article', 'leaf essay post');
+      art.id = x.id;
+      var head = el('div', 'leaf-head');
+      head.appendChild(el('span', null, T.note));
+      var t = el('time');
+      if (x.date) {
+        t.dateTime = x.date;
+        t.textContent = new Date(x.date + 'T12:00:00').toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+      head.appendChild(t);
+      art.appendChild(head);
+      art.appendChild(el('h2', 'serif', pick(x.title)));
+      if (x.image) { var img = el('img'); img.src = x.image; img.alt = ''; img.loading = 'lazy'; art.appendChild(img); }
+      pick(x.body).split(/\n+/).forEach(function (p) { if (p.trim()) art.appendChild(el('p', null, p.trim())); });
+      var foot = el('div', 'foot');
+      foot.appendChild(el('span', 'sig', '— P.H. Lobato'));
+      if (x.link && x.link.url) {
+        var a = el('a', 'go', pick(x.link.label) || x.link.url);
+        a.href = x.link.url;
+        foot.appendChild(a);
+      }
+      art.appendChild(foot);
+      box.appendChild(art);
+    });
+  }).catch(function () {
+    box.textContent = '';
+    box.appendChild(el('div', 'leaf empty', T.fail));
+  });
+})();
+</script>
+<script data-goatcounter="https://qennawriter.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
