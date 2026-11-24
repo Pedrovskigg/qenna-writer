@@ -47,7 +47,7 @@ QColor mix(const QColor& a, const QColor& b, qreal t)
                             a.blueF() + (b.blueF() - a.blueF()) * t);
 }
 
-enum class Glyph { Pin, Left, Right, Close };
+enum class Glyph { Pin, Left, Right, Close, Bell };
 
 // Ícones desenhados (sem caractere de fonte, que no Linux pode faltar).
 QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr)
@@ -76,6 +76,16 @@ QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr)
     case Glyph::Right:
         p.drawPolyline(QPolygonF({ QPointF(9, 6), QPointF(15, 12), QPointF(9, 18) }));
         break;
+    case Glyph::Bell: {
+        QPainterPath path;
+        path.moveTo(6, 16); path.cubicTo(7, 14.5, 6.5, 12, 6.5, 10);
+        path.cubicTo(6.5, 6.5, 9, 4.5, 12, 4.5);
+        path.cubicTo(15, 4.5, 17.5, 6.5, 17.5, 10);
+        path.cubicTo(17.5, 12, 17, 14.5, 18, 16); path.closeSubpath();
+        p.drawPath(path);
+        p.drawArc(QRectF(10, 17, 4, 3.5), 180 * 16, 180 * 16);
+        break;
+    }
     case Glyph::Close:
         p.drawLine(QPointF(7, 7), QPointF(17, 17));
         p.drawLine(QPointF(17, 7), QPointF(7, 17));
@@ -245,6 +255,55 @@ void RecadosStrip::applyTheme()
         QPushButton#recRead:hover { text-decoration: underline; }
     )")).arg(tint.name(), Theme::panelBorder(), text.name(), muted.name(),
              accent.name(), Theme::hoverOverlay()));
+}
+
+// ============================== Sininho ==============================
+
+RecadosBell::RecadosBell(QWidget* parent)
+    : QToolButton(parent)
+{
+    setObjectName(QStringLiteral("recadosBell"));
+    setCursor(Qt::PointingHandCursor);
+    setFocusPolicy(Qt::NoFocus);
+    setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    setAutoRaise(true);
+    setText(tr("Recados"));
+    setToolTip(tr("Ler os recados do autor"));
+    setIconSize(QSize(16, 16));
+    setFixedHeight(24);
+    connect(this, &QToolButton::clicked, this, &RecadosBell::readRequested);
+    RecadosFeed* feed = RecadosFeed::instance();
+    connect(feed, &RecadosFeed::changed, this, &RecadosBell::refresh);
+    connect(feed, &RecadosFeed::stateChanged, this, &RecadosBell::refresh);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, &RecadosBell::refresh);
+    refresh();
+}
+
+void RecadosBell::refresh()
+{
+    RecadosFeed* feed = RecadosFeed::instance();
+    const QList<Recado> list = feed->recados();
+    if (list.isEmpty()) { hide(); return; }
+    bool unread = false;
+    for (const Recado& r : list) unread = unread || !feed->isRead(r.id);
+    const QColor muted = Theme::toColor(Theme::textMuted());
+    const QColor accent = Theme::toColor(Theme::accentDefault());
+    const qreal dpr = devicePixelRatioF();
+    QPixmap pm = glyphIcon(Glyph::Bell, muted, 16, dpr).pixmap(16, 16);
+    if (unread) {
+        // o pontinho de "tem recado novo", com um anel na cor do fundo
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(Theme::toColor(Theme::chromeBackground()), 1.5));
+        p.setBrush(accent);
+        p.drawEllipse(QRectF(9.5, 1, 6, 6));
+    }
+    setIcon(QIcon(pm));
+    setStyleSheet(QStringLiteral(
+        "QToolButton#recadosBell { background: transparent; border: none; color: %1; font-size: 11.5px; padding: 0 2px; }"
+        "QToolButton#recadosBell:hover { color: %2; text-decoration: underline; }")
+        .arg(muted.name(), Theme::textPrimary()));
+    show();
 }
 
 // ============================== Leitor ==============================

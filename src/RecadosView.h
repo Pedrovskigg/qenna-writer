@@ -6,6 +6,7 @@
 
 #include <QDialog>
 #include <QFrame>
+#include <QToolButton>
 
 class QLabel;
 class QToolButton;
@@ -35,6 +36,21 @@ private:
     QPushButton* m_read = nullptr;
     QToolButton* m_close = nullptr;
     int m_page = 0;
+};
+
+// Sininho "Recados" no topo da coluna do menu: o caminho de volta pros recados
+// depois que a faixa foi fechada. Pontinho na cor de destaque quando há recado
+// que a pessoa ainda não leu. Some quando não há recado nenhum.
+class RecadosBell : public QToolButton {
+    Q_OBJECT
+public:
+    explicit RecadosBell(QWidget* parent = nullptr);
+
+signals:
+    void readRequested();
+
+private:
+    void refresh();
 };
 
 class RecadosDialog : public QDialog {

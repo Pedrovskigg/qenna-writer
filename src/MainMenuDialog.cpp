@@ -1231,7 +1231,6 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     {
         auto* row = new QHBoxLayout();
         row->setContentsMargins(0, 0, 0, 0);
-        row->addStretch(1);
         auto* whatsNewBtn = new QPushButton(tr("Ver atualizações"), this);
         whatsNewBtn->setObjectName(QStringLiteral("menuWhatsNewBtn"));
         whatsNewBtn->setCursor(Qt::PointingHandCursor);
@@ -1244,6 +1243,16 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
             dlg->open();
         });
         row->addWidget(whatsNewBtn);
+        row->addStretch(1);
+        // Sininho dos recados no canto direito (o "Ver atualizações" foi pro
+        // esquerdo, a pedido do Pe): volta pros recados depois que a faixa da
+        // Biblioteca foi fechada.
+        auto* bell = new RecadosBell(this);
+        connect(bell, &RecadosBell::readRequested, this, [this]() {
+            RecadosDialog dlg(this);
+            dlg.exec();
+        });
+        row->addWidget(bell);
         col->addLayout(row);
     }
     col->addWidget(m_logoLabel, 0, Qt::AlignHCenter);

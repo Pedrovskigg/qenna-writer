@@ -1529,27 +1529,27 @@ Aproveite.</source>
 <context>
     <name>BookCard</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1578"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1587"/>
         <source>Abrir automaticamente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1581"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1590"/>
         <source>Editar projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1582"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1591"/>
         <source>Criar capa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1584"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1593"/>
         <source>Remover dos recentes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1585"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1594"/>
         <source>Excluir projeto</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10692,154 +10692,154 @@ ou cole com Ctrl+V</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1235"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1234"/>
         <source>Ver atualizações</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1240"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1239"/>
         <source>O que mudou na versão %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1272"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1281"/>
         <source>Novo projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1279"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1288"/>
         <source>Nova ideia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1283"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1292"/>
         <source>Comece a escrever agora, sem criar um projeto ainda</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1287"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1296"/>
         <source>Carregar pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1302"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1311"/>
         <source>Idioma:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1307"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1316"/>
         <source>Português (BR)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1308"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1317"/>
         <source>English</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1309"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1318"/>
         <source>Español</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1328"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1337"/>
         <source>Verificar atualizações</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1342"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1351"/>
         <source>Sobre o Qenna Writer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1354"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1363"/>
         <source>Lixeira — projetos excluídos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1378"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1387"/>
         <source>Biblioteca</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1389"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1398"/>
         <source>Estante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1389"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1398"/>
         <source>Pilha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1640"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1649"/>
         <source>1 projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1640"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1649"/>
         <source>%1 projetos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1783"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1837"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1792"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1846"/>
         <source>Erro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1784"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1793"/>
         <source>Não foi possível ler o projeto para edição.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1838"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1847"/>
         <source>Não foi possível salvar as alterações:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1964"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1973"/>
         <source>Cor sólida do tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1388"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1397"/>
         <source>Continuar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1388"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1397"/>
         <source>Vitrine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1388"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1397"/>
         <source>Cinema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1389"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1398"/>
         <source>Seu dia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1506"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1515"/>
         <source>Capítulo %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1511"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1520"/>
         <source>cap. %1 · %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1575"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1584"/>
         <source>Abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1576"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1585"/>
         <source>Continuar de onde parei</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25882,24 +25882,37 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     </message>
 </context>
 <context>
-    <name>RecadosDialog</name>
+    <name>RecadosBell</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="256"/>
+        <location filename="../src/RecadosView.cpp" line="270"/>
         <source>Recados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="292"/>
+        <location filename="../src/RecadosView.cpp" line="271"/>
+        <source>Ler os recados do autor</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RecadosDialog</name>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="315"/>
+        <source>Recados</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="351"/>
         <source>Novo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="343"/>
+        <location filename="../src/RecadosView.cpp" line="402"/>
         <source>Abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="359"/>
+        <location filename="../src/RecadosView.cpp" line="418"/>
         <source>Fechar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25907,37 +25920,37 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
 <context>
     <name>RecadosStrip</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="156"/>
+        <location filename="../src/RecadosView.cpp" line="166"/>
         <source>Recado anterior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="162"/>
+        <location filename="../src/RecadosView.cpp" line="172"/>
         <source>Próximo recado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="166"/>
+        <location filename="../src/RecadosView.cpp" line="176"/>
         <source>Ler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="173"/>
+        <location filename="../src/RecadosView.cpp" line="183"/>
         <source>Dispensar (volta quando chegar recado novo)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="202"/>
+        <location filename="../src/RecadosView.cpp" line="212"/>
         <source>RECADO NOVO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="202"/>
+        <location filename="../src/RecadosView.cpp" line="212"/>
         <source>RECADO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="213"/>
+        <location filename="../src/RecadosView.cpp" line="223"/>
         <source>%1 de %2</source>
         <translation type="unfinished"></translation>
     </message>
