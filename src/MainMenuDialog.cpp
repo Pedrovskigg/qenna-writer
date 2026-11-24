@@ -1329,10 +1329,14 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     });
     langRow->addWidget(checkUpdatesBtn);
 
-    auto* infoBtn = new QPushButton(QStringLiteral("ⓘ"), this);
+    // Ícone desenhado, não o caractere "ⓘ": no Linux nem toda fonte tem esse
+    // símbolo e o botão virava um quadradinho vazio.
+    auto* infoBtn = new QPushButton(this);
+    m_infoBtn = infoBtn;
     infoBtn->setObjectName(QStringLiteral("menuInfoBtn"));
     infoBtn->setCursor(Qt::PointingHandCursor);
     infoBtn->setFixedSize(24, 24);
+    infoBtn->setIconSize(QSize(14, 14));
     infoBtn->setToolTip(tr("Sobre o Qenna Writer"));
     connect(infoBtn, &QPushButton::clicked, this, [this]() {
         AboutDialog dlg(this);
@@ -1745,6 +1749,11 @@ void MainMenuDialog::refreshActionIcons()
         const QColor c(Theme::textPrimary());
         m_newIdeaBtn->setIcon(IconUtils::loadToolbarIcon(
             QStringLiteral(":/icons/doc-plus.svg"), c, c, c, QSize(18, 18)));
+    }
+    if (m_infoBtn) {
+        const QColor c(Theme::textPrimary());
+        m_infoBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/leftbar/projectinfo.svg"), c, c, c, QSize(14, 14)));
     }
     if (m_trashBtn) {
         const QColor c(Theme::textPrimary());

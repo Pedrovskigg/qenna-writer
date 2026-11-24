@@ -143,6 +143,7 @@ private:
     QPushButton* m_newBtn = nullptr;
     QPushButton* m_newIdeaBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;
+    QPushButton* m_infoBtn = nullptr;
     QPushButton* m_trashBtn = nullptr;
     QComboBox* m_langCombo = nullptr;
 
