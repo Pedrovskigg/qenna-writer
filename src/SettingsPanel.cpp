@@ -1,4 +1,6 @@
 #include "SettingsPanel.h"
+#include "BugReportView.h"
+#include "BugReports.h"
 #include "ElementCreateDialog.h"
 #include "BookSeams.h"
 #include "SceneBreaks.h"
@@ -248,7 +250,8 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     paneLay->setSpacing(0);
     const QString catTitles[CategoryCount] = {
         tr("Aparência"), tr("Escrita"), tr("Corretor"), tr("Personagens"),
-        tr("Timeline"), tr("Assistente de IA"), tr("Backup"), tr("Avançado")
+        tr("Timeline"), tr("Assistente de IA"), tr("Backup"), tr("Avançado"),
+        BugFeed::instance()->isAuthor() ? tr("Central de bugs") : tr("Reportar um bug")
     };
     const QString catSubtitles[CategoryCount] = {
         tr("Tamanho, barras, tema e idioma."),
@@ -258,7 +261,9 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         tr("Tempo e resumo das cenas."),
         tr("Provedor, chave e imagem de personagem. O app nunca exige IA."),
         tr("Cópia zipada do projeto inteiro."),
-        tr("Memória.")
+        tr("Memória."),
+        BugFeed::instance()->isAuthor() ? tr("Todos os relatos. Mude o estágio e responda: quem enviou acompanha em \"Meus bugs\".")
+                                        : tr("Conte o que deu errado e acompanhe a correção.")
     };
     for (int c = 0; c < CategoryCount; ++c) {
         Section& s = m_sections[c];
@@ -286,6 +291,11 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         s.rows->setSpacing(0);
         v->addLayout(s.rows);
         paneLay->addWidget(s.widget);
+        if (c == Bugs) {
+            m_bugView = new BugReportView(s.widget);
+            s.rows->addWidget(m_bugView);
+            connect(m_bugView, &BugReportView::newsChanged, this, [this](bool news) { m_bugNews = news; applyFilter(); });
+        }
         if (c == Assistant) {
             // O "?" da IA continua: explica que a chave é sua e que nada exige IA.
             auto* aiInfoBtn = new QPushButton(QStringLiteral("?"), s.widget);
@@ -1230,7 +1240,8 @@ void SettingsPanel::buildNav(QWidget* nav)
 {
     static const char* icons[CategoryCount] = {
         ":/icons/theme-panel.svg", ":/icons/edit.svg", ":/icons/check.svg", ":/icons/elements/user.svg",
-        ":/icons/leftbar/timeline.svg", ":/icons/elements/star.svg", ":/icons/save-project.svg", ":/icons/settings.svg"
+        ":/icons/leftbar/timeline.svg", ":/icons/elements/star.svg", ":/icons/save-project.svg", ":/icons/settings.svg",
+        ":/icons/bug.svg"
     };
     const QColor muted = Theme::toColor(Theme::textMuted());
     const QColor bright = Theme::toColor(Theme::textBright());
@@ -1276,6 +1287,14 @@ void SettingsPanel::buildNav(QWidget* nav)
         m_navItems[c] = b;
         m_navCounts[c] = count;
         group->addButton(b, c);
+        if (c == Bugs) {   // separado das opções: não é configuração, é conversa com o autor
+            auto* sep = new QFrame(nav);
+            sep->setObjectName(QStringLiteral("settingsNavSep"));
+            sep->setFixedHeight(1);
+            v->addSpacing(6);
+            v->addWidget(sep);
+            v->addSpacing(6);
+        }
         connect(b, &QPushButton::clicked, this, [this, c]() {
             if (!m_search->text().isEmpty()) {
                 const QSignalBlocker block(m_search);
@@ -1292,6 +1311,7 @@ void SettingsPanel::selectCategory(int category)
 {
     m_category = category;
     QSettings().setValue(QStringLiteral("settings/lastCategory"), category);
+    if (category == Bugs && m_bugView) m_bugView->activate();
     applyFilter();
     if (m_pane) m_pane->verticalScrollBar()->setValue(0);
 }
@@ -1330,7 +1350,12 @@ void SettingsPanel::applyFilter()
             m_navItems[c]->setProperty("dim", searching && hits[c] == 0);
             m_navItems[c]->style()->unpolish(m_navItems[c]);
             m_navItems[c]->style()->polish(m_navItems[c]);
-            m_navCounts[c]->setText(QString::number(searching ? hits[c] : totals[c]));
+            if (c == Bugs) {   // sem contagem: um pontinho quando um relato seu andou
+                m_navCounts[c]->setText(m_bugNews ? QStringLiteral("\u25CF") : QString());
+                m_navCounts[c]->setStyleSheet(m_bugNews ? QStringLiteral("color: %1;").arg(Theme::accentDefault()) : QString());
+            } else {
+                m_navCounts[c]->setText(QString::number(searching ? hits[c] : totals[c]));
+            }
         }
     }
     // O "?" da IA mora no cabeçalho grande; na busca ele some junto.
@@ -1696,6 +1721,7 @@ void SettingsPanel::applyTheme()
             background: %4;
             color: %5;
         }
+        #settingsPanel QFrame#settingsNavSep { background: %9; border: none; margin: 0px 8px; }
         #settingsPanel QPushButton#settingsNavItem:checked {
             background: %6;
             color: %5;

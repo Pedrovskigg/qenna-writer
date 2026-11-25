@@ -11,6 +11,26 @@ CREATE TABLE IF NOT EXISTS comments (
 );
 -- banidos: o aparelho (id anônimo do app/navegador) pra sempre; a conexão (IP) por 30 dias,
 -- porque operadora de celular divide o mesmo IP entre muita gente
+-- "Reportar um bug" (Configurações do app). Quem relatou só vê os seus (pelo hash do id anônimo);
+-- o histórico público mostra só título e versão dos resolvidos; o Pe vê e mexe em tudo com a chave.
+CREATE TABLE IF NOT EXISTS bugs (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  code     TEXT NOT NULL UNIQUE,    -- protocolo QW-XXXXX (vai no assunto do e-mail com o print)
+  client   TEXT NOT NULL,           -- hash com sal do id anônimo de quem relatou
+  ban_ip   TEXT,
+  name     TEXT NOT NULL,
+  title    TEXT NOT NULL,
+  body     TEXT NOT NULL,
+  steps    TEXT NOT NULL DEFAULT '',
+  env      TEXT NOT NULL DEFAULT '',
+  stage    TEXT NOT NULL DEFAULT 'sent',   -- sent | work | done
+  reply    TEXT NOT NULL DEFAULT '',
+  reply_at INTEGER,
+  version  TEXT NOT NULL DEFAULT '',
+  at       INTEGER NOT NULL,
+  updated  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS bugs_client ON bugs (client);
 CREATE TABLE IF NOT EXISTS bans (
   hash  TEXT PRIMARY KEY,
   kind  TEXT NOT NULL,      -- 'ip' | 'client'

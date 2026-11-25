@@ -1680,6 +1680,258 @@ Profitez-en.</translation>
     </message>
 </context>
 <context>
+    <name>BugReportView</name>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="62"/>
+        <source>tema %1</source>
+        <translation>thème %1</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="124"/>
+        <source>Novo relato</source>
+        <translation>Nouveau signalement</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="124"/>
+        <location filename="../src/BugReportView.cpp" line="559"/>
+        <source>Meus bugs</source>
+        <translation>Mes bugs</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="124"/>
+        <location filename="../src/BugReportView.cpp" line="631"/>
+        <source>Resolvidos</source>
+        <translation>Résolus</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="231"/>
+        <source>Ex.: o texto some quando troco de tema</source>
+        <translation>Ex. : le texte disparaît quand je change de thème</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="234"/>
+        <source>O que você esperava que acontecesse, e o que aconteceu.</source>
+        <translation>Ce que vous attendiez, et ce qui s&apos;est passé.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="239"/>
+        <source>1. Abri um projeto  2. Cliquei em…</source>
+        <translation>1. J&apos;ai ouvert un projet  2. J&apos;ai cliqué sur…</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="246"/>
+        <source>Em poucas palavras</source>
+        <translation>En quelques mots</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="247"/>
+        <source>O que aconteceu</source>
+        <translation>Ce qui s&apos;est passé</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="248"/>
+        <source>Caso o bug apresentado ou falha do app tenha gerado algum código de erro, cole aqui também.</source>
+        <translation>Si le bug ou la panne de l&apos;app a généré un code d&apos;erreur, collez-le ici aussi.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="249"/>
+        <source>Como repetir</source>
+        <translation>Comment le reproduire</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="249"/>
+        <source>opcional</source>
+        <translation>facultatif</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="250"/>
+        <source>Seu nome</source>
+        <translation>Votre nom</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="250"/>
+        <source>o mesmo dos comentários</source>
+        <translation>le même que dans les commentaires</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="252"/>
+        <source>É um bug de interface ou visual</source>
+        <translation>C&apos;est un bug d&apos;interface ou visuel</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="260"/>
+        <source>Vai junto, automático: %1</source>
+        <translation>Envoyé automatiquement : %1</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="271"/>
+        <source>Protocolo deste relato</source>
+        <translation>Numéro de ce signalement</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="280"/>
+        <location filename="../src/BugReportView.cpp" line="343"/>
+        <location filename="../src/BugReportView.cpp" line="403"/>
+        <source>copiar</source>
+        <translation>copier</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="299"/>
+        <source>Tem print ou vídeo do bug? Mande para %1 com &lt;b&gt;%2&lt;/b&gt; no assunto.</source>
+        <translation>Une capture ou une vidéo du bug ? Envoyez-la à %1 avec &lt;b&gt;%2&lt;/b&gt; en objet.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="306"/>
+        <location filename="../src/BugReportView.cpp" line="410"/>
+        <source>copiado</source>
+        <translation>copié</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="315"/>
+        <location filename="../src/BugReportView.cpp" line="341"/>
+        <location filename="../src/BugReportView.cpp" line="351"/>
+        <source>Enviar relato</source>
+        <translation>Envoyer le signalement</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="329"/>
+        <location filename="../src/BugReportView.cpp" line="353"/>
+        <source>Escreva o título e o que aconteceu.</source>
+        <translation>Écrivez le titre et ce qui s&apos;est passé.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="334"/>
+        <source>Enviando…</source>
+        <translation>Envoi…</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="354"/>
+        <source>O relato passou do tamanho máximo.</source>
+        <translation>Le signalement dépasse la taille maximale.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="355"/>
+        <source>Muitos relatos seguidos. Tente de novo daqui a pouco.</source>
+        <translation>Trop de signalements d&apos;affilée. Réessayez dans un moment.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="356"/>
+        <source>Você não pode mais enviar relatos.</source>
+        <translation>Vous ne pouvez plus envoyer de signalements.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="357"/>
+        <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
+        <translation>Envoi impossible. Vérifiez votre connexion et réessayez.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="366"/>
+        <location filename="../src/BugReportView.cpp" line="475"/>
+        <source>Resolvido</source>
+        <translation>Résolu</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="366"/>
+        <source>Resolvido na %1</source>
+        <translation>Résolu dans la %1</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="367"/>
+        <location filename="../src/BugReportView.cpp" line="475"/>
+        <location filename="../src/BugReportView.cpp" line="631"/>
+        <source>Em andamento</source>
+        <translation>En cours</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="368"/>
+        <location filename="../src/BugReportView.cpp" line="475"/>
+        <source>Enviado</source>
+        <translation>Envoyé</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="424"/>
+        <source>Como repetir: %1</source>
+        <translation>Comment le reproduire : %1</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="452"/>
+        <source>AUTOR</source>
+        <translation>AUTEUR</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="493"/>
+        <source>Responder (sai com o selo AUTOR)</source>
+        <translation>Répondre (avec le badge AUTEUR)</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="493"/>
+        <source>Atualizar a resposta</source>
+        <translation>Mettre à jour la réponse</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="500"/>
+        <source>Resolvido na versão</source>
+        <translation>Résolu dans la version</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="509"/>
+        <source>apagar</source>
+        <translation>supprimer</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="514"/>
+        <source>Salvar</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="559"/>
+        <source>Meus bugs (%1)</source>
+        <translation>Mes bugs (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="564"/>
+        <source>Nenhum relato ainda. Quando você enviar um, ele aparece aqui com o estágio.</source>
+        <translation>Aucun signalement pour l&apos;instant. Quand vous en envoyez un, il apparaît ici avec son étape.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="565"/>
+        <location filename="../src/BugReportView.cpp" line="588"/>
+        <location filename="../src/BugReportView.cpp" line="646"/>
+        <source>Carregando…</source>
+        <translation>Chargement…</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="588"/>
+        <source>Ainda não há bugs resolvidos.</source>
+        <translation>Pas encore de bugs résolus.</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="594"/>
+        <source>VERSÃO %1</source>
+        <translation>VERSION %1</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="610"/>
+        <source>o seu</source>
+        <translation>le vôtre</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="631"/>
+        <source>Todos</source>
+        <translation>Tous</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="631"/>
+        <source>Enviados</source>
+        <translation>Envoyés</translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="646"/>
+        <source>Nenhum relato aqui.</source>
+        <translation>Aucun signalement ici.</translation>
+    </message>
+</context>
+<context>
     <name>CardItem</name>
     <message>
         <source>Escolher símbolo</source>
@@ -29840,13 +30092,13 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Activer le correcteur orthographique</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="231"/>
-        <location filename="../src/SettingsPanel.cpp" line="1246"/>
+        <location filename="../src/SettingsPanel.cpp" line="233"/>
+        <location filename="../src/SettingsPanel.cpp" line="1257"/>
         <source>Configurações</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="257"/>
+        <location filename="../src/SettingsPanel.cpp" line="260"/>
         <source>Como nascem, presença nas cenas e menções com @.</source>
         <translation>Leur création, leur présence dans les scènes et les mentions avec @.</translation>
     </message>
@@ -29867,72 +30119,72 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Classique : la barre de toujours, avec tous les boutons sur une ligne. Ruban : onglets (Éditeur, Révision, Monde, Ambiance) et Fichier au bout. Complet montre les groupes nommés et de grands boutons ; simplifié tient sur une ligne ; avec accent et Classeur tiennent aussi sur une ligne, avec le Q de Qenna à la place de Fichier ; onglets seuls garde l&apos;écran dégagé et le ruban descend quand vous cliquez sur un onglet. Le ruban vaut avec la barre en haut ; sur le côté, c&apos;est la classique.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="835"/>
+        <location filename="../src/SettingsPanel.cpp" line="845"/>
         <source>Ficha</source>
         <translation>Fiche</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="836"/>
+        <location filename="../src/SettingsPanel.cpp" line="846"/>
         <source>Documento livre</source>
         <translation>Document libre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="838"/>
+        <location filename="../src/SettingsPanel.cpp" line="848"/>
         <source>Novos personagens vêm como</source>
         <translation>Les nouveaux personnages arrivent en</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="838"/>
+        <location filename="../src/SettingsPanel.cpp" line="848"/>
         <source>O que já vem marcado ao criar um personagem.</source>
         <translation>Ce qui est déjà coché quand vous créez un personnage.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="840"/>
+        <location filename="../src/SettingsPanel.cpp" line="850"/>
         <source>Ficha: a página do personagem nasce com campos prontos (idade, origem, gênero, ocupação, história, conexões...), que dá pra editar, tirar e reordenar. Documento livre: uma página em branco, como um capítulo. Na hora de criar, dá pra escolher o outro.</source>
         <translation>Fiche : la page du personnage naît avec des champs prêts (âge, origine, genre, métier, histoire, liens...), que vous pouvez modifier, retirer et réordonner. Document libre : une page blanche, comme un chapitre. Au moment de créer, vous pouvez choisir l&apos;autre.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="848"/>
+        <location filename="../src/SettingsPanel.cpp" line="858"/>
         <source>Marca quem aparece no capítulo e avisa no cabeçalho.</source>
         <translation>Marque qui apparaît dans le chapitre et le signale dans l&apos;en-tête.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="849"/>
+        <location filename="../src/SettingsPanel.cpp" line="859"/>
         <source>Quando ativado, o app procura os nomes dos personagens no capítulo e marca a presença de quem aparece. A foto de quem chegou aparece ao lado do título; clicar nela desfaz.</source>
         <translation>Si activé, l&apos;app cherche les noms des personnages dans le chapitre et marque la présence de qui apparaît. La photo de qui est arrivé s&apos;affiche à côté du titre ; cliquer dessus annule.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="863"/>
+        <location filename="../src/SettingsPanel.cpp" line="873"/>
         <source>Detectar diálogos automaticamente</source>
         <translation>Détecter les dialogues automatiquement</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="863"/>
+        <location filename="../src/SettingsPanel.cpp" line="873"/>
         <source>Quem fala cada fala, no Pensário.</source>
         <translation>Qui dit chaque réplique, dans le Pensarium.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="864"/>
+        <location filename="../src/SettingsPanel.cpp" line="874"/>
         <source>Lê as falas do capítulo aberto alguns segundos depois que você para de digitar e descobre quem fala cada uma. Aparecem no Pensário, na aba Diálogos, e alimentam as Estatísticas.</source>
         <translation>Lit les répliques du chapitre ouvert quelques secondes après que vous arrêtez d&apos;écrire et trouve qui dit chacune. Elles apparaissent dans le Pensarium, onglet Dialogues, et alimentent les Statistiques.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="873"/>
+        <location filename="../src/SettingsPanel.cpp" line="883"/>
         <source>Menções (@) a capítulos e cenas</source>
         <translation>Mentions (@) de chapitres et de scènes</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="873"/>
+        <location filename="../src/SettingsPanel.cpp" line="883"/>
         <source>Por padrão o @ só sugere as gavetas.</source>
         <translation>Par défaut, @ ne propose que les tiroirs.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="880"/>
+        <location filename="../src/SettingsPanel.cpp" line="890"/>
         <source>Perguntar tempo e resumo ao criar cena com &quot;----&quot;</source>
         <translation>Demander le moment et le résumé en créant une scène avec «&#xa0;----&#xa0;»</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="880"/>
+        <location filename="../src/SettingsPanel.cpp" line="890"/>
         <source>Alimenta a Timeline na hora.</source>
         <translation>Alimente la Timeline tout de suite.</translation>
     </message>
@@ -29949,117 +30201,117 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Remplit le moment et le résumé de plusieurs chapitres d’un coup.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="903"/>
+        <location filename="../src/SettingsPanel.cpp" line="913"/>
         <source>Provedor</source>
         <translation>Fournisseur</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="903"/>
+        <location filename="../src/SettingsPanel.cpp" line="913"/>
         <source>Anthropic, Gemini e xAI via endpoint compatível.</source>
         <translation>Anthropic, Gemini et xAI via un endpoint compatible.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="912"/>
+        <location filename="../src/SettingsPanel.cpp" line="922"/>
         <source>Chave de API</source>
         <translation>Clé API</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="912"/>
+        <location filename="../src/SettingsPanel.cpp" line="922"/>
         <source>Fica salva neste computador, sem criptografia.</source>
         <translation>Enregistrée sur cet ordinateur, sans chiffrement.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="918"/>
+        <location filename="../src/SettingsPanel.cpp" line="928"/>
         <source>Endpoint (URL base)</source>
         <translation>Endpoint (URL de base)</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="921"/>
+        <location filename="../src/SettingsPanel.cpp" line="931"/>
         <source>Modelo</source>
         <translation>Modèle</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="923"/>
+        <location filename="../src/SettingsPanel.cpp" line="933"/>
         <source>Ler documentos na 1ª vez que abrir um projeto</source>
         <translation>Lire les documents à la première ouverture d’un projet</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="923"/>
+        <location filename="../src/SettingsPanel.cpp" line="933"/>
         <source>Uma chamada de API por documento. Custa de verdade.</source>
         <translation>Un appel d’API par document. Ça coûte pour de vrai.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1013"/>
+        <location filename="../src/SettingsPanel.cpp" line="1023"/>
         <source>Imagem de personagem · modelo</source>
         <translation>Image de personnage · modèle</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1013"/>
+        <location filename="../src/SettingsPanel.cpp" line="1023"/>
         <source>Usa a API da OpenAI com a mesma chave.</source>
         <translation>Utilise l’API d’OpenAI avec la même clé.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1014"/>
+        <location filename="../src/SettingsPanel.cpp" line="1024"/>
         <source>Imagem de personagem · qualidade</source>
         <translation>Image de personnage · qualité</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1015"/>
+        <location filename="../src/SettingsPanel.cpp" line="1025"/>
         <source>Imagem de personagem · tamanho</source>
         <translation>Image de personnage · taille</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1036"/>
+        <location filename="../src/SettingsPanel.cpp" line="1046"/>
         <source>Backup do projeto</source>
         <translation>Sauvegarde du projet</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1036"/>
+        <location filename="../src/SettingsPanel.cpp" line="1046"/>
         <source>Zipa a pasta inteira do projeto.</source>
         <translation>Compresse tout le dossier du projet.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1046"/>
+        <location filename="../src/SettingsPanel.cpp" line="1056"/>
         <source>Escolher…</source>
         <translation>Choisir…</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1049"/>
+        <location filename="../src/SettingsPanel.cpp" line="1059"/>
         <source>Pasta de destino</source>
         <translation>Dossier de destination</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1049"/>
+        <location filename="../src/SettingsPanel.cpp" line="1059"/>
         <source>Fora da pasta do projeto.</source>
         <translation>En dehors du dossier du projet.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1060"/>
+        <location filename="../src/SettingsPanel.cpp" line="1070"/>
         <source>A cada</source>
         <translation>Tous les</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1062"/>
+        <location filename="../src/SettingsPanel.cpp" line="1072"/>
         <source>Fazer agora</source>
         <translation>Faire maintenant</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1090"/>
+        <location filename="../src/SettingsPanel.cpp" line="1100"/>
         <source>Documentos simultâneos na RAM</source>
         <translation>Documents simultanés en RAM</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1090"/>
+        <location filename="../src/SettingsPanel.cpp" line="1100"/>
         <source>Mais é troca mais rápida; menos é menos memória.</source>
         <translation>Plus, c’est un changement plus rapide ; moins, c’est moins de mémoire.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1123"/>
+        <location filename="../src/SettingsPanel.cpp" line="1133"/>
         <source>ⓘ  Qenna Writer %1 · Sobre</source>
         <translation>ⓘ  Qenna Writer %1 · À propos</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1126"/>
+        <location filename="../src/SettingsPanel.cpp" line="1136"/>
         <source>Sobre o Qenna Writer</source>
         <translation>À propos de Qenna Writer</translation>
     </message>
@@ -30068,21 +30320,21 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Interface</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="329"/>
+        <location filename="../src/SettingsPanel.cpp" line="339"/>
         <source>Tamanho da interface</source>
         <translation>Taille de l&apos;interface</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="328"/>
-        <location filename="../src/SettingsPanel.cpp" line="334"/>
-        <location filename="../src/SettingsPanel.cpp" line="341"/>
+        <location filename="../src/SettingsPanel.cpp" line="338"/>
+        <location filename="../src/SettingsPanel.cpp" line="344"/>
         <location filename="../src/SettingsPanel.cpp" line="351"/>
         <location filename="../src/SettingsPanel.cpp" line="361"/>
+        <location filename="../src/SettingsPanel.cpp" line="371"/>
         <source>%1%</source>
         <translation>%1 %</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="331"/>
+        <location filename="../src/SettingsPanel.cpp" line="341"/>
         <source>Ajusta o tamanho da barra de ferramentas, da barra lateral e dos ícones — útil em telas menores ou de resolução mais alta.</source>
         <translation>Règle la taille de la barre d&apos;outils, de la barre latérale et des icônes — utile sur les petits écrans ou en haute résolution.</translation>
     </message>
@@ -30091,12 +30343,12 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Barre d&apos;outils&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="367"/>
+        <location filename="../src/SettingsPanel.cpp" line="377"/>
         <source>Topo</source>
         <translation>Haut</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="368"/>
+        <location filename="../src/SettingsPanel.cpp" line="378"/>
         <source>Lateral direita</source>
         <translation>Côté droit</translation>
     </message>
@@ -30105,47 +30357,47 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Barre latérale&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="454"/>
+        <location filename="../src/SettingsPanel.cpp" line="464"/>
         <source>Esquerda</source>
         <translation>Gauche</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="455"/>
+        <location filename="../src/SettingsPanel.cpp" line="465"/>
         <source>Direita</source>
         <translation>Droite</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="782"/>
+        <location filename="../src/SettingsPanel.cpp" line="792"/>
         <source>Testar o cursor</source>
         <translation>Essayer le curseur</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="790"/>
+        <location filename="../src/SettingsPanel.cpp" line="800"/>
         <source>Segurar o scroll na borda passa pro próximo capítulo.</source>
         <translation>Maintenir le défilement au bord passe au chapitre suivant.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="796"/>
+        <location filename="../src/SettingsPanel.cpp" line="806"/>
         <source>Numerais romanos nos capítulos</source>
         <translation>Chiffres romains pour les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="796"/>
+        <location filename="../src/SettingsPanel.cpp" line="806"/>
         <source>&quot;3 - A Batalha&quot; vira &quot;III - A Batalha&quot;.</source>
         <translation>«&#xa0;3 - La Bataille&#xa0;» devient «&#xa0;III - La Bataille&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="802"/>
+        <location filename="../src/SettingsPanel.cpp" line="812"/>
         <source>Meta unificada entre projetos</source>
         <translation>Objectif commun à tous les projets</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="802"/>
+        <location filename="../src/SettingsPanel.cpp" line="812"/>
         <source>A meta do dia soma todos os projetos.</source>
         <translation>L’objectif du jour additionne tous les projets.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="809"/>
+        <location filename="../src/SettingsPanel.cpp" line="819"/>
         <source>Corretor ortográfico</source>
         <translation>Correcteur orthographique</translation>
     </message>
@@ -30154,17 +30406,17 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Langue du dictionnaire&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="810"/>
+        <location filename="../src/SettingsPanel.cpp" line="820"/>
         <source>Palavras desconhecidas ganham um sublinhado vermelho. Clique com o botão direito numa delas para ver sugestões ou adicionar ao dicionário do projeto.</source>
         <translation>Les mots inconnus sont soulignés en rouge. Faites un clic droit sur l&apos;un d&apos;eux pour voir des suggestions ou l&apos;ajouter au dictionnaire du projet.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="825"/>
+        <location filename="../src/SettingsPanel.cpp" line="835"/>
         <source>Termos do glossário no texto</source>
         <translation>Termes du glossaire dans le texte</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="826"/>
+        <location filename="../src/SettingsPanel.cpp" line="836"/>
         <source>Os termos do glossário ganham um sublinhado pontilhado discreto. Parando o mouse em cima, aparece a ficha do termo: tipo, definição e a primeira vez que ele aparece no livro.</source>
         <translation>Les termes du glossaire reçoivent un soulignement pointillé discret. En passant la souris dessus, leur fiche apparaît&#xa0;: type, définition et première apparition dans le livre.</translation>
     </message>
@@ -30173,43 +30425,43 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Page d&apos;écriture</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="663"/>
+        <location filename="../src/SettingsPanel.cpp" line="673"/>
         <source>Largura da página</source>
         <translation>Largeur de la page</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="665"/>
+        <location filename="../src/SettingsPanel.cpp" line="675"/>
         <source>Comprimento da página</source>
         <translation>Hauteur de la page</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="667"/>
+        <location filename="../src/SettingsPanel.cpp" line="677"/>
         <source>Margem lateral</source>
         <translation>Marge latérale</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="669"/>
+        <location filename="../src/SettingsPanel.cpp" line="679"/>
         <source>Margem topo/base</source>
         <translation>Marge haut/bas</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="649"/>
+        <location filename="../src/SettingsPanel.cpp" line="659"/>
         <source>Define o tamanho da &quot;folha&quot; e o respiro interno entre a borda e o texto. No comprimento máximo (&quot;Tela cheia&quot;) a folha preenche a janela inteira e acompanha o seu tamanho; arrastando para a esquerda, a folha ganha uma altura fixa e o fundo aparece em volta. Vale para todos os projetos.</source>
         <translation>Définit la taille de la «&#xa0;feuille&#xa0;» et l&apos;espace intérieur entre le bord et le texte. À la hauteur maximale («&#xa0;Plein écran&#xa0;»), la feuille remplit toute la fenêtre et suit sa taille&#xa0;; en faisant glisser vers la gauche, la feuille prend une hauteur fixe et le fond apparaît autour. S&apos;applique à tous les projets.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="251"/>
-        <location filename="../src/SettingsPanel.cpp" line="297"/>
+        <location filename="../src/SettingsPanel.cpp" line="253"/>
+        <location filename="../src/SettingsPanel.cpp" line="307"/>
         <source>Assistente de IA</source>
         <translation>Assistante IA</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="295"/>
+        <location filename="../src/SettingsPanel.cpp" line="305"/>
         <source>O que é isso?</source>
         <translation>Qu&apos;est-ce que c&apos;est&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="298"/>
+        <location filename="../src/SettingsPanel.cpp" line="308"/>
         <source>O Qenna Writer conta com uma configuração completa para uso de um assistente de IA para escrita. Ele pode fazer revisões, leituras críticas, discutir sobre o projeto, pesquisar nele e muito mais.
 
 Como o Qenna Writer é uma ferramenta gratuita, o uso dessa ferramenta exige que o usuário possua sua própria chave de API.
@@ -30224,7 +30476,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Fournisseur&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="898"/>
+        <location filename="../src/SettingsPanel.cpp" line="908"/>
         <source>Local — em breve</source>
         <translation>Local — bientôt</translation>
     </message>
@@ -30233,7 +30485,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Clé API&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="910"/>
+        <location filename="../src/SettingsPanel.cpp" line="920"/>
         <source>sk-...</source>
         <translation>sk-...</translation>
     </message>
@@ -30246,12 +30498,12 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Modèle&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="913"/>
+        <location filename="../src/SettingsPanel.cpp" line="923"/>
         <source>Usada pela assistente de revisão ao selecionar um trecho no editor. A chave fica salva localmente em texto puro, sem criptografia — não compartilhe seu computador/config com quem não deva ver essa chave.</source>
         <translation>Utilisée par l&apos;assistante de révision quand vous sélectionnez un passage dans l&apos;éditeur. La clé est enregistrée localement en texte brut, sans chiffrement — ne partagez pas votre ordinateur/configuration avec quelqu&apos;un qui ne devrait pas voir cette clé.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="904"/>
+        <location filename="../src/SettingsPanel.cpp" line="914"/>
         <source>Trocar o provedor preenche o Endpoint automaticamente (Anthropic, Gemini e xAI oferecem endpoints compatíveis com o formato OpenAI, que é o único que este app fala). Suporte a modelo local ainda está a caminho.</source>
         <translation>Changer de fournisseur remplit automatiquement l&apos;Endpoint (Anthropic, Gemini et xAI proposent des endpoints compatibles avec le format OpenAI, le seul que cette application comprend). La prise en charge des modèles locaux arrive bientôt.</translation>
     </message>
@@ -30260,7 +30512,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Lire automatiquement les documents à la 1re ouverture d&apos;un projet</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="924"/>
+        <location filename="../src/SettingsPanel.cpp" line="934"/>
         <source>Roda o mesmo scan do botão &quot;Ler documentos do projeto&quot; (uma chamada de API por documento) sozinho, em segundo plano, só na primeira vez que um projeto sem resumo salvo ainda é aberto. Desligado por padrão — liga sob sua responsabilidade, é custo de API real.</source>
         <translation>Lance tout seul, en arrière-plan, la même analyse que le bouton «&#xa0;Lire les documents du projet&#xa0;» (un appel API par document), uniquement la première fois qu&apos;un projet sans résumé enregistré est ouvert. Désactivé par défaut — à activer sous votre responsabilité, c&apos;est un vrai coût d&apos;API.</translation>
     </message>
@@ -30273,20 +30525,20 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Qualité&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="995"/>
+        <location filename="../src/SettingsPanel.cpp" line="1005"/>
         <source>Baixa</source>
         <translation>Basse</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="544"/>
-        <location filename="../src/SettingsPanel.cpp" line="560"/>
-        <location filename="../src/SettingsPanel.cpp" line="996"/>
+        <location filename="../src/SettingsPanel.cpp" line="554"/>
+        <location filename="../src/SettingsPanel.cpp" line="570"/>
+        <location filename="../src/SettingsPanel.cpp" line="1006"/>
         <source>Média</source>
         <translation>Moyenne</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="559"/>
-        <location filename="../src/SettingsPanel.cpp" line="997"/>
+        <location filename="../src/SettingsPanel.cpp" line="569"/>
+        <location filename="../src/SettingsPanel.cpp" line="1007"/>
         <source>Alta</source>
         <translation>Haute</translation>
     </message>
@@ -30295,22 +30547,22 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Taille&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="999"/>
+        <location filename="../src/SettingsPanel.cpp" line="1009"/>
         <source>Quadrado</source>
         <translation>Carré</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1000"/>
+        <location filename="../src/SettingsPanel.cpp" line="1010"/>
         <source>Retrato</source>
         <translation>Portrait</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1001"/>
+        <location filename="../src/SettingsPanel.cpp" line="1011"/>
         <source>Paisagem</source>
         <translation>Paysage</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="984"/>
+        <location filename="../src/SettingsPanel.cpp" line="994"/>
         <source>Ponto de partida do diálogo de geração (a escolha feita lá atualiza estes campos) e também o que a %1 usa quando gera uma imagem sozinha durante o chat, sem abrir diálogo nenhum. A geração de imagem sempre usa a API oficial da OpenAI (api.openai.com) com a Chave de API acima, independente do Endpoint configurado pro chat.</source>
         <translation>Point de départ de la fenêtre de génération (le choix fait là-bas met à jour ces champs) et aussi ce que %1 utilise quand elle génère une image seule pendant la discussion, sans ouvrir de fenêtre. La génération d&apos;images utilise toujours l&apos;API officielle d&apos;OpenAI (api.openai.com) avec la clé API ci-dessus, quel que soit l&apos;Endpoint configuré pour la discussion.</translation>
     </message>
@@ -30319,7 +30571,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Détection des personnages</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="848"/>
+        <location filename="../src/SettingsPanel.cpp" line="858"/>
         <source>Detectar personagens automaticamente</source>
         <translation>Détecter automatiquement les personnages</translation>
     </message>
@@ -30332,37 +30584,37 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Quand cette option est activée, l&apos;application détecte les noms des personnages dans le texte et propose de marquer leur présence dans la scène.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="809"/>
+        <location filename="../src/SettingsPanel.cpp" line="819"/>
         <source>Sublinhado vermelho nas palavras desconhecidas.</source>
         <translation>Soulignement rouge sous les mots inconnus.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="814"/>
+        <location filename="../src/SettingsPanel.cpp" line="824"/>
         <source>Idioma do dicionário</source>
         <translation>Langue du dictionnaire</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="814"/>
+        <location filename="../src/SettingsPanel.cpp" line="824"/>
         <source>Qual dicionário o corretor usa.</source>
         <translation>Le dictionnaire utilisé par le correcteur.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="817"/>
+        <location filename="../src/SettingsPanel.cpp" line="827"/>
         <source>Corrigir nomes automaticamente</source>
         <translation>Corriger les noms automatiquement</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="817"/>
+        <location filename="../src/SettingsPanel.cpp" line="827"/>
         <source>&quot;Elizbeth&quot; vira &quot;Elizabeth&quot; enquanto você digita.</source>
         <translation>«&#xa0;Elizbeth&#xa0;» devient «&#xa0;Elizabeth&#xa0;» pendant que vous écrivez.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="818"/>
+        <location filename="../src/SettingsPanel.cpp" line="828"/>
         <source>Errou o nome de um personagem, cenário ou objeto por uma ou duas letras? Assim que a palavra termina, o Qenna troca pelo nome certo. Só acontece com palavras que o corretor já marcou como erro. Apertar Backspace logo depois desfaz a troca, e o projeto passa a aceitar aquela palavra.</source>
         <translation>Vous avez mal écrit le nom d’un personnage, d’un lieu ou d’un objet à une ou deux lettres près&#xa0;? Dès que le mot se termine, Qenna met le bon nom. Cela n’arrive qu’aux mots que le correcteur a déjà signalés. Appuyer sur Retour arrière juste après annule le remplacement, et le projet accepte désormais ce mot.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="825"/>
+        <location filename="../src/SettingsPanel.cpp" line="835"/>
         <source>Sublinhado pontilhado e ficha no hover.</source>
         <translation>Soulignement pointillé et fiche au survol.</translation>
     </message>
@@ -30375,22 +30627,22 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Marque directement, sans demander.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="851"/>
+        <location filename="../src/SettingsPanel.cpp" line="861"/>
         <source>Rodar</source>
         <translation>Lancer</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="852"/>
+        <location filename="../src/SettingsPanel.cpp" line="862"/>
         <source>Detectar presença por cena em todos os capítulos</source>
         <translation>Détecter la présence par scène dans tous les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="852"/>
+        <location filename="../src/SettingsPanel.cpp" line="862"/>
         <source>Pra capítulos antigos. Um por vez, sem travar.</source>
         <translation>Pour les anciens chapitres. Un à la fois, sans bloquer.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="853"/>
+        <location filename="../src/SettingsPanel.cpp" line="863"/>
         <source>Preenche a presença por CENA (não só por capítulo) usando quem já está confirmado — útil pra capítulos antigos que você ainda não reabriu nesta versão. Roda um capítulo por vez, não trava o app.</source>
         <translation>Remplit la présence par SCÈNE (et pas seulement par chapitre) à partir des personnages déjà confirmés — utile pour les anciens chapitres pas encore rouverts dans cette version. Traite un chapitre à la fois, sans bloquer l&apos;application.</translation>
     </message>
@@ -30403,7 +30655,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Autoriser la mention des documents du manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="874"/>
+        <location filename="../src/SettingsPanel.cpp" line="884"/>
         <source>Por padrão, @ só sugere documentos das gavetas (personagens, locais etc.). Ative para incluir também capítulos e cenas do manuscrito.</source>
         <translation>Par défaut, @ ne suggère que les documents des tiroirs (personnages, lieux, etc.). Activez cette option pour inclure aussi les chapitres et scènes du manuscrit.</translation>
     </message>
@@ -30412,12 +30664,12 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Navigation</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="790"/>
+        <location filename="../src/SettingsPanel.cpp" line="800"/>
         <source>Navegar automaticamente entre capítulos</source>
         <translation>Naviguer automatiquement entre les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="791"/>
+        <location filename="../src/SettingsPanel.cpp" line="801"/>
         <source>Ao chegar no início ou fim de um capítulo, manter o scroll pressionado na borda por 2 segundos avança ou retrocede automaticamente para o próximo.</source>
         <translation>Au début ou à la fin d&apos;un chapitre, maintenir le défilement au bord pendant 2 secondes passe automatiquement au chapitre suivant ou précédent.</translation>
     </message>
@@ -30430,7 +30682,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Utiliser des chiffres romains pour les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="797"/>
+        <location filename="../src/SettingsPanel.cpp" line="807"/>
         <source>Troca o número que aparece antes do título do capítulo (ex.: &quot;3 - A Batalha&quot; vira &quot;III - A Batalha&quot;) na barra lateral do manuscrito.</source>
         <translation>Change le numéro affiché avant le titre du chapitre (ex.&#xa0;: «&#xa0;3 - La Bataille&#xa0;» devient «&#xa0;III - La Bataille&#xa0;») dans la barre latérale du manuscrit.</translation>
     </message>
@@ -30443,7 +30695,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Afficher une fenêtre à la création d&apos;une scène via «&#xa0;----&#xa0;»</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="881"/>
+        <location filename="../src/SettingsPanel.cpp" line="891"/>
         <source>Ao dividir o capítulo numa cena nova, pergunta o marcador temporal e o resumo que alimentam a linha do tempo. Se desligado, defina isso manualmente pelo clique direito na cena.</source>
         <translation>En divisant le chapitre en une nouvelle scène, demande le repère temporel et le résumé qui alimentent la chronologie. Si c&apos;est désactivé, définissez-les manuellement par un clic droit sur la scène.</translation>
     </message>
@@ -30464,7 +30716,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Documents gardés en mémoire simultanément&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1091"/>
+        <location filename="../src/SettingsPanel.cpp" line="1101"/>
         <source>O app mantém os documentos abertos recentemente na memória para troca rápida. Ao atingir o limite, o mais antigo (sem edições pendentes) é descarregado automaticamente.</source>
         <translation>L&apos;application garde en mémoire les documents récemment ouverts pour passer rapidement de l&apos;un à l&apos;autre. Une fois la limite atteinte, le plus ancien (sans modification en attente) est automatiquement déchargé.</translation>
     </message>
@@ -30477,7 +30729,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Objectif unifié pour tous les projets</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="803"/>
+        <location filename="../src/SettingsPanel.cpp" line="813"/>
         <source>Quando ativado, a meta e o progresso do dia passam a ser somados entre todos os projetos abertos no Qenna Writer, em vez de contar isolado por projeto — útil pra quem escreve em mais de um no mesmo dia.</source>
         <translation>Quand cette option est activée, l&apos;objectif et la progression du jour sont additionnés sur tous les projets ouverts dans Qenna Writer, au lieu d&apos;être comptés projet par projet — utile si vous écrivez dans plusieurs projets le même jour.</translation>
     </message>
@@ -30486,27 +30738,27 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Sauvegarde du projet</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1033"/>
+        <location filename="../src/SettingsPanel.cpp" line="1043"/>
         <source>Desligado</source>
         <translation>Désactivé</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1034"/>
+        <location filename="../src/SettingsPanel.cpp" line="1044"/>
         <source>Automático</source>
         <translation>Automatique</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1035"/>
+        <location filename="../src/SettingsPanel.cpp" line="1045"/>
         <source>Só lembrete</source>
         <translation>Rappel uniquement</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1027"/>
+        <location filename="../src/SettingsPanel.cpp" line="1037"/>
         <source>Zipa a pasta inteira do projeto (manuscritos, fichas, lousas, tudo) periodicamente. Escolha uma pasta de destino FORA da pasta do projeto e, se possível, fora de Documentos — outro disco, pendrive ou uma pasta sincronizada na nuvem protegem de verdade contra perder o projeto e o backup juntos.</source>
         <translation>Compresse périodiquement tout le dossier du projet (manuscrits, fiches, Boards, tout) en zip. Choisissez un dossier de destination EN DEHORS du dossier du projet et, si possible, en dehors de Documents — un autre disque, une clé USB ou un dossier synchronisé dans le cloud protègent vraiment contre la perte simultanée du projet et de la sauvegarde.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1044"/>
+        <location filename="../src/SettingsPanel.cpp" line="1054"/>
         <source>Nenhuma pasta escolhida</source>
         <translation>Aucun dossier choisi</translation>
     </message>
@@ -30519,152 +30771,152 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Tous les&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1052"/>
+        <location filename="../src/SettingsPanel.cpp" line="1062"/>
         <source>1 dia</source>
         <translation>1 jour</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1053"/>
+        <location filename="../src/SettingsPanel.cpp" line="1063"/>
         <source>2 dias</source>
         <translation>2 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1054"/>
+        <location filename="../src/SettingsPanel.cpp" line="1064"/>
         <source>3 dias</source>
         <translation>3 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1055"/>
+        <location filename="../src/SettingsPanel.cpp" line="1065"/>
         <source>4 dias</source>
         <translation>4 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1056"/>
+        <location filename="../src/SettingsPanel.cpp" line="1066"/>
         <source>5 dias</source>
         <translation>5 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1057"/>
+        <location filename="../src/SettingsPanel.cpp" line="1067"/>
         <source>6 dias</source>
         <translation>6 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1058"/>
+        <location filename="../src/SettingsPanel.cpp" line="1068"/>
         <source>7 dias</source>
         <translation>7 jours</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1064"/>
+        <location filename="../src/SettingsPanel.cpp" line="1074"/>
         <source>Fazer backup agora</source>
         <translation>Sauvegarder maintenant</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1077"/>
+        <location filename="../src/SettingsPanel.cpp" line="1087"/>
         <source>Escolher pasta de destino do backup</source>
         <translation>Choisir le dossier de destination de la sauvegarde</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1133"/>
+        <location filename="../src/SettingsPanel.cpp" line="1143"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1252"/>
+        <location filename="../src/SettingsPanel.cpp" line="1263"/>
         <source>Buscar opção</source>
         <translation>Rechercher une option</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1338"/>
+        <location filename="../src/SettingsPanel.cpp" line="1363"/>
         <source>Nenhuma opção com &quot;%1&quot;.</source>
         <translation>Aucune option avec «&#xa0;%1&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1369"/>
+        <location filename="../src/SettingsPanel.cpp" line="1394"/>
         <source>Tela cheia</source>
         <translation>Plein écran</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="1492"/>
+        <location filename="../src/SettingsPanel.cpp" line="1517"/>
         <source>Idioma do app (%1)</source>
         <translation>Langue de l&apos;application (%1)</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="530"/>
+        <location filename="../src/SettingsPanel.cpp" line="540"/>
         <source>Animações da interface</source>
         <translation>Animations de l&apos;interface</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="531"/>
+        <location filename="../src/SettingsPanel.cpp" line="541"/>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
         <translation>Les tiroirs et le tiroir des Manuscrits sortent de derrière la barre latérale, avec les lignes qui arrivent en cascade. Désactivé, tout apparaît immédiatement.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="523"/>
+        <location filename="../src/SettingsPanel.cpp" line="533"/>
         <source>Nomes na barra lateral</source>
         <translation>Noms dans la barre latérale</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="524"/>
+        <location filename="../src/SettingsPanel.cpp" line="534"/>
         <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
         <translation>En laissant la souris sur la barre latérale, elle affiche le nom de chaque bouton et le nombre d&apos;éléments de chaque tiroir. Désactivé, il ne reste que les icônes, avec l&apos;infobulle habituelle.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="745"/>
+        <location filename="../src/SettingsPanel.cpp" line="755"/>
         <source>Cursor suave</source>
         <translation>Curseur fluide</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="743"/>
+        <location filename="../src/SettingsPanel.cpp" line="753"/>
         <source>Enquanto você digita, o cursor desliza até a próxima letra em vez de pular, como no Word. Desligado, volta o cursor de sempre.</source>
         <translation>Pendant la frappe, le curseur glisse jusqu&apos;à la lettre suivante au lieu de sauter, comme dans Word. Désactivé, le curseur habituel revient.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="250"/>
+        <location filename="../src/SettingsPanel.cpp" line="252"/>
         <source>Aparência</source>
         <translation>Apparence</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="250"/>
+        <location filename="../src/SettingsPanel.cpp" line="252"/>
         <source>Escrita</source>
         <translation>Écriture</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="250"/>
+        <location filename="../src/SettingsPanel.cpp" line="252"/>
         <source>Corretor</source>
         <translation>Correcteur</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="250"/>
+        <location filename="../src/SettingsPanel.cpp" line="252"/>
         <source>Personagens</source>
         <translation>Personnages</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="251"/>
+        <location filename="../src/SettingsPanel.cpp" line="253"/>
         <source>Timeline</source>
         <translation>Timeline</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="251"/>
+        <location filename="../src/SettingsPanel.cpp" line="253"/>
         <source>Backup</source>
         <translation>Sauvegarde</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="251"/>
+        <location filename="../src/SettingsPanel.cpp" line="253"/>
         <source>Avançado</source>
         <translation>Avancé</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="254"/>
+        <location filename="../src/SettingsPanel.cpp" line="257"/>
         <source>Tamanho, barras, tema e idioma.</source>
         <translation>Taille, barres, thème et langue.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="255"/>
+        <location filename="../src/SettingsPanel.cpp" line="258"/>
         <source>A folha, o cursor e os capítulos.</source>
         <translation>La page, le curseur et les chapitres.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="256"/>
+        <location filename="../src/SettingsPanel.cpp" line="259"/>
         <source>Sublinhados no texto e dicionário.</source>
         <translation>Soulignements dans le texte et dictionnaire.</translation>
     </message>
@@ -30673,58 +30925,58 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Présence dans les scènes et mentions avec @.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="258"/>
+        <location filename="../src/SettingsPanel.cpp" line="261"/>
         <source>Tempo e resumo das cenas.</source>
         <translation>Moment et résumé des scènes.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="259"/>
+        <location filename="../src/SettingsPanel.cpp" line="262"/>
         <source>Provedor, chave e imagem de personagem. O app nunca exige IA.</source>
         <translation>Fournisseur, clé et image de personnage. L’app n’exige jamais d’IA.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="260"/>
+        <location filename="../src/SettingsPanel.cpp" line="263"/>
         <source>Cópia zipada do projeto inteiro.</source>
         <translation>Copie compressée de tout le projet.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="261"/>
+        <location filename="../src/SettingsPanel.cpp" line="264"/>
         <source>Memória.</source>
         <translation>Mémoire.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="329"/>
+        <location filename="../src/SettingsPanel.cpp" line="339"/>
         <source>Barra de ferramentas, barra lateral e ícones.</source>
         <translation>Barre d’outils, barre latérale et icônes.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="352"/>
+        <location filename="../src/SettingsPanel.cpp" line="362"/>
         <source>Zoom do app</source>
         <translation>Zoom de l&apos;app</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="352"/>
+        <location filename="../src/SettingsPanel.cpp" line="362"/>
         <source>Aumenta tudo: painéis, gavetas, textos e janelas. Vale ao reabrir o Qenna.</source>
         <translation>Agrandit tout : panneaux, tiroirs, textes et fenêtres. Prend effet à la prochaine ouverture de Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="354"/>
+        <location filename="../src/SettingsPanel.cpp" line="364"/>
         <source>Deixa o app inteiro maior ou menor, como o zoom de um navegador. Útil em telas muito densas, como as dos MacBooks, onde tudo sai pequeno. Diferente do Tamanho da interface, que só mexe nas barras. A mudança vale na próxima vez que você abrir o Qenna.</source>
         <translation>Agrandit ou réduit toute l&apos;app, comme le zoom d&apos;un navigateur. Utile sur les écrans très denses, comme ceux des MacBook, où tout paraît petit. Différent de la Taille de l&apos;interface, qui ne touche qu&apos;aux barres. Le changement prend effet à la prochaine ouverture de Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="369"/>
+        <location filename="../src/SettingsPanel.cpp" line="379"/>
         <source>Barra de ferramentas</source>
         <translation>Barre d’outils</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="369"/>
+        <location filename="../src/SettingsPanel.cpp" line="379"/>
         <source>Onde a barra de ferramentas fica.</source>
         <translation>Où se trouve la barre d’outils.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="378"/>
-        <location filename="../src/SettingsPanel.cpp" line="466"/>
+        <location filename="../src/SettingsPanel.cpp" line="388"/>
+        <location filename="../src/SettingsPanel.cpp" line="476"/>
         <source>Clássica</source>
         <translation>Classique</translation>
     </message>
@@ -30737,17 +30989,17 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Ruban simplifié</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="384"/>
+        <location filename="../src/SettingsPanel.cpp" line="394"/>
         <source>Só as abas</source>
         <translation>Onglets seuls</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="391"/>
+        <location filename="../src/SettingsPanel.cpp" line="401"/>
         <source>Estilo da barra</source>
         <translation>Style de la barre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="391"/>
+        <location filename="../src/SettingsPanel.cpp" line="401"/>
         <source>A clássica ou a faixa com abas, como no Word.</source>
         <translation>La classique ou le ruban à onglets, comme dans Word.</translation>
     </message>
@@ -30756,13 +31008,13 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Classique : la barre de toujours, avec tous les boutons sur une ligne. Ruban : onglets (Éditeur, Révision, Monde, Ambiance) et Fichier au bout. Complet montre les groupes nommés et de grands boutons ; simplifié tient sur une ligne ; onglets seuls garde l&apos;écran dégagé et le ruban descend quand vous cliquez sur un onglet. Le ruban vaut avec la barre en haut ; sur le côté, c&apos;est la classique.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="405"/>
-        <location filename="../src/SettingsPanel.cpp" line="489"/>
+        <location filename="../src/SettingsPanel.cpp" line="415"/>
+        <location filename="../src/SettingsPanel.cpp" line="499"/>
         <source>De ponta a ponta</source>
         <translation>Bord à bord</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="406"/>
+        <location filename="../src/SettingsPanel.cpp" line="416"/>
         <source>Flutuante</source>
         <translation>Flottant</translation>
     </message>
@@ -30771,7 +31023,7 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Position du ruban</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="408"/>
+        <location filename="../src/SettingsPanel.cpp" line="418"/>
         <source>No teto da janela ou flutuando em cima da folha.</source>
         <translation>En haut de la fenêtre ou flottant au-dessus de la feuille.</translation>
     </message>
@@ -30780,424 +31032,444 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <translation type="vanished">Bord à bord : le ruban devient le haut de la fenêtre, comme dans Word, et la barre latérale descend collée à lui. Flottant : le ruban a la largeur de la feuille et flotte au-dessus. Ne s&apos;applique que si le style de la barre est l&apos;un des rubans.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="456"/>
+        <location filename="../src/SettingsPanel.cpp" line="466"/>
         <source>Barra lateral</source>
         <translation>Barre latérale</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="456"/>
+        <location filename="../src/SettingsPanel.cpp" line="466"/>
         <source>De que lado ficam as gavetas.</source>
         <translation>De quel côté sont les tiroirs.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="467"/>
+        <location filename="../src/SettingsPanel.cpp" line="477"/>
         <source>Gavetas com cor</source>
         <translation>Tiroirs en couleur</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="468"/>
+        <location filename="../src/SettingsPanel.cpp" line="478"/>
         <source>Barra com nomes</source>
         <translation>Barre avec noms</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="469"/>
+        <location filename="../src/SettingsPanel.cpp" line="479"/>
         <source>Tambor de gavetas</source>
         <translation>Tambour de tiroirs</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="470"/>
+        <location filename="../src/SettingsPanel.cpp" line="480"/>
         <source>Lê a cena</source>
         <translation>Lit la scène</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="475"/>
+        <location filename="../src/SettingsPanel.cpp" line="485"/>
         <source>Estilo da barra lateral</source>
         <translation>Style de la barre latérale</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="475"/>
+        <location filename="../src/SettingsPanel.cpp" line="485"/>
         <source>O jeito das gavetas e dos nomes na barra lateral.</source>
         <translation>L&apos;allure des tiroirs et des noms dans la barre latérale.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="477"/>
+        <location filename="../src/SettingsPanel.cpp" line="487"/>
         <source>Clássica: a barra de sempre. Gavetas com cor: as gavetas ficam numa bandeja, cada uma com a cor dela, separadas das ferramentas. Barra com nomes: a barra fica larga, com o nome do projeto e tudo escrito, e as gavetas abrem como árvore ali mesmo; o botão do pé recolhe. Tambor de gavetas: as gavetas giram num tambor com a roda do mouse. Lê a cena: as gavetas acendem com quem e o que aparece na folha aberta. Clique com o botão direito na barra pra trocar na hora.</source>
         <translation>Classique : la barre de toujours. Tiroirs en couleur : les tiroirs sont dans un plateau, chacun de sa couleur, à part des outils. Barre avec noms : la barre s&apos;élargit, avec le nom du projet et tout écrit, et les tiroirs s&apos;ouvrent en arbre sur place ; le bouton du bas la replie. Tambour de tiroirs : les tiroirs tournent sur un tambour avec la molette. Lit la scène : les tiroirs s&apos;allument selon qui et quoi apparaît sur la page ouverte. Clic droit sur la barre pour changer sur-le-champ.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="490"/>
+        <location filename="../src/SettingsPanel.cpp" line="500"/>
         <source>Placa</source>
         <translation>Plaque</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="492"/>
+        <location filename="../src/SettingsPanel.cpp" line="502"/>
         <source>Comprimento da barra lateral</source>
         <translation>Longueur de la barre latérale</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="492"/>
+        <location filename="../src/SettingsPanel.cpp" line="502"/>
         <source>Até o chão ou só a altura do que ela tem.</source>
         <translation>Jusqu&apos;en bas ou seulement la hauteur de son contenu.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="494"/>
+        <location filename="../src/SettingsPanel.cpp" line="504"/>
         <source>De ponta a ponta: a barra vai do topo até o pé da janela. Placa: a barra fica do tamanho do que ela tem, e o fundo do tema aparece livre embaixo dela. Vale pra todos os estilos.</source>
         <translation>D&apos;un bout à l&apos;autre : la barre va du haut en bas de la fenêtre. Plaque : la barre n&apos;a que la hauteur de son contenu, et le fond du thème reste libre en dessous. Vaut pour tous les styles.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="504"/>
+        <location filename="../src/SettingsPanel.cpp" line="514"/>
         <source>Barra da direita</source>
         <translation>Barre de droite</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="504"/>
+        <location filename="../src/SettingsPanel.cpp" line="514"/>
         <source>As ferramentas do projeto do outro lado da folha.</source>
         <translation>Les outils du projet de l&apos;autre côté de la page.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="505"/>
+        <location filename="../src/SettingsPanel.cpp" line="515"/>
         <source>Criador de Mundos, Referência, Pensário, Lembretes, Estatísticas e a assistente ganham uma barra própria, irmã da barra lateral, do outro lado da folha, e saem da barra de cima. Desligado, voltam pra barra de cima.</source>
         <translation>Créateur de Mondes, Référence, Pensarium, Rappels, Statistiques et l&apos;assistante ont leur propre barre, sœur de la barre latérale, de l&apos;autre côté de la page, et quittent la barre du haut. Désactivé, ils reviennent dans la barre du haut.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="515"/>
+        <location filename="../src/SettingsPanel.cpp" line="525"/>
         <source>Barras em relevo</source>
         <translation>Barres en relief</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="515"/>
+        <location filename="../src/SettingsPanel.cpp" line="525"/>
         <source>Paradas, as barras ficam gravadas na mesa.</source>
         <translation>Au repos, les barres sont gravées dans le bureau.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="516"/>
+        <location filename="../src/SettingsPanel.cpp" line="526"/>
         <source>Sem o mouse em cima, a barra de cima e as laterais perdem a caixa e os botões ficam gravados no fundo, em baixo-relevo, deixando o tema aparecer. O mouse chega e a barra acorda inteira. Os botões nunca saem do lugar.</source>
         <translation>Sans la souris dessus, la barre du haut et les barres latérales perdent leur cadre et les boutons sont gravés dans le fond, en bas-relief, laissant voir le thème. Quand la souris arrive, la barre se réveille en entier. Les boutons ne bougent jamais.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="523"/>
+        <location filename="../src/SettingsPanel.cpp" line="533"/>
         <source>Mostra o nome de cada botão com o mouse em cima.</source>
         <translation>Affiche le nom de chaque bouton au survol.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="530"/>
+        <location filename="../src/SettingsPanel.cpp" line="540"/>
         <source>Gavetas deslizando e listas em cascata.</source>
         <translation>Tiroirs qui glissent et listes en cascade.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="588"/>
-        <location filename="../src/SettingsPanel.cpp" line="592"/>
+        <location filename="../src/SettingsPanel.cpp" line="598"/>
+        <location filename="../src/SettingsPanel.cpp" line="602"/>
         <source>Vinheta de abertura</source>
         <translation>Animation d&apos;ouverture</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="588"/>
+        <location filename="../src/SettingsPanel.cpp" line="598"/>
         <source>O logo do Qenna se montando ao abrir o app.</source>
         <translation>Le logo de Qenna qui se construit à l&apos;ouverture de l&apos;app.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="589"/>
+        <location filename="../src/SettingsPanel.cpp" line="599"/>
         <source>A animação do logo que toca enquanto o Qenna abre. Desligada, o app abre direto. Vale na próxima vez que você abrir o Qenna.</source>
         <translation>L&apos;animation du logo qui se joue pendant l&apos;ouverture de Qenna. Désactivée, l&apos;app s&apos;ouvre directement. Prend effet la prochaine fois que vous ouvrez Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="593"/>
+        <location filename="../src/SettingsPanel.cpp" line="603"/>
         <source>Você realmente deseja desligar a vinheta do app? Eu sei que ela é meio demorada, mas poxa, deu tanto trabalho pra fazer 🥺</source>
         <translation>Vous voulez vraiment désactiver l&apos;animation d&apos;ouverture ? Je sais qu&apos;elle est un peu longue, mais bon, elle a demandé tellement de travail 🥺</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="595"/>
+        <location filename="../src/SettingsPanel.cpp" line="605"/>
         <source>Confirmar</source>
         <translation>Confirmer</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="595"/>
+        <location filename="../src/SettingsPanel.cpp" line="605"/>
         <source>Manter vinheta</source>
         <translation>Garder l&apos;animation</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="607"/>
+        <location filename="../src/SettingsPanel.cpp" line="617"/>
         <source>Tema</source>
         <translation>Thème</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="607"/>
+        <location filename="../src/SettingsPanel.cpp" line="617"/>
         <source>Abre os Temas.</source>
         <translation>Ouvre les Thèmes.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="626"/>
+        <location filename="../src/SettingsPanel.cpp" line="636"/>
         <source>Idioma do app</source>
         <translation>Langue de l’app</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="626"/>
+        <location filename="../src/SettingsPanel.cpp" line="636"/>
         <source>Vale na próxima vez que você abrir o Qenna.</source>
         <translation>S’applique à la prochaine ouverture de Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="658"/>
+        <location filename="../src/SettingsPanel.cpp" line="668"/>
         <source>Modo de página</source>
         <translation>Mode page</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="658"/>
+        <location filename="../src/SettingsPanel.cpp" line="668"/>
         <source>O texto em folhas separadas, como no Word.</source>
         <translation>Le texte sur des feuilles séparées, comme dans Word.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="659"/>
+        <location filename="../src/SettingsPanel.cpp" line="669"/>
         <source>Divide o capítulo em folhas de papel (A4 na largura da página), com um vão entre elas, como o Layout de Impressão do Word. A folha tem a margem dela, então o comprimento e a margem topo/base não se aplicam. Só muda a tela: o arquivo e a exportação continuam iguais. Vale para todos os projetos.</source>
         <translation>Divise le chapitre en feuilles de papier (A4 à la largeur de la page), avec un espace entre elles, comme la mise en page d&apos;impression de Word. La feuille a sa propre marge, donc la longueur et la marge haut/bas ne s&apos;appliquent pas. Seul l&apos;écran change : le fichier et l&apos;export restent identiques. Valable pour tous les projets.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="663"/>
+        <location filename="../src/SettingsPanel.cpp" line="673"/>
         <source>Largura da folha de escrita.</source>
         <translation>Largeur de la page d’écriture.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="665"/>
+        <location filename="../src/SettingsPanel.cpp" line="675"/>
         <source>&quot;Tela cheia&quot; acompanha a janela.</source>
         <translation>«&#xa0;Plein écran&#xa0;» suit la fenêtre.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="667"/>
+        <location filename="../src/SettingsPanel.cpp" line="677"/>
         <source>Respiro entre a borda da folha e o texto.</source>
         <translation>Espace entre le bord de la page et le texte.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="669"/>
+        <location filename="../src/SettingsPanel.cpp" line="679"/>
         <source>Respiro em cima e embaixo.</source>
         <translation>Espace en haut et en bas.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="685"/>
+        <location filename="../src/SettingsPanel.cpp" line="695"/>
         <source>Nó da Timeline</source>
         <translation>Nœud de la Chronologie</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="686"/>
+        <location filename="../src/SettingsPanel.cpp" line="696"/>
         <source>Nome da cena</source>
         <translation>Nom de la scène</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="696"/>
+        <location filename="../src/SettingsPanel.cpp" line="706"/>
         <source>Quebra de cena</source>
         <translation>Changement de scène</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="696"/>
+        <location filename="../src/SettingsPanel.cpp" line="706"/>
         <source>Como a divisão entre cenas aparece no texto.</source>
         <translation>Comment la séparation entre les scènes apparaît dans le texte.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="698"/>
+        <location filename="../src/SettingsPanel.cpp" line="708"/>
         <source>Nó da Timeline: a bolinha da Timeline entre dois fios, na cor da linha da cena (Flashback na cor dele, vazada quando a cena não tem data). Nome da cena: &quot;CENA 2&quot; com o título e o &quot;quando se passa&quot; embaixo. Só muda o desenho na tela; o arquivo e a exportação não mudam.</source>
         <translation>Nœud de la Chronologie&#xa0;: le point de la Chronologie entre deux fils, dans la couleur de la ligne de la scène (Flashback dans sa couleur, creux quand la scène n&apos;a pas de date). Nom de la scène&#xa0;: «&#xa0;SCÈNE 2&#xa0;» avec le titre et le «&#xa0;quand ça se passe&#xa0;» dessous. Seul le dessin à l&apos;écran change&#xa0;; le fichier et l&apos;export restent les mêmes.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="713"/>
+        <location filename="../src/SettingsPanel.cpp" line="723"/>
         <source>Abertura de capítulo</source>
         <translation>Ouverture de chapitre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="713"/>
+        <location filename="../src/SettingsPanel.cpp" line="723"/>
         <source>O nó que abre cada capítulo no livro inteiro.</source>
         <translation>Le nœud qui ouvre chaque chapitre dans le livre entier.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="715"/>
+        <location filename="../src/SettingsPanel.cpp" line="725"/>
         <source>Fios: o rótulo entre dois fios, com o título embaixo. Nó: a bolinha da Timeline com o número. Numeral: o número grande em itálico. Romano: algarismo romano e título em itálico. Margem: alinhado à esquerda, como revista. Fleurão: um ornamento clássico em cima. Também muda no botão direito da abertura ou do nome na faixa de cima.</source>
         <translation>Filets : l&apos;étiquette entre deux filets, avec le titre en dessous. Nœud : le point de la Chronologie avec le numéro. Chiffre : le grand chiffre en italique. Romain : chiffre romain et titre en italique. Marge : aligné à gauche, comme un magazine. Fleuron : un ornement classique au-dessus. Se change aussi d&apos;un clic droit sur l&apos;ouverture ou sur le nom dans la bande du haut.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="724"/>
+        <location filename="../src/SettingsPanel.cpp" line="734"/>
         <source>Nó na faixa de cima</source>
         <translation>Nœud dans la bande du haut</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="724"/>
+        <location filename="../src/SettingsPanel.cpp" line="734"/>
         <source>O nome do documento no estilo da abertura.</source>
         <translation>Le nom du document dans le style de l&apos;ouverture.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="725"/>
+        <location filename="../src/SettingsPanel.cpp" line="735"/>
         <source>Ligado, a faixa acima da folha mostra o documento no estilo da abertura de capítulo, em qualquer documento: capítulo, cena, gaveta e ficha. Desligado, volta a faixa simples, só com o nome.</source>
         <translation>Activé, la bande au-dessus de la page affiche le document dans le style de l&apos;ouverture de chapitre, dans n&apos;importe quel document : chapitre, scène, tiroir et fiche. Désactivé, la bande simple revient, avec juste le nom.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="745"/>
+        <location filename="../src/SettingsPanel.cpp" line="755"/>
         <source>O cursor desliza até a próxima letra, como no Word.</source>
         <translation>Le curseur glisse jusqu’à la lettre suivante, comme dans Word.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="755"/>
+        <location filename="../src/SettingsPanel.cpp" line="765"/>
         <source>desligado</source>
         <translation>désactivé</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="755"/>
+        <location filename="../src/SettingsPanel.cpp" line="765"/>
         <source>%1 ms</source>
         <translation>%1 ms</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="760"/>
+        <location filename="../src/SettingsPanel.cpp" line="770"/>
         <source>Deslize do cursor</source>
         <translation>Glissement du curseur</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="761"/>
+        <location filename="../src/SettingsPanel.cpp" line="771"/>
         <source>Fade da letra</source>
         <translation>Fondu de la lettre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="768"/>
+        <location filename="../src/SettingsPanel.cpp" line="778"/>
         <source>Digite aqui pra testar…</source>
         <translation>Tapez ici pour essayer…</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="541"/>
+        <location filename="../src/SettingsPanel.cpp" line="551"/>
         <source>Fundos animados</source>
         <translation>Arrière-plans animés</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="541"/>
+        <location filename="../src/SettingsPanel.cpp" line="551"/>
         <source>O clima na mesa dos temas Animados.</source>
         <translation>La météo sur le bureau des thèmes Animés.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="538"/>
+        <location filename="../src/SettingsPanel.cpp" line="548"/>
         <source>Os temas da categoria Animados têm clima na mesa: chuva, neve, cidade, floresta. A animação para sozinha quando o Qenna fica em segundo plano. Desligada, a mesa fica parada no último quadro e o app trabalha menos.</source>
         <translation>Les thèmes de la catégorie Animés ont de la météo sur le bureau : pluie, neige, ville, forêt. L&apos;animation se met en pause toute seule quand Qenna passe en arrière-plan. Désactivée, le bureau reste figé sur la dernière image et l&apos;app travaille moins.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="379"/>
+        <location filename="../src/SettingsPanel.cpp" line="254"/>
+        <source>Central de bugs</source>
+        <translation>Centre des bugs</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsPanel.cpp" line="254"/>
+        <source>Reportar um bug</source>
+        <translation>Signaler un bug</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsPanel.cpp" line="265"/>
+        <source>Todos os relatos. Mude o estágio e responda: quem enviou acompanha em &quot;Meus bugs&quot;.</source>
+        <translation>Tous les signalements. Changez l&apos;étape et répondez : la personne qui l&apos;a envoyé suit tout dans « Mes bugs ».</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsPanel.cpp" line="266"/>
+        <source>Conte o que deu errado e acompanhe a correção.</source>
+        <translation>Dites ce qui n&apos;a pas marché et suivez la correction.</translation>
+    </message>
+    <message>
+        <location filename="../src/SettingsPanel.cpp" line="389"/>
         <source>Abas completas</source>
         <translation>Onglets complets</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="380"/>
+        <location filename="../src/SettingsPanel.cpp" line="390"/>
         <source>Abas simples</source>
         <translation>Onglets simples</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="381"/>
+        <location filename="../src/SettingsPanel.cpp" line="391"/>
         <source>Abas em cartão</source>
         <translation>Onglets en carte</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="382"/>
+        <location filename="../src/SettingsPanel.cpp" line="392"/>
         <source>Abas de pasta</source>
         <translation>Onglets de dossier</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="383"/>
+        <location filename="../src/SettingsPanel.cpp" line="393"/>
         <source>Giratória</source>
         <translation>Rotative</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="393"/>
+        <location filename="../src/SettingsPanel.cpp" line="403"/>
         <source>Clássica: a barra de sempre, com todos os botões numa fileira. As outras organizam os botões em abas (Editor, Revisão, Mundo, Ambiente), com o Arquivo ou o Q na ponta. Abas completas mostram grupos com nome e botões grandes; abas simples, em cartão e de pasta cabem numa linha; a Giratória troca de aba num rolo de nomes; só as abas deixa a tela limpa e a faixa desce quando você clica numa aba. Com a barra na lateral, vale a clássica.</source>
         <translation>Classique : la barre de toujours, avec tous les boutons sur une ligne. Les autres rangent les boutons en onglets (Éditeur, Révision, Monde, Ambiance), avec Fichier ou le Q au bout. Onglets complets montre des groupes nommés et de grands boutons ; les onglets simples, en carte et de dossier tiennent sur une ligne ; la Rotative change d&apos;onglet sur un rouleau de noms ; onglets seuls garde l&apos;écran dégagé et le ruban descend quand vous cliquez sur un onglet. Avec la barre sur le côté, c&apos;est la classique.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="408"/>
+        <location filename="../src/SettingsPanel.cpp" line="418"/>
         <source>Posição da barra</source>
         <translation>Position de la barre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="410"/>
+        <location filename="../src/SettingsPanel.cpp" line="420"/>
         <source>De ponta a ponta: a barra vira o teto da janela, como no Word, e a barra lateral desce emendada nela. Flutuante: a barra fica solta em cima da folha, com a largura escolhida logo abaixo. Vale pra todos os estilos; com a barra na lateral, não vale.</source>
         <translation>D&apos;un bord à l&apos;autre : la barre devient le plafond de la fenêtre, comme dans Word, et la barre latérale descend collée à elle. Flottante : la barre reste libre au-dessus de la page, avec la largeur choisie juste en dessous. Vaut pour tous les styles ; avec la barre sur le côté, ne s&apos;applique pas.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="417"/>
+        <location filename="../src/SettingsPanel.cpp" line="427"/>
         <source>Automática</source>
         <translation>Automatique</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="418"/>
+        <location filename="../src/SettingsPanel.cpp" line="428"/>
         <source>Da folha</source>
         <translation>De la page</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="419"/>
+        <location filename="../src/SettingsPanel.cpp" line="429"/>
         <source>Personalizada</source>
         <translation>Personnalisée</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="421"/>
+        <location filename="../src/SettingsPanel.cpp" line="431"/>
         <source>Largura da barra</source>
         <translation>Largeur de la barre</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="421"/>
+        <location filename="../src/SettingsPanel.cpp" line="431"/>
         <source>Com a barra flutuante.</source>
         <translation>Avec la barre flottante.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="423"/>
+        <location filename="../src/SettingsPanel.cpp" line="433"/>
         <source>Automática: cada estilo com a largura de sempre (a clássica do tamanho dos botões, as abas da largura da folha). Da folha: a barra acompanha a largura da folha. Personalizada: você escolhe no controle abaixo. Se os botões não couberem, a barra gira como um carrossel.</source>
         <translation>Automatique : chaque style avec sa largeur habituelle (la classique aussi large que ses boutons, les onglets aussi larges que la page). De la page : la barre suit la largeur de la page. Personnalisée : vous choisissez avec le réglage ci-dessous. Si les boutons ne tiennent pas, la barre tourne comme un carrousel.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="431"/>
+        <location filename="../src/SettingsPanel.cpp" line="441"/>
         <source>Largura personalizada</source>
         <translation>Largeur personnalisée</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="431"/>
+        <location filename="../src/SettingsPanel.cpp" line="441"/>
         <source>A largura da barra quando ela é personalizada.</source>
         <translation>La largeur de la barre quand elle est personnalisée.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="434"/>
+        <location filename="../src/SettingsPanel.cpp" line="444"/>
         <source>%1 px</source>
         <translation>%1 px</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="543"/>
-        <location filename="../src/SettingsPanel.cpp" line="561"/>
+        <location filename="../src/SettingsPanel.cpp" line="553"/>
+        <location filename="../src/SettingsPanel.cpp" line="571"/>
         <source>Leve</source>
         <translation>Légère</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="545"/>
+        <location filename="../src/SettingsPanel.cpp" line="555"/>
         <source>Forte</source>
         <translation>Forte</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="547"/>
+        <location filename="../src/SettingsPanel.cpp" line="557"/>
         <source>Intensidade da animação</source>
         <translation>Intensité de l&apos;animation</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="547"/>
+        <location filename="../src/SettingsPanel.cpp" line="557"/>
         <source>Quanta chuva, neve e folha cai na mesa.</source>
         <translation>Combien de pluie, de neige et de feuilles tombent sur le bureau.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="563"/>
+        <location filename="../src/SettingsPanel.cpp" line="573"/>
         <source>Qualidade da animação</source>
         <translation>Qualité de l&apos;animation</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="563"/>
+        <location filename="../src/SettingsPanel.cpp" line="573"/>
         <source>A resolução em que a mesa é desenhada.</source>
         <translation>La résolution à laquelle le bureau est dessiné.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="572"/>
+        <location filename="../src/SettingsPanel.cpp" line="582"/>
         <source>Quadros por segundo</source>
         <translation>Images par seconde</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="572"/>
+        <location filename="../src/SettingsPanel.cpp" line="582"/>
         <source>Quantas vezes por segundo a mesa se mexe.</source>
         <translation>Combien de fois par seconde le bureau bouge.</translation>
     </message>
     <message>
-        <location filename="../src/SettingsPanel.cpp" line="554"/>
+        <location filename="../src/SettingsPanel.cpp" line="564"/>
         <source>Se o computador sofrer com os temas Animados, abaixe estes dois. Na qualidade Média a arte é desenhada a 75% e esticada na tela, quase sem diferença à vista; na Leve, a 50%, fica um pouco mais macia. Cada passo pra baixo deixa a mesa bem mais leve, e menos quadros por segundo também.</source>
         <translation>Si votre ordinateur peine avec les thèmes Animés, baissez ces deux réglages. En qualité Moyenne, le décor est dessiné à 75 % puis étiré à l&apos;écran, sans presque aucune différence visible ; en Légère, à 50 %, il devient un peu plus doux. Chaque cran vers le bas allège beaucoup le bureau, tout comme moins d&apos;images par seconde.</translation>
     </message>

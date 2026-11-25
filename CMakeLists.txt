@@ -358,6 +358,8 @@ qt_add_executable(qenna-writer
     src/WindowChrome.h
     src/QuickSavePopup.h
     src/UpdateBanner.cpp
+    src/BugReports.cpp
+    src/BugReportView.cpp
     src/Recados.cpp
     src/RecadosView.cpp
     src/UpdateBanner.h

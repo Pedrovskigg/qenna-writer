@@ -15,6 +15,7 @@ class QScrollArea;
 class QSlider;
 class QSpinBox;
 class QVBoxLayout;
+class BugReportView;
 
 // Configurações em categorias: trilho à esquerda (com busca no topo) e uma
 // categoria por vez à direita, cada opção numa linha — nome, uma frase curta
@@ -122,7 +123,7 @@ signals:
     void backupRunNowRequested();
 
 private:
-    enum Category { Appearance, Writing, Spelling, Characters, Timeline, Assistant, Backup, Advanced, CategoryCount };
+    enum Category { Appearance, Writing, Spelling, Characters, Timeline, Assistant, Backup, Advanced, Bugs, CategoryCount };
 
     struct Row {
         QWidget* widget = nullptr;
@@ -161,6 +162,8 @@ private:
     QLineEdit* m_search = nullptr;
     QScrollArea* m_pane = nullptr;
     QLabel* m_noResults = nullptr;
+    BugReportView* m_bugView = nullptr;   // "Reportar um bug" (ou "Central de bugs", no app do autor)
+    bool m_bugNews = false;
     QPushButton* m_themeButton = nullptr;
 
     QSlider* m_uiScaleSlider = nullptr;

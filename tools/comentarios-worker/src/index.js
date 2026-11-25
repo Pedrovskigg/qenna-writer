@@ -9,6 +9,14 @@
 //   POST   /bans/<id do comentário> (Authorization: Bearer <ADMIN_KEY>)  · bane quem escreveu e apaga o comentário
 //   O POST /comments aceita "client" (o id anônimo do app/navegador), pro ban pegar o aparelho.
 //
+//   Bugs ("Reportar um bug" nas Configurações):
+//   POST /bugs                ← { code, client, name, title, body, steps, env, website }
+//   GET  /bugs/mine?client=   → os relatos de quem mandou (pelo hash do id anônimo)
+//   GET  /bugs/resolved       → [{ id, title, version, updated }]  (público: só título e versão)
+//   GET  /bugs/all            (chave) → todos, com nome e ambiente
+//   POST /bugs/<id>           (chave) ← { stage?, reply?, version? }
+//   DELETE /bugs/<id>         (chave)
+//
 //   GET    /reactions?me=<id>       → { "<recado>": { heart, fire, clap, laugh, mine: [kinds] }, ... }
 //   POST   /reactions               ← { recado, kind, client }  (marca/desmarca; devolve o recado atualizado)
 //   client = id anônimo que o app/navegador sorteia e guarda; aqui só entra o hash dele com sal.
@@ -243,6 +251,92 @@ async function toggleReaction(request, env) {
   return json({ ok: true, recado, reactions: all[recado] || { heart: 0, fire: 0, clap: 0, laugh: 0, mine: [] } });
 }
 
+const BUG_CODE = /^QW-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{5}$/;
+const BUG_STAGES = ['sent', 'work', 'done'];
+const MAX_BUGS = 6;                       // relatos por pessoa por hora
+const bugClient = (env, client) => sha256((env.SALT || 'qenna') + '|bug|' + client);
+function bugOut(b, withName) {
+  const o = { id: b.id, code: b.code, title: b.title, body: b.body, steps: b.steps, env: b.env, stage: b.stage,
+              reply: b.reply, reply_at: b.reply_at, version: b.version, at: b.at, updated: b.updated };
+  if (withName) o.name = b.name;
+  return o;
+}
+
+async function addBug(request, env) {
+  let d;
+  try { d = await request.json(); } catch { return fail('bad-request'); }
+  if (d.website) return json({ ok: true });
+  if (!BUG_CODE.test(String(d.code || '')) || !validClient(d.client)) return fail('bad-request');
+  const name = clean(d.name, MAX_NAME).replace(/\s+/g, ' ') || 'Anônimo';
+  const title = clean(d.title, 80).replace(/\s+/g, ' ');
+  const body = clean(d.body, 2000);
+  const steps = clean(d.steps, 1000);
+  const envTxt = clean(d.env, 160).replace(/\s+/g, ' ');
+  if (!title || !body) return fail('empty');
+  if (title.length > 80 || body.length > 2000 || steps.length > 1000 || name.length > MAX_NAME) return fail('too-long');
+  const bh = await banHashes(env, request, d.client);
+  if (await isBanned(env, bh)) return fail('banned', 403);
+  const now = Date.now();
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  const who = 'b:' + await sha256((env.SALT || 'qenna') + '|' + ip);
+  await env.DB.prepare('DELETE FROM sends WHERE at < ?').bind(now - 24 * 3600 * 1000).run();
+  const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM sends WHERE who = ? AND at > ?').bind(who, now - 3600 * 1000).first();
+  if (n >= MAX_BUGS) return fail('slow-down', 429);
+  if (await env.DB.prepare('SELECT 1 AS x FROM bugs WHERE code = ?').bind(d.code).first()) return fail('code-taken', 409);
+  const res = await env.DB.prepare('INSERT INTO bugs (code, client, ban_ip, name, title, body, steps, env, at, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .bind(d.code, await bugClient(env, d.client), bh.ip, name, title, body, steps, envTxt, now, now).run();
+  await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
+  const b = await env.DB.prepare('SELECT * FROM bugs WHERE id = ?').bind(res.meta.last_row_id).first();
+  return json({ ok: true, bug: bugOut(b, false) }, 201);
+}
+
+async function myBugs(url, env) {
+  const c = url.searchParams.get('client');
+  if (!validClient(c)) return fail('bad-request');
+  const { results } = await env.DB.prepare('SELECT * FROM bugs WHERE client = ? ORDER BY at DESC LIMIT 200').bind(await bugClient(env, c)).all();
+  return json(results.map((b) => bugOut(b, false)), 200, { 'Cache-Control': 'no-store' });
+}
+
+async function resolvedBugs(env) {
+  const { results } = await env.DB.prepare("SELECT id, title, version, updated FROM bugs WHERE stage = 'done' AND version != '' ORDER BY updated DESC LIMIT 500").all();
+  return json(results, 200, { 'Cache-Control': 'no-store' });
+}
+
+async function allBugs(request, env) {
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  if (key !== 'ok') return fail('forbidden', 403);
+  const { results } = await env.DB.prepare('SELECT * FROM bugs ORDER BY at DESC LIMIT 1000').all();
+  return json(results.map((b) => bugOut(b, true)), 200, { 'Cache-Control': 'no-store' });
+}
+
+async function updateBug(request, env, id) {
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  if (key !== 'ok') return fail('forbidden', 403);
+  let d;
+  try { d = await request.json(); } catch { return fail('bad-request'); }
+  const b = await env.DB.prepare('SELECT * FROM bugs WHERE id = ?').bind(id).first();
+  if (!b) return fail('gone', 404);
+  const now = Date.now();
+  const stage = BUG_STAGES.includes(d.stage) ? d.stage : b.stage;
+  const reply = d.reply != null ? clean(d.reply, 2000) : b.reply;
+  const version = d.version != null ? clean(d.version, 20) : b.version;
+  const replyAt = reply !== b.reply ? (reply ? now : null) : b.reply_at;
+  await env.DB.prepare('UPDATE bugs SET stage = ?, reply = ?, reply_at = ?, version = ?, updated = ? WHERE id = ?')
+    .bind(stage, reply, replyAt, version, now, id).run();
+  const nb = await env.DB.prepare('SELECT * FROM bugs WHERE id = ?').bind(id).first();
+  return json({ ok: true, bug: bugOut(nb, true) });
+}
+
+async function removeBug(request, env, id) {
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  if (key !== 'ok') return fail('forbidden', 403);
+  await env.DB.prepare('DELETE FROM bugs WHERE id = ?').bind(id).run();
+  return json({ ok: true });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -255,6 +349,13 @@ export default {
       const mb = url.pathname.match(/^\/bans\/(\d+)$/);
       if (mb && request.method === 'POST') return await ban(request, env, Number(mb[1]));
       if (url.pathname === '/reactions' && request.method === 'GET') return await listReactions(url, env);
+      if (url.pathname === '/bugs' && request.method === 'POST') return await addBug(request, env);
+      if (url.pathname === '/bugs/mine' && request.method === 'GET') return await myBugs(url, env);
+      if (url.pathname === '/bugs/resolved' && request.method === 'GET') return await resolvedBugs(env);
+      if (url.pathname === '/bugs/all' && request.method === 'GET') return await allBugs(request, env);
+      const mbug = url.pathname.match(/^\/bugs\/(\d+)$/);
+      if (mbug && request.method === 'POST') return await updateBug(request, env, Number(mbug[1]));
+      if (mbug && request.method === 'DELETE') return await removeBug(request, env, Number(mbug[1]));
       if (url.pathname === '/reactions' && request.method === 'POST') return await toggleReaction(request, env);
       return fail('not-found', 404);
     } catch (e) {

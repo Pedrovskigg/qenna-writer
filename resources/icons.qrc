@@ -249,6 +249,7 @@
         <file alias="construtor.svg">../src/assets/icons/constructor.svg</file>
         <file alias="worldmap.svg">../src/assets/icons/worldmap.svg</file>
         <file alias="reminder.svg">../src/assets/icons/reminder.svg</file>
+        <file alias="bug.svg">../src/assets/icons/bug.svg</file>
         <file alias="save-project.svg">../src/assets/icons/save-project.svg</file>
         <file alias="search.svg">../src/assets/icons/search.svg</file>
         <file alias="settings.svg">../src/assets/icons/settings.svg</file>

@@ -119,8 +119,8 @@ private:
     void parse(const QByteArray& json);
     void saveState();
     static QString commentsUrl();
-    QString apiBase() const;      // o endereço do servidor sem o "/comments"
 public:
+    QString apiBase() const;      // o endereço do servidor sem o "/comments" (comentários, reações, bugs)
     static QString clientId();
 private:
 
