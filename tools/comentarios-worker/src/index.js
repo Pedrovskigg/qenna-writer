@@ -1,7 +1,9 @@
 // Comentários dos recados do Qenna Writer (o mural do menu e o blog do site).
 //
 //   GET    /comments                → { "<id do recado>": [ { id, name, body, at }, ... ], ... }
-//   POST   /comments                ← { recado, name, body, website }  (website = isca de robô, tem que vir vazio)
+//   POST   /comments                ← { recado, name, body, parent?, website }  (website = isca de robô, tem que vir vazio)
+//                                     parent = id do comentário respondido (resposta de resposta vira resposta do original)
+//   Reações nos comentários: as mesmas /reactions, com recado = "c-<id do comentário>".
 //                                     com Authorization: Bearer <ADMIN_KEY> = comentário do autor (selo "autor")
 //   DELETE /comments/<id>           (Authorization: Bearer <ADMIN_KEY>)  · só o Pe
 //
@@ -71,11 +73,11 @@ async function sha256(text) {
 
 async function list(env) {
   const { results } = await env.DB.prepare(
-    `SELECT id, recado, name, body, at, author FROM (
+    `SELECT id, recado, name, body, at, author, parent FROM (
        SELECT *, ROW_NUMBER() OVER (PARTITION BY recado ORDER BY at DESC) AS n FROM comments
      ) WHERE n <= ? ORDER BY at ASC`).bind(PER_RECADO).all();
   const out = {};
-  for (const c of results) (out[c.recado] ||= []).push({ id: c.id, name: c.name, body: c.body, at: c.at, author: !!c.author });
+  for (const c of results) (out[c.recado] ||= []).push({ id: c.id, name: c.name, body: c.body, at: c.at, author: !!c.author, parent: c.parent || null });
   return json(out, 200, { 'Cache-Control': 'no-store' });
 }
 
@@ -105,16 +107,26 @@ async function add(request, env) {
     .bind(who, now - WINDOW_MS).first();
   if (!hasKey && n >= MAX_SENDS) return fail('slow-down', 429);
 
-  const res = await env.DB.prepare('INSERT INTO comments (recado, name, body, at, author) VALUES (?, ?, ?, ?, ?)')
-    .bind(recado, name, body, now, isAuthor ? 1 : 0).run();
+  // resposta: o comentário respondido tem que ser do mesmo recado; resposta de resposta sobe pro original
+  let parent = null;
+  if (data.parent != null && data.parent !== '') {
+    const p = await env.DB.prepare('SELECT id, parent FROM comments WHERE id = ? AND recado = ?').bind(Number(data.parent), recado).first();
+    if (!p) return fail('gone');
+    parent = p.parent || p.id;
+  }
+  const res = await env.DB.prepare('INSERT INTO comments (recado, name, body, at, author, parent) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(recado, name, body, now, isAuthor ? 1 : 0, parent).run();
   if (!hasKey) await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
-  return json({ ok: true, comment: { id: res.meta.last_row_id, recado, name, body, at: now, author: isAuthor } }, 201);
+  return json({ ok: true, comment: { id: res.meta.last_row_id, recado, name, body, at: now, author: isAuthor, parent } }, 201);
 }
 
 async function remove(request, env, id) {
   const auth = request.headers.get('Authorization') || '';
   if (!env.ADMIN_KEY || auth !== 'Bearer ' + env.ADMIN_KEY) return fail('forbidden', 403);
-  await env.DB.prepare('DELETE FROM comments WHERE id = ?').bind(id).run();
+  // some junto: as respostas dele e as reações de todos
+  const { results } = await env.DB.prepare('SELECT id FROM comments WHERE id = ? OR parent = ?').bind(id, id).all();
+  for (const c of results) await env.DB.prepare('DELETE FROM reactions WHERE recado = ?').bind('c-' + c.id).run();
+  await env.DB.prepare('DELETE FROM comments WHERE id = ? OR parent = ?').bind(id, id).run();
   return json({ ok: true });
 }
 

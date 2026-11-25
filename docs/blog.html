@@ -203,6 +203,17 @@
   .react.on .heart { fill-opacity: 1; }
   .react.on svg .cover { fill: color-mix(in srgb, var(--blue) 45%, var(--paper-white)); }
   .react .n:empty { display: none; }
+  .reacts.small { margin-top: 4px; gap: 2px; }
+  .reacts.small .react { height: 24px; border: none; padding: 0 6px; font-size: 11.5px; gap: 4px; }
+  .reacts.small .react svg { width: 15px; height: 15px; }
+  .reacts.small .react.on { background: transparent; }
+  .reacts.small .react:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .cmt.reply { margin-left: 22px; padding-left: 12px; border-left: 2px solid var(--rule); }
+  .cmt .acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .cmt .rep { font-size: 12px; color: var(--ink-faint); background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+  .cmt-replying { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--blue); }
+  .cmt-replying[hidden] { display: none; }
+  .cmt-replying button { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 17px; line-height: 1; padding: 0; }
   .cmts { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
   .cmts h3 { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: var(--ink-faint); margin: 0 0 14px; }
   .cmt { margin: 0 0 16px; }
@@ -264,7 +275,7 @@
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
   var API = (new URLSearchParams(location.search).get('api') || 'https://qenna-comentarios.qennawriter.workers.dev').replace(/\/$/, '');
-  var C = {"title0": "Comments", "title": "Comments (%1)", "none": "No comments yet. Be the first.", "loading": "Loading comments…", "name": "Your name", "write": "Write a comment", "send": "Send", "sending": "Sending…", "ok": "Comment published.", "empty": "Please write your name and the comment.", "no-links": "Links are not allowed in comments.", "slow-down": "Too many comments in a row. Please try again in a few minutes.", "too-long": "The comment is longer than the limit.", "network": "Could not send. Please check your connection and try again.", "author": "author", "reserved": "This name is reserved for the author of Qenna.", "del": "delete", "key": "Admin key", "badkey": "Wrong key."};
+  var C = {"title0": "Comments", "title": "Comments (%1)", "none": "No comments yet. Be the first.", "loading": "Loading comments…", "name": "Your name", "write": "Write a comment", "send": "Send", "sending": "Sending…", "ok": "Comment published.", "empty": "Please write your name and the comment.", "no-links": "Links are not allowed in comments.", "slow-down": "Too many comments in a row. Please try again in a few minutes.", "too-long": "The comment is longer than the limit.", "network": "Could not send. Please check your connection and try again.", "author": "author", "reserved": "This name is reserved for the author of Qenna.", "reply": "Reply", "replying": "Replying to %1", "cancel": "Cancel reply", "gone": "That comment was deleted; the reply was not sent.", "del": "delete", "key": "Admin key", "badkey": "Wrong key."};
   var slots = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
   var admin = location.hash === '#admin';
@@ -275,8 +286,17 @@
     var items = s.items || [];
     s.h.textContent = items.length ? C.title.replace('%1', items.length) : C.title0;
     if (!items.length) { s.list.appendChild(el('p', 'cmt-none', s.loaded ? C.none : C.loading)); return; }
+    // cada comentário seguido das respostas dele (um nível só)
+    var tops = {}, ordered = [];
+    items.forEach(function (c) { if (!c.parent) tops[c.id] = true; });
     items.forEach(function (c) {
-      var d = el('div', c.author ? 'cmt by-author' : 'cmt');
+      if (c.parent) return;
+      ordered.push(c);
+      items.forEach(function (r) { if (r.parent === c.id) ordered.push(r); });
+    });
+    items.forEach(function (c) { if (c.parent && !tops[c.parent]) ordered.push(c); });
+    ordered.forEach(function (c) {
+      var d = el('div', 'cmt' + (c.author ? ' by-author' : '') + (c.parent ? ' reply' : ''));
       d.appendChild(el('span', 'who', c.name));
       if (c.author) d.appendChild(el('span', 'badge', C.author));
       d.appendChild(el('time', null, fmt(c.at)));
@@ -287,6 +307,13 @@
         d.appendChild(del);
       }
       d.appendChild(el('p', null, c.body));
+      var acts = el('div', 'acts');
+      acts.appendChild(reactsFor('c-' + c.id, true));
+      var rep = el('button', 'rep', C.reply);
+      rep.type = 'button';
+      rep.onclick = function () { s.startReply(c.parent || c.id, c.name); };
+      acts.appendChild(rep);
+      d.appendChild(acts);
       s.list.appendChild(d);
     });
   }
@@ -302,7 +329,14 @@
     var msg = el('span', 'msg');
     var btn = el('button', null, C.send); btn.type = 'submit';
     row.appendChild(msg); row.appendChild(btn);
-    form.appendChild(name); form.appendChild(text); form.appendChild(hp); form.appendChild(row);
+    var replying = el('div', 'cmt-replying'); replying.hidden = true;
+    var replyTxt = el('span');
+    var replyX = el('button', null, '\u00d7'); replyX.type = 'button'; replyX.setAttribute('aria-label', C.cancel);
+    replying.appendChild(replyTxt); replying.appendChild(replyX);
+    var replyTo = null;
+    function clearReply() { replyTo = null; replying.hidden = true; }
+    replyX.onclick = clearReply;
+    form.appendChild(replying); form.appendChild(name); form.appendChild(text); form.appendChild(hp); form.appendChild(row);
     function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
     var again = el('button', 'cmt-again', 'Comment again');
     again.type = 'button'; again.hidden = true;
@@ -317,12 +351,12 @@
       var hdr = { 'Content-Type': 'application/json' };
       if (admin && store('qenna-admin')) hdr.Authorization = 'Bearer ' + store('qenna-admin');
       fetch(API + '/comments', { method: 'POST', headers: hdr,
-        body: JSON.stringify({ recado: id, name: n, body: b, website: hp.value }) })
+        body: JSON.stringify({ recado: id, name: n, body: b, parent: replyTo, website: hp.value }) })
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.comment) {
             (slots[id].items = slots[id].items || []).push(res.comment);
-            renderList(id); text.value = ''; say('');
+            clearReply(); renderList(id); text.value = ''; say('');
             form.hidden = true; again.hidden = false;   // o comentário já aparece na lista
           } else say(C[res.error] || C.network, true);
         })
@@ -330,7 +364,11 @@
         .then(function () { btn.disabled = false; btn.textContent = C.send; });
     };
     sec.appendChild(h); sec.appendChild(list); sec.appendChild(again); sec.appendChild(form);
-    slots[id] = { h: h, list: list, items: [], loaded: false };
+    slots[id] = { h: h, list: list, items: [], loaded: false,
+      startReply: function (target, who) {
+        replyTo = target; replyTxt.textContent = C.replying.replace('%1', who); replying.hidden = false;
+        again.hidden = true; form.hidden = false; text.focus();
+      } };
     renderList(id);
     return sec;
   }
@@ -343,7 +381,7 @@
     clap: '<rect class="soft" transform="translate(15.2 13.6) rotate(26)" x="-3.3" y="-6.6" width="6.6" height="13.2" rx="3.3"/><g transform="translate(10.4 15.2) rotate(-18)"><rect class="cover" stroke="none" x="-3.4" y="-7.2" width="6.8" height="13.6" rx="3.2"/><rect class="cover" transform="rotate(-38)" x="-6.4" y="-1.2" width="4.6" height="2.9" rx="1.45"/><rect class="cover" x="-3.4" y="-7.2" width="6.8" height="13.6" rx="3.2"/><path d="M-1.1 -7V-3.4M1.1 -7V-3.4"/></g><path d="M4.6 6.6L6.4 8.4M8.6 3.4L9.2 5.8M13.2 3.2L12.4 5.6"/>',
     laugh: '<circle class="soft" cx="12" cy="12" r="8.6"/><path d="M7.6 10.4L9 8.9L10.4 10.4M13.6 10.4L15 8.9L16.4 10.4"/><path class="solid" d="M7.6 13.2H16.4C16.1 16.4 14.2 17.9 12 17.9C9.8 17.9 7.9 16.4 7.6 13.2Z"/>'
   };
-  var rslots = {};
+  var rslots = {}, reactCache = {};
   function clientId() {
     var id = store('qenna-client');
     if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2, 12)); store('qenna-client', id); }
@@ -360,8 +398,8 @@
       b.querySelector('.n').textContent = r[k] ? r[k] : '';
     });
   }
-  function reactsFor(id) {
-    var row = el('div', 'reacts');
+  function reactsFor(id, small) {
+    var row = el('div', small ? 'reacts small' : 'reacts');
     var btns = KINDS.map(function (k, i) {
       var b = el('button', 'react');
       b.type = 'button'; b.title = TIPS[i]; b.setAttribute('aria-label', TIPS[i]);
@@ -370,7 +408,7 @@
       row.appendChild(b);
       return b;
     });
-    rslots[id] = { btns: btns, data: null };
+    rslots[id] = { btns: btns, data: reactCache[id] || null };
     paintReacts(id);
     return row;
   }
@@ -383,12 +421,13 @@
     fetch(API + '/reactions', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recado: id, kind: k, client: clientId() }) })
       .then(function (res) { return res.json(); })
-      .then(function (res) { if (res.ok) { s.data = res.reactions; paintReacts(id); } else loadReacts(); })
+      .then(function (res) { if (res.ok) { s.data = reactCache[id] = res.reactions; paintReacts(id); } else loadReacts(); })
       .catch(loadReacts);
   }
   function loadReacts() {
     if (!API) return;
     fetch(API + '/reactions?me=' + encodeURIComponent(clientId()), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (all) {
+      reactCache = all;
       Object.keys(rslots).forEach(function (id) { rslots[id].data = all[id] || null; paintReacts(id); });
     }).catch(function () {});
   }
@@ -404,7 +443,7 @@
     fetch(API + '/comments/' + cid, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + key } })
       .then(function (r) {
         if (r.status === 403) { store('qenna-admin', null); alert(C.badkey); return; }
-        slots[id].items = slots[id].items.filter(function (c) { return c.id !== cid; });
+        slots[id].items = slots[id].items.filter(function (c) { return c.id !== cid && c.parent !== cid; });
         renderList(id);
       });
   }

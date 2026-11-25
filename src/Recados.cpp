@@ -28,6 +28,7 @@ Comentario parseComment(const QJsonObject& o)
     c.body = o.value(QStringLiteral("body")).toString();
     c.at = QDateTime::fromMSecsSinceEpoch(o.value(QStringLiteral("at")).toInteger());
     c.author = o.value(QStringLiteral("author")).toBool();
+    c.parent = o.value(QStringLiteral("parent")).toInteger();
     return c;
 }
 
@@ -198,7 +199,7 @@ void RecadosFeed::fetchComments()
     });
 }
 
-void RecadosFeed::postComment(const QString& recadoId, const QString& name, const QString& body)
+void RecadosFeed::postComment(const QString& recadoId, const QString& name, const QString& body, qint64 parent)
 {
     if (!commentsEnabled()) return;
     QNetworkRequest req{QUrl(commentsUrl())};
@@ -211,6 +212,7 @@ void RecadosFeed::postComment(const QString& recadoId, const QString& name, cons
     o.insert(QStringLiteral("recado"), recadoId);
     o.insert(QStringLiteral("name"), name);
     o.insert(QStringLiteral("body"), body);
+    if (parent > 0) o.insert(QStringLiteral("parent"), parent);
     QNetworkReply* reply = network()->post(req, QJsonDocument(o).toJson(QJsonDocument::Compact));
     connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId]() {
         reply->deleteLater();
@@ -342,8 +344,8 @@ void RecadosFeed::deleteComment(const QString& recadoId, qint64 commentId)
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         if (status == 403) { setAdminKey(QString()); emit adminKeyRejected(); return; }
         if (reply->error() != QNetworkReply::NoError) return;
-        QList<Comentario>& list = m_comments[recadoId];
-        list.erase(std::remove_if(list.begin(), list.end(), [commentId](const Comentario& c) { return c.id == commentId; }), list.end());
+        QList<Comentario>& list = m_comments[recadoId];   // o comentário e as respostas dele
+        list.erase(std::remove_if(list.begin(), list.end(), [commentId](const Comentario& c) { return c.id == commentId || c.parent == commentId; }), list.end());
         emit commentsChanged();
     });
 }

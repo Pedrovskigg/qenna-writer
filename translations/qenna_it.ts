@@ -28410,91 +28410,106 @@ Non è precisa al 100%, ma dà un&apos;idea. Se vuoi davvero l&apos;e-pub del tu
         <translation>Chiudi</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Amei</source>
         <translation>Adoro</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Que demais</source>
         <translation>Che bello</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Mandou bem</source>
         <translation>Ben fatto</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Kkkkk</source>
         <translation>Ahahah</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="597"/>
+        <location filename="../src/RecadosView.cpp" line="608"/>
         <source>Comentar de novo</source>
         <translation>Commenta di nuovo</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="620"/>
+        <location filename="../src/RecadosView.cpp" line="637"/>
+        <source>Cancelar a resposta</source>
+        <translation>Annulla la risposta</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="648"/>
         <source>Seu nome</source>
         <translation>Il tuo nome</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="626"/>
+        <location filename="../src/RecadosView.cpp" line="654"/>
         <source>Escreva um comentário</source>
         <translation>Scrivi un commento</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="641"/>
-        <location filename="../src/RecadosView.cpp" line="754"/>
-        <location filename="../src/RecadosView.cpp" line="763"/>
+        <location filename="../src/RecadosView.cpp" line="669"/>
+        <location filename="../src/RecadosView.cpp" line="830"/>
+        <location filename="../src/RecadosView.cpp" line="839"/>
         <source>Enviar</source>
         <translation>Invia</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="679"/>
+        <location filename="../src/RecadosView.cpp" line="708"/>
         <source>Comentar</source>
         <translation>Commenta</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="679"/>
+        <location filename="../src/RecadosView.cpp" line="708"/>
         <source>Comentários (%1)</source>
         <translation>Commenti (%1)</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="681"/>
+        <location filename="../src/RecadosView.cpp" line="710"/>
         <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
         <translation>Nessun commento per ora. Sii il primo.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="682"/>
+        <location filename="../src/RecadosView.cpp" line="711"/>
         <source>Carregando comentários…</source>
         <translation>Caricamento dei commenti…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="699"/>
+        <location filename="../src/RecadosView.cpp" line="750"/>
         <source>AUTOR</source>
         <translation>AUTORE</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="707"/>
+        <location filename="../src/RecadosView.cpp" line="758"/>
         <source>apagar</source>
         <translation>elimina</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="743"/>
-        <location filename="../src/RecadosView.cpp" line="783"/>
+        <location filename="../src/RecadosView.cpp" line="779"/>
+        <source>Responder</source>
+        <translation>Rispondi</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="787"/>
+        <source>Respondendo a %1</source>
+        <translation>Rispondendo a %1</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="818"/>
+        <location filename="../src/RecadosView.cpp" line="859"/>
         <source>Escreva o seu nome e o comentário.</source>
         <translation>Scrivi il tuo nome e il commento.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="746"/>
+        <location filename="../src/RecadosView.cpp" line="821"/>
         <source>Enviando…</source>
         <translation>Invio in corso…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="759"/>
-        <location filename="../src/RecadosView.cpp" line="772"/>
+        <location filename="../src/RecadosView.cpp" line="835"/>
+        <location filename="../src/RecadosView.cpp" line="848"/>
         <source>Chave errada.</source>
         <translation>Chiave errata.</translation>
     </message>
@@ -28503,37 +28518,42 @@ Non è precisa al 100%, ma dà un&apos;idea. Se vuoi davvero l&apos;e-pub del tu
         <translation type="vanished">Commento pubblicato.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="765"/>
+        <location filename="../src/RecadosView.cpp" line="841"/>
         <source>Links não são aceitos nos comentários.</source>
         <translation>I link non sono ammessi nei commenti.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="771"/>
+        <location filename="../src/RecadosView.cpp" line="847"/>
         <source>Assinatura do autor</source>
         <translation>Firma dell&apos;autore</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="773"/>
+        <location filename="../src/RecadosView.cpp" line="849"/>
         <source>Esse nome é reservado ao autor do Qenna. Se você é o autor, digite a chave:</source>
         <translation>Questo nome è riservato all&apos;autore di Qenna. Se sei l&apos;autore, inserisci la chiave:</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="780"/>
+        <location filename="../src/RecadosView.cpp" line="856"/>
         <source>Esse nome é reservado ao autor do Qenna.</source>
         <translation>Questo nome è riservato all&apos;autore di Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="782"/>
+        <location filename="../src/RecadosView.cpp" line="858"/>
         <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
         <translation>Troppi commenti di seguito. Riprova tra qualche minuto.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="784"/>
+        <location filename="../src/RecadosView.cpp" line="860"/>
         <source>O comentário passou do tamanho máximo.</source>
         <translation>Il commento supera la lunghezza massima.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="785"/>
+        <location filename="../src/RecadosView.cpp" line="861"/>
+        <source>Esse comentário foi apagado; a resposta não foi enviada.</source>
+        <translation>Quel commento è stato eliminato; la risposta non è stata inviata.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="862"/>
         <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation>Impossibile inviare. Controlla la connessione e riprova.</translation>
     </message>

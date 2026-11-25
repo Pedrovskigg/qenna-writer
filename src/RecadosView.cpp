@@ -545,37 +545,48 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
     toggle->setFlat(true);
     auto* toggleRow = new QHBoxLayout();
     toggleRow->setSpacing(6);
-    const Glyph glyphs[kReacoes] = { Glyph::Heart, Glyph::Fire, Glyph::Clap, Glyph::Laugh };
     const QString tips[kReacoes] = { tr("Amei"), tr("Que demais"), tr("Mandou bem"), tr("Kkkkk") };
-    QList<QToolButton*> reacts;
-    for (int k = 0; k < kReacoes; ++k) {
-        auto* b = new QToolButton(box);
-        b->setObjectName(QStringLiteral("recReact"));
-        b->setCursor(Qt::PointingHandCursor);
-        b->setCheckable(true);
-        b->setToolTip(tips[k]);
-        b->setIconSize(QSize(18, 18));
-        b->setFixedHeight(26);
-        connect(b, &QToolButton::clicked, box, [feed, id, k]() { feed->toggleReaction(id, Reacao(k)); });
-        toggleRow->addWidget(b);
-        reacts << b;
-    }
-    auto paintReacts = [feed, id, reacts, glyphs, box]() {
-        const Reacoes r = feed->reactions(id);
+    // chave do servidor (recado ou "c-<id>") -> os 4 botões dela; os dos comentários renascem a cada rebuild
+    auto reactSets = std::make_shared<QHash<QString, QList<QToolButton*>>>();
+    auto paintSet = [feed, box](const QString& key, const QList<QToolButton*>& bs) {
+        static const Glyph glyphs[kReacoes] = { Glyph::Heart, Glyph::Fire, Glyph::Clap, Glyph::Laugh };
+        const Reacoes r = feed->reactions(key);
         const QColor accent = Theme::toColor(Theme::accentDefault());
         const QColor muted = Theme::toColor(Theme::textMuted());
         const qreal dpr = box->devicePixelRatioF();
-        for (int k = 0; k < kReacoes; ++k) {
-            QToolButton* b = reacts.at(k);
+        for (int k = 0; k < kReacoes && k < bs.size(); ++k) {
+            QToolButton* b = bs.at(k);
+            const int sz = b->iconSize().width();
             b->setChecked(r.mine[k]);
-            b->setIcon(glyphIcon(glyphs[k], r.mine[k] ? accent : muted, 18, dpr, r.mine[k]));
+            b->setIcon(glyphIcon(glyphs[k], r.mine[k] ? accent : muted, sz, dpr, r.mine[k]));
             b->setText(r.count[k] > 0 ? QString::number(r.count[k]) : QString());
             b->setToolButtonStyle(r.count[k] > 0 ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
         }
     };
-    paintReacts();
-    connect(feed, &RecadosFeed::reactionsChanged, box, [paintReacts, id](const QString& rid) { if (rid.isEmpty() || rid == id) paintReacts(); });
-    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, box, paintReacts);
+    auto makeReacts = [feed, box, tips, reactSets, paintSet](const QString& key, QWidget* host, QHBoxLayout* row, bool small) {
+        QList<QToolButton*> bs;
+        for (int k = 0; k < kReacoes; ++k) {
+            auto* b = new QToolButton(host);
+            b->setObjectName(small ? QStringLiteral("recReactSm") : QStringLiteral("recReact"));
+            b->setCursor(Qt::PointingHandCursor);
+            b->setCheckable(true);
+            b->setToolTip(tips[k]);
+            b->setIconSize(small ? QSize(15, 15) : QSize(18, 18));
+            b->setFixedHeight(small ? 22 : 26);
+            connect(b, &QToolButton::clicked, box, [feed, key, k]() { feed->toggleReaction(key, Reacao(k)); });
+            row->addWidget(b);
+            bs << b;
+        }
+        reactSets->insert(key, bs);
+        paintSet(key, bs);
+    };
+    makeReacts(id, box, toggleRow, false);
+    auto repaintAll = [reactSets, paintSet]() { for (auto it = reactSets->begin(); it != reactSets->end(); ++it) paintSet(it.key(), it.value()); };
+    connect(feed, &RecadosFeed::reactionsChanged, box, [reactSets, paintSet, repaintAll](const QString& rid) {
+        if (rid.isEmpty()) { repaintAll(); return; }
+        if (reactSets->contains(rid)) paintSet(rid, reactSets->value(rid));
+    });
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, box, repaintAll);
     toggleRow->addSpacing(10);
     toggleRow->addWidget(toggle);
     toggleRow->addStretch(1);
@@ -614,6 +625,23 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
     sep->setObjectName(QStringLiteral("recSep"));
     sep->setFixedHeight(1);
     fv->addWidget(sep);
+
+    auto replyTo = std::make_shared<qint64>(0);
+    auto* replyBar = new QWidget(form);
+    auto* rb = new QHBoxLayout(replyBar);
+    rb->setContentsMargins(0, 0, 0, 0);
+    rb->setSpacing(6);
+    auto* replyLabel = new QLabel(replyBar);
+    replyLabel->setObjectName(QStringLiteral("recCmtReplying"));
+    rb->addWidget(replyLabel);
+    auto* replyCancel = iconButton(replyBar, tr("Cancelar a resposta"));
+    replyCancel->setIcon(glyphIcon(Glyph::Close, Theme::toColor(Theme::textMuted()), 14, devicePixelRatioF()));
+    rb->addWidget(replyCancel);
+    rb->addStretch(1);
+    replyBar->hide();
+    fv->addWidget(replyBar);
+    auto clearReply = [replyTo, replyBar]() { *replyTo = 0; replyBar->hide(); };
+    connect(replyCancel, &QToolButton::clicked, box, clearReply);
 
     auto* nameEdit = new QLineEdit(form);
     nameEdit->setObjectName(QStringLiteral("recCmtNameEdit"));
@@ -665,7 +693,7 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         status->style()->polish(status);
     };
 
-    auto rebuild = [this, feed, id, lv, listHost, toggle, panel, box]() {
+    auto rebuild = [this, feed, id, lv, listHost, toggle, panel, box, reactSets, makeReacts, replyTo, replyBar, replyLabel, form, again, bodyEdit]() {
         const std::function<void(QLayout*)> clear = [&clear](QLayout* l) {
             while (QLayoutItem* it = l->takeAt(0)) {
                 if (it->widget()) it->widget()->deleteLater();
@@ -674,6 +702,7 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             }
         };
         clear(lv);
+        for (auto it = reactSets->begin(); it != reactSets->end();) it = (it.key() == id) ? std::next(it) : reactSets->erase(it);
         const QList<Comentario> list = feed->comments(id);
         const QString arrow = panel->isVisible() ? QStringLiteral("  \u25B4") : QStringLiteral("  \u25BE");
         toggle->setText((list.isEmpty() ? tr("Comentar") : tr("Comentários (%1)").arg(list.size())) + arrow);
@@ -685,10 +714,32 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             lv->addWidget(empty);
             return;
         }
+        // ordem: cada comentário do recado seguido das respostas dele (as respostas sem "pai" vivo vão no fim)
+        QList<Comentario> ordered;
+        QSet<qint64> tops;
+        for (const Comentario& c : list) if (c.parent == 0) tops.insert(c.id);
         for (const Comentario& c : list) {
+            if (c.parent != 0) continue;
+            ordered << c;
+            for (const Comentario& rr : list) if (rr.parent == c.id) ordered << rr;
+        }
+        for (const Comentario& c : list) if (c.parent != 0 && !tops.contains(c.parent)) ordered << c;
+        for (const Comentario& c : ordered) {
+            const bool isReply = c.parent != 0;
+            auto* item = new QWidget(listHost);
+            item->setObjectName(isReply ? QStringLiteral("recCmtReply") : QStringLiteral("recCmtItem"));
+            item->setAttribute(Qt::WA_StyledBackground, true);
+            auto* iv = new QVBoxLayout(item);
+            iv->setContentsMargins(isReply ? 12 : 0, 0, 0, 0);
+            iv->setSpacing(4);
+            auto* indent = new QHBoxLayout();
+            indent->setContentsMargins(0, 0, 0, 0);
+            if (isReply) indent->addSpacing(18);
+            indent->addWidget(item, 1);
+            lv->addLayout(indent);
             auto* headRow = new QHBoxLayout();
             headRow->setSpacing(8);
-            auto* head = new QLabel(listHost);
+            auto* head = new QLabel(item);
             head->setObjectName(QStringLiteral("recCmtHead"));
             head->setTextFormat(Qt::RichText);
             // o autor: nome na cor de destaque + pílula "AUTOR" preenchida (de longe dá pra ver que é ele)
@@ -696,15 +747,15 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             head->setText(QStringLiteral("<b>%1</b>").arg(c.name.toHtmlEscaped()));
             headRow->addWidget(head);
             if (c.author) {
-                auto* badge = new QLabel(tr("AUTOR"), listHost);
+                auto* badge = new QLabel(tr("AUTOR"), item);
                 badge->setObjectName(QStringLiteral("recCmtBadge"));
                 headRow->addWidget(badge);
             }
-            auto* when = new QLabel(longDate(c.at.toLocalTime().date()), listHost);
+            auto* when = new QLabel(longDate(c.at.toLocalTime().date()), item);
             when->setObjectName(QStringLiteral("recCmtWhen"));
             headRow->addWidget(when);
             if (feed->isAuthor()) {   // só no PC do autor (tem a chave)
-                auto* del = new QPushButton(tr("apagar"), listHost);
+                auto* del = new QPushButton(tr("apagar"), item);
                 del->setObjectName(QStringLiteral("recCmtDel"));
                 del->setCursor(Qt::PointingHandCursor);
                 del->setFlat(true);
@@ -713,13 +764,36 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
                 headRow->addWidget(del);
             }
             headRow->addStretch(1);
-            lv->addLayout(headRow);
-            auto* body = new QLabel(c.body, listHost);
+            iv->addLayout(headRow);
+            auto* body = new QLabel(c.body, item);
             body->setObjectName(QStringLiteral("recCmtBody"));
             body->setTextFormat(Qt::PlainText);
             body->setWordWrap(true);
             body->setTextInteractionFlags(Qt::TextSelectableByMouse);
-            lv->addWidget(body);
+            iv->addWidget(body);
+            auto* acts = new QHBoxLayout();
+            acts->setContentsMargins(0, 0, 0, 0);
+            acts->setSpacing(2);
+            makeReacts(RecadosFeed::commentKey(c.id), item, acts, true);
+            acts->addSpacing(10);
+            auto* reply = new QPushButton(tr("Responder"), item);
+            reply->setObjectName(QStringLiteral("recCmtDel"));
+            reply->setCursor(Qt::PointingHandCursor);
+            reply->setFlat(true);
+            const qint64 target = isReply ? c.parent : c.id;   // um nível só: responde na mesma conversa
+            const QString who = c.name;
+            connect(reply, &QPushButton::clicked, box, [this, replyTo, replyBar, replyLabel, form, again, bodyEdit, target, who]() {
+                *replyTo = target;
+                replyLabel->setText(tr("Respondendo a %1").arg(who));
+                replyBar->show();
+                again->hide();
+                form->show();
+                bodyEdit->setFocus();
+            });
+            acts->addWidget(reply);
+            acts->addStretch(1);
+            iv->addLayout(acts);
+            lv->addSpacing(8);
         }
     };
     rebuild();
@@ -729,15 +803,16 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         form->show();
         bodyEdit->setFocus();
     });
-    connect(toggle, &QPushButton::clicked, box, [panel, rebuild, bodyEdit, nameEdit, form, again]() {
+    connect(toggle, &QPushButton::clicked, box, [panel, rebuild, bodyEdit, nameEdit, form, again, clearReply]() {
         panel->setVisible(!panel->isVisible());
         form->show();
         again->hide();
+        clearReply();
         rebuild();
         if (panel->isVisible()) (nameEdit->text().isEmpty() ? static_cast<QWidget*>(nameEdit) : bodyEdit)->setFocus();
     });
 
-    connect(send, &QPushButton::clicked, box, [this, feed, id, nameEdit, bodyEdit, send, setStatus]() {
+    connect(send, &QPushButton::clicked, box, [this, feed, id, nameEdit, bodyEdit, send, setStatus, replyTo]() {
         const QString name = nameEdit->text().simplified();
         const QString body = bodyEdit->toPlainText().trimmed();
         if (name.isEmpty() || body.isEmpty()) { setStatus(tr("Escreva o seu nome e o comentário."), true); return; }
@@ -745,10 +820,11 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         send->setEnabled(false);
         send->setText(tr("Enviando…"));
         setStatus(QString(), false);
-        feed->postComment(id, name, body);
+        feed->postComment(id, name, body, *replyTo);
     });
-    connect(feed, &RecadosFeed::commentPosted, box, [this, id, bodyEdit, send, setStatus, form, again](const QString& rid) {
+    connect(feed, &RecadosFeed::commentPosted, box, [this, id, bodyEdit, send, setStatus, form, again, clearReply](const QString& rid) {
         if (rid != id) return;
+        clearReply();
         bodyEdit->clear();
         send->setEnabled(true);
         send->setText(tr("Enviar"));
@@ -782,6 +858,7 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         else if (why == QLatin1String("slow-down")) msg = tr("Muitos comentários seguidos. Tente de novo daqui a alguns minutos.");
         else if (why == QLatin1String("empty")) msg = tr("Escreva o seu nome e o comentário.");
         else if (why == QLatin1String("too-long")) msg = tr("O comentário passou do tamanho máximo.");
+        else if (why == QLatin1String("gone")) msg = tr("Esse comentário foi apagado; a resposta não foi enviada.");
         else msg = tr("Não foi possível enviar. Confira a internet e tente de novo.");
         setStatus(msg, true);
     });
@@ -813,6 +890,12 @@ void RecadosDialog::applyTheme()
                                padding: 1px 8px; font-size: 12px; font-weight: 600; }
         QToolButton#recReact:hover { border-color: %5; }
         QToolButton#recReact:checked { color: %5; border-color: %5; background: %10; }
+        QToolButton#recReactSm { background: transparent; color: %4; border: none; border-radius: 11px;
+                                 padding: 0px 5px; font-size: 11px; font-weight: 600; }
+        QToolButton#recReactSm:hover { background: %9; }
+        QToolButton#recReactSm:checked { color: %5; }
+        QWidget#recCmtReply { border-left: 2px solid %6; background: transparent; }
+        QLabel#recCmtReplying { color: %5; font-size: 12px; font-weight: 600; background: transparent; }
         QFrame#recCmtPanel { background: %8; border: 1px solid %6; border-radius: @radius-control; }
         QLabel#recCmtHead { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; background: transparent; }
         QLabel#recCmtHead[author="true"] { color: %5; }

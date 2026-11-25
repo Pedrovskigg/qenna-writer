@@ -25917,126 +25917,146 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Amei</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Que demais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Mandou bem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="548"/>
         <source>Kkkkk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="597"/>
+        <location filename="../src/RecadosView.cpp" line="608"/>
         <source>Comentar de novo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="620"/>
+        <location filename="../src/RecadosView.cpp" line="637"/>
+        <source>Cancelar a resposta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="648"/>
         <source>Seu nome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="626"/>
+        <location filename="../src/RecadosView.cpp" line="654"/>
         <source>Escreva um comentário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="641"/>
-        <location filename="../src/RecadosView.cpp" line="754"/>
-        <location filename="../src/RecadosView.cpp" line="763"/>
+        <location filename="../src/RecadosView.cpp" line="669"/>
+        <location filename="../src/RecadosView.cpp" line="830"/>
+        <location filename="../src/RecadosView.cpp" line="839"/>
         <source>Enviar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="679"/>
+        <location filename="../src/RecadosView.cpp" line="708"/>
         <source>Comentar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="679"/>
+        <location filename="../src/RecadosView.cpp" line="708"/>
         <source>Comentários (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="681"/>
+        <location filename="../src/RecadosView.cpp" line="710"/>
         <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="682"/>
+        <location filename="../src/RecadosView.cpp" line="711"/>
         <source>Carregando comentários…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="699"/>
+        <location filename="../src/RecadosView.cpp" line="750"/>
         <source>AUTOR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="707"/>
+        <location filename="../src/RecadosView.cpp" line="758"/>
         <source>apagar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="743"/>
-        <location filename="../src/RecadosView.cpp" line="783"/>
+        <location filename="../src/RecadosView.cpp" line="779"/>
+        <source>Responder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="787"/>
+        <source>Respondendo a %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="818"/>
+        <location filename="../src/RecadosView.cpp" line="859"/>
         <source>Escreva o seu nome e o comentário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="746"/>
+        <location filename="../src/RecadosView.cpp" line="821"/>
         <source>Enviando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="759"/>
-        <location filename="../src/RecadosView.cpp" line="772"/>
+        <location filename="../src/RecadosView.cpp" line="835"/>
+        <location filename="../src/RecadosView.cpp" line="848"/>
         <source>Chave errada.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="765"/>
+        <location filename="../src/RecadosView.cpp" line="841"/>
         <source>Links não são aceitos nos comentários.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="771"/>
+        <location filename="../src/RecadosView.cpp" line="847"/>
         <source>Assinatura do autor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="773"/>
+        <location filename="../src/RecadosView.cpp" line="849"/>
         <source>Esse nome é reservado ao autor do Qenna. Se você é o autor, digite a chave:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="780"/>
+        <location filename="../src/RecadosView.cpp" line="856"/>
         <source>Esse nome é reservado ao autor do Qenna.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="782"/>
+        <location filename="../src/RecadosView.cpp" line="858"/>
         <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="784"/>
+        <location filename="../src/RecadosView.cpp" line="860"/>
         <source>O comentário passou do tamanho máximo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="785"/>
+        <location filename="../src/RecadosView.cpp" line="861"/>
+        <source>Esse comentário foi apagado; a resposta não foi enviada.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="862"/>
         <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -47,7 +47,8 @@ struct Comentario {
     QString name;
     QString body;
     QDateTime at;
-    bool author = false;   // o Pe (comentou com a chave de admin, pelo blog)
+    bool author = false;   // o Pe (comentou com a chave de admin)
+    qint64 parent = 0;     // resposta a este comentário (0 = comentário do recado)
 };
 
 // Reações (25/11/2026, aprovadas pelo Pe): coração, fogo, palmas e risada. Uma de
@@ -85,7 +86,9 @@ public:
     void fetchComments();                                   // ao abrir o leitor
     QList<Comentario> comments(const QString& recadoId) const { return m_comments.value(recadoId); }
     bool commentsLoaded() const { return m_commentsLoaded; }
-    void postComment(const QString& recadoId, const QString& name, const QString& body);
+    void postComment(const QString& recadoId, const QString& name, const QString& body, qint64 parent = 0);
+    // as reações de um comentário usam a mesma chave do servidor: "c-<id>"
+    static QString commentKey(qint64 commentId) { return QStringLiteral("c-") + QString::number(commentId); }
 
     // O autor (o Pe) no app: a chave de admin fica guardada no QSettings do PC dele
     // (recados/adminKey). Com ela, a assinatura reservada passa (selo "autor") e
@@ -104,7 +107,7 @@ signals:
     void stateChanged();
     void commentsChanged();
     void commentPosted(const QString& recadoId);
-    // reason: no-links, reserved, slow-down, empty, too-long, network
+    // reason: no-links, reserved, slow-down, empty, too-long, gone, network
     void commentFailed(const QString& recadoId, const QString& reason);
     void adminKeyRejected();
     void reactionsChanged(const QString& recadoId);   // vazio = todos
