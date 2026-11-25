@@ -71,6 +71,30 @@ async function sha256(text) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// A chave de admin: comparação em tempo constante e, por IP, no máximo 5 erros por hora.
+// Passou disso, esse IP fica sem poder tentar a chave por 1 hora (contra chute em massa).
+const MAX_KEY_FAILS = 5;
+const KEY_WINDOW_MS = 60 * 60 * 1000;
+function sameKey(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+// 'none' = não mandou chave · 'ok' = chave certa · 'bad' = errada · 'locked' = errou demais
+async function checkKey(request, env) {
+  const auth = request.headers.get('Authorization') || '';
+  if (!auth) return 'none';
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  const who = 'k:' + await sha256((env.SALT || 'qenna') + '|' + ip);
+  const now = Date.now();
+  const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM sends WHERE who = ? AND at > ?').bind(who, now - KEY_WINDOW_MS).first();
+  if (n >= MAX_KEY_FAILS) return 'locked';
+  if (env.ADMIN_KEY && sameKey(auth, 'Bearer ' + env.ADMIN_KEY)) return 'ok';
+  await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
+  return 'bad';
+}
+
 async function list(env) {
   const { results } = await env.DB.prepare(
     `SELECT id, recado, name, body, at, author, parent FROM (
@@ -93,7 +117,9 @@ async function add(request, env) {
   if (name.length > MAX_NAME || body.length > MAX_BODY) return fail('too-long');
   // A chave libera a assinatura; o selo "autor" só sai quando o nome É a assinatura
   // (o Pe comentando com outro nome, mesmo com a chave no app, sai como comentário comum).
-  const hasKey = !!env.ADMIN_KEY && (request.headers.get('Authorization') || '') === 'Bearer ' + env.ADMIN_KEY;
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  const hasKey = key === 'ok';
   const reserved = reservedName(name);
   if (!hasKey && reserved) return fail('reserved');
   const isAuthor = hasKey && reserved;
@@ -121,8 +147,9 @@ async function add(request, env) {
 }
 
 async function remove(request, env, id) {
-  const auth = request.headers.get('Authorization') || '';
-  if (!env.ADMIN_KEY || auth !== 'Bearer ' + env.ADMIN_KEY) return fail('forbidden', 403);
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  if (key !== 'ok') return fail('forbidden', 403);
   // some junto: as respostas dele e as reações de todos
   const { results } = await env.DB.prepare('SELECT id FROM comments WHERE id = ? OR parent = ?').bind(id, id).all();
   for (const c of results) await env.DB.prepare('DELETE FROM reactions WHERE recado = ?').bind('c-' + c.id).run();
