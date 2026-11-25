@@ -203,6 +203,8 @@ void RecadosFeed::postComment(const QString& recadoId, const QString& name, cons
     req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
     req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("application/json"));
     req.setTransferTimeout(15000);
+    const QString key = QSettings().value(QStringLiteral("recados/adminKey")).toString();
+    if (!key.isEmpty()) req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
     QJsonObject o;
     o.insert(QStringLiteral("recado"), recadoId);
     o.insert(QStringLiteral("name"), name);
@@ -220,6 +222,38 @@ void RecadosFeed::postComment(const QString& recadoId, const QString& name, cons
         }
         const QString err = res.value(QStringLiteral("error")).toString();
         emit commentFailed(recadoId, err.isEmpty() ? QStringLiteral("network") : err);
+    });
+}
+
+bool RecadosFeed::isAuthor() const
+{
+    return !QSettings().value(QStringLiteral("recados/adminKey")).toString().isEmpty();
+}
+
+void RecadosFeed::setAdminKey(const QString& key)
+{
+    if (key.isEmpty()) QSettings().remove(QStringLiteral("recados/adminKey"));
+    else QSettings().setValue(QStringLiteral("recados/adminKey"), key);
+    emit commentsChanged();   // o "apagar" aparece ou some
+}
+
+void RecadosFeed::deleteComment(const QString& recadoId, qint64 commentId)
+{
+    const QString key = QSettings().value(QStringLiteral("recados/adminKey")).toString();
+    if (!commentsEnabled() || key.isEmpty()) return;
+    QNetworkRequest req{QUrl(commentsUrl() + QLatin1Char('/') + QString::number(commentId))};
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
+    req.setTransferTimeout(15000);
+    QNetworkReply* reply = network()->deleteResource(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId, commentId]() {
+        reply->deleteLater();
+        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (status == 403) { setAdminKey(QString()); emit adminKeyRejected(); return; }
+        if (reply->error() != QNetworkReply::NoError) return;
+        QList<Comentario>& list = m_comments[recadoId];
+        list.erase(std::remove_if(list.begin(), list.end(), [commentId](const Comentario& c) { return c.id == commentId; }), list.end());
+        emit commentsChanged();
     });
 }
 

@@ -13,6 +13,8 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QLineEdit>
+#include <QInputDialog>
+#include <functional>
 #include <QPlainTextEdit>
 #include <QSignalBlocker>
 #include <QTextCursor>
@@ -546,8 +548,15 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         status->style()->polish(status);
     };
 
-    auto rebuild = [this, feed, id, lv, listHost, toggle, panel]() {
-        while (QLayoutItem* it = lv->takeAt(0)) { if (it->widget()) it->widget()->deleteLater(); delete it; }
+    auto rebuild = [this, feed, id, lv, listHost, toggle, panel, box]() {
+        const std::function<void(QLayout*)> clear = [&clear](QLayout* l) {
+            while (QLayoutItem* it = l->takeAt(0)) {
+                if (it->widget()) it->widget()->deleteLater();
+                if (it->layout()) clear(it->layout());
+                delete it;
+            }
+        };
+        clear(lv);
         const QList<Comentario> list = feed->comments(id);
         const QString arrow = panel->isVisible() ? QStringLiteral("  \u25B4") : QStringLiteral("  \u25BE");
         toggle->setText((list.isEmpty() ? tr("Comentar") : tr("Comentários (%1)").arg(list.size())) + arrow);
@@ -560,6 +569,8 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             return;
         }
         for (const Comentario& c : list) {
+            auto* headRow = new QHBoxLayout();
+            headRow->setSpacing(8);
             auto* head = new QLabel(listHost);
             head->setObjectName(QStringLiteral("recCmtHead"));
             head->setTextFormat(Qt::RichText);
@@ -569,7 +580,18 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
                 : QString();
             head->setText(QStringLiteral("<b>%1</b>%3&nbsp;&nbsp;<span style=\"font-size:11px; font-weight:400;\">%2</span>")
                               .arg(c.name.toHtmlEscaped(), longDate(c.at.toLocalTime().date()).toHtmlEscaped(), badge));
-            lv->addWidget(head);
+            headRow->addWidget(head);
+            if (feed->isAuthor()) {   // só no PC do autor (tem a chave)
+                auto* del = new QPushButton(tr("apagar"), listHost);
+                del->setObjectName(QStringLiteral("recCmtDel"));
+                del->setCursor(Qt::PointingHandCursor);
+                del->setFlat(true);
+                const qint64 cid = c.id;
+                connect(del, &QPushButton::clicked, box, [feed, id, cid]() { feed->deleteComment(id, cid); });
+                headRow->addWidget(del);
+            }
+            headRow->addStretch(1);
+            lv->addLayout(headRow);
             auto* body = new QLabel(c.body, listHost);
             body->setObjectName(QStringLiteral("recCmtBody"));
             body->setTextFormat(Qt::PlainText);
@@ -612,13 +634,29 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         form->hide();       // o comentário já aparece na lista
         again->show();
     });
-    connect(feed, &RecadosFeed::commentFailed, box, [this, id, send, setStatus](const QString& rid, const QString& why) {
+    connect(feed, &RecadosFeed::adminKeyRejected, box, [this, setStatus]() { setStatus(tr("Chave errada."), true); });
+    connect(feed, &RecadosFeed::commentFailed, box, [this, feed, id, send, setStatus](const QString& rid, const QString& why) {
         if (rid != id) return;
         send->setEnabled(true);
         send->setText(tr("Enviar"));
         QString msg;
         if (why == QLatin1String("no-links")) msg = tr("Links não são aceitos nos comentários.");
-        else if (why == QLatin1String("reserved")) msg = tr("Esse nome é reservado ao autor do Qenna.");
+        else if (why == QLatin1String("reserved")) {
+            // é o autor? A chave uma vez, guardada no PC dele, e o comentário vai de novo
+            const bool hadKey = feed->isAuthor();
+            if (hadKey) feed->setAdminKey(QString());
+            bool ok = false;
+            const QString key = QInputDialog::getText(this, tr("Assinatura do autor"),
+                (hadKey ? tr("Chave errada.") + QStringLiteral("\n\n") : QString())
+                    + tr("Esse nome é reservado ao autor do Qenna. Se você é o autor, digite a chave:"),
+                QLineEdit::Password, QString(), &ok);
+            if (ok && !key.trimmed().isEmpty()) {
+                feed->setAdminKey(key.trimmed());
+                send->click();
+                return;
+            }
+            msg = tr("Esse nome é reservado ao autor do Qenna.");
+        }
         else if (why == QLatin1String("slow-down")) msg = tr("Muitos comentários seguidos. Tente de novo daqui a alguns minutos.");
         else if (why == QLatin1String("empty")) msg = tr("Escreva o seu nome e o comentário.");
         else if (why == QLatin1String("too-long")) msg = tr("O comentário passou do tamanho máximo.");
@@ -663,6 +701,9 @@ void RecadosDialog::applyTheme()
                                  padding: 6px 16px; font-size: 13px; font-weight: 600; }
         QPushButton#recCmtSend:hover { background: %9; }
         QPushButton#recCmtSend:disabled { color: %4; border-color: %6; }
+        QPushButton#recCmtDel { background: transparent; border: none; padding: 0px; color: %4; font-size: 11px;
+                                text-decoration: underline; }
+        QPushButton#recCmtDel:hover { color: %5; }
     )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(), Theme::textMuted(),
              accent.name(), Theme::panelBorder(), ink.name(),
              mix(Theme::toColor(Theme::panelBackground()), Theme::toColor(Theme::textPrimary()), 0.04).name(),

@@ -77,6 +77,13 @@ public:
     bool commentsLoaded() const { return m_commentsLoaded; }
     void postComment(const QString& recadoId, const QString& name, const QString& body);
 
+    // O autor (o Pe) no app: a chave de admin fica guardada no QSettings do PC dele
+    // (recados/adminKey). Com ela, a assinatura reservada passa (selo "autor") e
+    // aparece o "apagar" em cada comentário. Quem não tem a chave não vê nada disso.
+    bool isAuthor() const;
+    void setAdminKey(const QString& key);
+    void deleteComment(const QString& recadoId, qint64 commentId);
+
 signals:
     void changed();
     void stateChanged();
@@ -84,6 +91,7 @@ signals:
     void commentPosted(const QString& recadoId);
     // reason: no-links, reserved, slow-down, empty, too-long, network
     void commentFailed(const QString& recadoId, const QString& reason);
+    void adminKeyRejected();
 
 private:
     explicit RecadosFeed(QObject* parent = nullptr);
