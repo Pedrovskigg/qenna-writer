@@ -2,10 +2,10 @@
 // "Reportar um bug" (Configurações), desenho do Pe aprovado no Lab de 25/11/2026.
 //
 // Cada relato passa por 3 estágios: enviado (vermelho), em andamento (amarelo,
-// quando o autor responde) e resolvido (verde, com a versão do conserto). Quem
-// relata vê só os próprios relatos (pelo id anônimo do app, o mesmo das reações);
-// o histórico público mostra só o título e a versão dos resolvidos. No app do
-// autor (com a chave de admin) a seção vira a "Central de bugs".
+// quando o autor responde) e resolvido (verde, com a versão do conserto). Todo
+// relato é público (decisão do Pe, 25/11: mostra o serviço e quem chega vê se o
+// bug já foi contado); "Meus bugs" acha os da pessoa pelo id anônimo do app, o
+// mesmo das reações. No app do autor (com a chave) a seção vira a "Central de bugs".
 //
 // Mora no mesmo servidor dos comentários (tools/comentarios-worker), rotas /bugs.
 // Cada relato tem um protocolo (QW-XXXXX), que nasce junto com o formulário: a
@@ -24,12 +24,6 @@ struct BugReport {
     QDateTime at, replyAt, updated;
 };
 
-struct ResolvedBug {
-    qint64 id = 0;
-    QString title, version;
-    QDateTime updated;
-};
-
 class BugFeed : public QObject {
     Q_OBJECT
 public:
@@ -43,13 +37,13 @@ public:
     QString draftCode();
 
     void fetchMine();
-    void fetchResolved();
+    void fetchPublic();
     void fetchAll();          // só o autor
     QList<BugReport> mine() const { return m_mine; }
-    QList<ResolvedBug> resolved() const { return m_resolved; }
+    QList<BugReport> publicBugs() const { return m_public; }
     QList<BugReport> all() const { return m_all; }
     bool mineLoaded() const { return m_mineLoaded; }
-    bool resolvedLoaded() const { return m_resolvedLoaded; }
+    bool publicLoaded() const { return m_publicLoaded; }
     bool allLoaded() const { return m_allLoaded; }
 
     void submit(const QString& name, const QString& title, const QString& body,
@@ -65,7 +59,7 @@ public:
 signals:
     void changed();
     void submitted(const QString& code);
-    void failed(const QString& reason);   // empty, too-long, slow-down, banned, network
+    void failed(const QString& reason);   // empty, too-long, no-links, slow-down, banned, network
     void adminKeyRejected();
 
 private:
@@ -73,7 +67,6 @@ private:
     static QString newCode();
     static QString seenKey(const BugReport& b);
 
-    QList<BugReport> m_mine, m_all;
-    QList<ResolvedBug> m_resolved;
-    bool m_mineLoaded = false, m_resolvedLoaded = false, m_allLoaded = false;
+    QList<BugReport> m_mine, m_all, m_public;
+    bool m_mineLoaded = false, m_publicLoaded = false, m_allLoaded = false;
 };

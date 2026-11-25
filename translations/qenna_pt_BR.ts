@@ -1636,7 +1636,7 @@ Aproveite.</source>
 <context>
     <name>BugReportView</name>
     <message>
-        <location filename="../src/BugReportView.cpp" line="62"/>
+        <location filename="../src/BugReportView.cpp" line="63"/>
         <source>tema %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1647,240 +1647,276 @@ Aproveite.</source>
     </message>
     <message>
         <location filename="../src/BugReportView.cpp" line="124"/>
-        <location filename="../src/BugReportView.cpp" line="559"/>
+        <location filename="../src/BugReportView.cpp" line="649"/>
         <source>Meus bugs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/BugReportView.cpp" line="124"/>
-        <location filename="../src/BugReportView.cpp" line="631"/>
+        <location filename="../src/BugReportView.cpp" line="648"/>
+        <source>Todos os relatos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="223"/>
         <source>Resolvidos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="231"/>
+        <location filename="../src/BugReportView.cpp" line="270"/>
         <source>Ex.: o texto some quando troco de tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="234"/>
+        <location filename="../src/BugReportView.cpp" line="273"/>
         <source>O que você esperava que acontecesse, e o que aconteceu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="239"/>
+        <location filename="../src/BugReportView.cpp" line="278"/>
         <source>1. Abri um projeto  2. Cliquei em…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="246"/>
+        <location filename="../src/BugReportView.cpp" line="285"/>
+        <source>Os relatos ficam visíveis para todo mundo: assim quem tiver o mesmo problema acha o seu. Não escreva dados pessoais.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="289"/>
         <source>Em poucas palavras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="247"/>
+        <location filename="../src/BugReportView.cpp" line="316"/>
+        <source>Já relatados, parecidos com o seu:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="320"/>
+        <source>resolvido</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="321"/>
+        <source>em andamento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="322"/>
+        <source>enviado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="330"/>
         <source>O que aconteceu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="248"/>
+        <location filename="../src/BugReportView.cpp" line="331"/>
         <source>Caso o bug apresentado ou falha do app tenha gerado algum código de erro, cole aqui também.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="249"/>
+        <location filename="../src/BugReportView.cpp" line="332"/>
         <source>Como repetir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="249"/>
+        <location filename="../src/BugReportView.cpp" line="332"/>
         <source>opcional</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="250"/>
+        <location filename="../src/BugReportView.cpp" line="333"/>
         <source>Seu nome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="250"/>
+        <location filename="../src/BugReportView.cpp" line="333"/>
         <source>o mesmo dos comentários</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="252"/>
+        <location filename="../src/BugReportView.cpp" line="335"/>
         <source>É um bug de interface ou visual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="260"/>
+        <location filename="../src/BugReportView.cpp" line="343"/>
         <source>Vai junto, automático: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="271"/>
+        <location filename="../src/BugReportView.cpp" line="354"/>
         <source>Protocolo deste relato</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="280"/>
-        <location filename="../src/BugReportView.cpp" line="343"/>
-        <location filename="../src/BugReportView.cpp" line="403"/>
+        <location filename="../src/BugReportView.cpp" line="363"/>
+        <location filename="../src/BugReportView.cpp" line="426"/>
+        <location filename="../src/BugReportView.cpp" line="492"/>
         <source>copiar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="299"/>
+        <location filename="../src/BugReportView.cpp" line="382"/>
         <source>Tem print ou vídeo do bug? Mande para %1 com &lt;b&gt;%2&lt;/b&gt; no assunto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="306"/>
-        <location filename="../src/BugReportView.cpp" line="410"/>
+        <location filename="../src/BugReportView.cpp" line="389"/>
+        <location filename="../src/BugReportView.cpp" line="499"/>
         <source>copiado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="315"/>
-        <location filename="../src/BugReportView.cpp" line="341"/>
-        <location filename="../src/BugReportView.cpp" line="351"/>
+        <location filename="../src/BugReportView.cpp" line="398"/>
+        <location filename="../src/BugReportView.cpp" line="424"/>
+        <location filename="../src/BugReportView.cpp" line="434"/>
         <source>Enviar relato</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="329"/>
-        <location filename="../src/BugReportView.cpp" line="353"/>
+        <location filename="../src/BugReportView.cpp" line="412"/>
+        <location filename="../src/BugReportView.cpp" line="436"/>
         <source>Escreva o título e o que aconteceu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="334"/>
+        <location filename="../src/BugReportView.cpp" line="417"/>
         <source>Enviando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="354"/>
+        <location filename="../src/BugReportView.cpp" line="437"/>
         <source>O relato passou do tamanho máximo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="355"/>
+        <location filename="../src/BugReportView.cpp" line="438"/>
+        <source>Links não são aceitos nos relatos (eles ficam públicos).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="439"/>
         <source>Muitos relatos seguidos. Tente de novo daqui a pouco.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="356"/>
+        <location filename="../src/BugReportView.cpp" line="440"/>
         <source>Você não pode mais enviar relatos.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="357"/>
+        <location filename="../src/BugReportView.cpp" line="441"/>
         <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="366"/>
-        <location filename="../src/BugReportView.cpp" line="475"/>
+        <location filename="../src/BugReportView.cpp" line="450"/>
+        <location filename="../src/BugReportView.cpp" line="564"/>
         <source>Resolvido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="366"/>
+        <location filename="../src/BugReportView.cpp" line="450"/>
         <source>Resolvido na %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="367"/>
-        <location filename="../src/BugReportView.cpp" line="475"/>
-        <location filename="../src/BugReportView.cpp" line="631"/>
+        <location filename="../src/BugReportView.cpp" line="677"/>
+        <source>Nenhum relato ainda. Se achar um bug, conte em &quot;Novo relato&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="223"/>
+        <location filename="../src/BugReportView.cpp" line="451"/>
+        <location filename="../src/BugReportView.cpp" line="564"/>
         <source>Em andamento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="368"/>
-        <location filename="../src/BugReportView.cpp" line="475"/>
+        <location filename="../src/BugReportView.cpp" line="452"/>
+        <location filename="../src/BugReportView.cpp" line="564"/>
         <source>Enviado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="424"/>
+        <location filename="../src/BugReportView.cpp" line="513"/>
         <source>Como repetir: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="452"/>
+        <location filename="../src/BugReportView.cpp" line="541"/>
         <source>AUTOR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="493"/>
+        <location filename="../src/BugReportView.cpp" line="582"/>
         <source>Responder (sai com o selo AUTOR)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="493"/>
+        <location filename="../src/BugReportView.cpp" line="582"/>
         <source>Atualizar a resposta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="500"/>
+        <location filename="../src/BugReportView.cpp" line="589"/>
         <source>Resolvido na versão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="509"/>
+        <location filename="../src/BugReportView.cpp" line="598"/>
         <source>apagar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="514"/>
+        <location filename="../src/BugReportView.cpp" line="603"/>
         <source>Salvar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="559"/>
+        <location filename="../src/BugReportView.cpp" line="648"/>
+        <source>Todos os relatos (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/BugReportView.cpp" line="649"/>
         <source>Meus bugs (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="564"/>
+        <location filename="../src/BugReportView.cpp" line="654"/>
         <source>Nenhum relato ainda. Quando você enviar um, ele aparece aqui com o estágio.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="565"/>
-        <location filename="../src/BugReportView.cpp" line="588"/>
-        <location filename="../src/BugReportView.cpp" line="646"/>
+        <location filename="../src/BugReportView.cpp" line="655"/>
+        <location filename="../src/BugReportView.cpp" line="678"/>
+        <location filename="../src/BugReportView.cpp" line="699"/>
         <source>Carregando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="588"/>
-        <source>Ainda não há bugs resolvidos.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/BugReportView.cpp" line="594"/>
-        <source>VERSÃO %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/BugReportView.cpp" line="610"/>
+        <location filename="../src/BugReportView.cpp" line="479"/>
         <source>o seu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="631"/>
+        <location filename="../src/BugReportView.cpp" line="223"/>
         <source>Todos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="631"/>
+        <location filename="../src/BugReportView.cpp" line="223"/>
         <source>Enviados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/BugReportView.cpp" line="646"/>
+        <location filename="../src/BugReportView.cpp" line="677"/>
+        <location filename="../src/BugReportView.cpp" line="699"/>
         <source>Nenhum relato aqui.</source>
         <translation type="unfinished"></translation>
     </message>

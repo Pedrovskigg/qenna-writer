@@ -109,26 +109,18 @@ void BugFeed::fetchMine()
     });
 }
 
-void BugFeed::fetchResolved()
+void BugFeed::fetchPublic()
 {
     if (!enabled()) return;
-    QNetworkReply* reply = RecadosFeed::instance()->network()->get(request(QStringLiteral("/bugs/resolved")));
+    QNetworkReply* reply = RecadosFeed::instance()->network()->get(request(QStringLiteral("/bugs/public")));
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         reply->deleteLater();
         if (reply->error() != QNetworkReply::NoError) return;
         const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
         if (!doc.isArray()) return;
-        m_resolved.clear();
-        for (const QJsonValue& v : doc.array()) {
-            const QJsonObject o = v.toObject();
-            ResolvedBug r;
-            r.id = o.value(QStringLiteral("id")).toInteger();
-            r.title = o.value(QStringLiteral("title")).toString();
-            r.version = o.value(QStringLiteral("version")).toString();
-            r.updated = fromMs(o.value(QStringLiteral("updated")));
-            m_resolved.append(r);
-        }
-        m_resolvedLoaded = true;
+        m_public.clear();
+        for (const QJsonValue& v : doc.array()) m_public.append(parseBug(v.toObject()));
+        m_publicLoaded = true;
         emit changed();
     });
 }
@@ -169,8 +161,10 @@ void BugFeed::submit(const QString& name, const QString& title, const QString& b
         reply->deleteLater();
         const QJsonObject res = QJsonDocument::fromJson(reply->readAll()).object();
         if (res.value(QStringLiteral("ok")).toBool() && res.contains(QStringLiteral("bug"))) {
-            const BugReport b = parseBug(res.value(QStringLiteral("bug")).toObject());
+            BugReport b = parseBug(res.value(QStringLiteral("bug")).toObject());
             m_mine.prepend(b);
+            b.name = name.isEmpty() ? QStringLiteral("Anônimo") : name;
+            m_public.prepend(b);
             QSettings().remove(QStringLiteral("bugs/draftCode"));   // o próximo relato ganha outro
             markSeen();
             emit changed();
@@ -205,9 +199,9 @@ void BugFeed::update(qint64 id, const QString& stage, const QString& reply, cons
         if (!res.value(QStringLiteral("ok")).toBool()) { emit failed(QStringLiteral("network")); return; }
         const BugReport b = parseBug(res.value(QStringLiteral("bug")).toObject());
         for (BugReport& x : m_all) if (x.id == id) x = b;
-        for (BugReport& x : m_mine) if (x.id == id) { const QString n = x.name; x = b; x.name = n; }
+        for (BugReport& x : m_mine) if (x.id == id) x = b;
+        for (BugReport& x : m_public) if (x.id == id) x = b;
         emit changed();
-        fetchResolved();
     });
 }
 
@@ -220,8 +214,8 @@ void BugFeed::remove(qint64 id)
         if (r->error() != QNetworkReply::NoError) return;
         m_all.erase(std::remove_if(m_all.begin(), m_all.end(), [id](const BugReport& b) { return b.id == id; }), m_all.end());
         m_mine.erase(std::remove_if(m_mine.begin(), m_mine.end(), [id](const BugReport& b) { return b.id == id; }), m_mine.end());
+        m_public.erase(std::remove_if(m_public.begin(), m_public.end(), [id](const BugReport& b) { return b.id == id; }), m_public.end());
         emit changed();
-        fetchResolved();
     });
 }
 

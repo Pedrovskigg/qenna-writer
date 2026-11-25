@@ -12,7 +12,8 @@
 //   Bugs ("Reportar um bug" nas Configurações):
 //   POST /bugs                ← { code, client, name, title, body, steps, env, website }
 //   GET  /bugs/mine?client=   → os relatos de quem mandou (pelo hash do id anônimo)
-//   GET  /bugs/resolved       → [{ id, title, version, updated }]  (público: só título e versão)
+//   GET  /bugs/public         → todos os relatos, com nome (público desde 25/11: quem chega vê se o bug já foi contado)
+//   GET  /bugs/resolved       → [{ id, title, version, updated }]
 //   GET  /bugs/all            (chave) → todos, com nome e ambiente
 //   POST /bugs/<id>           (chave) ← { stage?, reply?, version? }
 //   DELETE /bugs/<id>         (chave)
@@ -273,6 +274,7 @@ async function addBug(request, env) {
   const steps = clean(d.steps, 1000);
   const envTxt = clean(d.env, 160).replace(/\s+/g, ' ');
   if (!title || !body) return fail('empty');
+  if (LINK.test(title) || LINK.test(body) || LINK.test(steps) || LINK.test(name)) return fail('no-links');   // é público
   if (title.length > 80 || body.length > 2000 || steps.length > 1000 || name.length > MAX_NAME) return fail('too-long');
   const bh = await banHashes(env, request, d.client);
   if (await isBanned(env, bh)) return fail('banned', 403);
@@ -295,6 +297,11 @@ async function myBugs(url, env) {
   if (!validClient(c)) return fail('bad-request');
   const { results } = await env.DB.prepare('SELECT * FROM bugs WHERE client = ? ORDER BY at DESC LIMIT 200').bind(await bugClient(env, c)).all();
   return json(results.map((b) => bugOut(b, false)), 200, { 'Cache-Control': 'no-store' });
+}
+
+async function publicBugs(env) {
+  const { results } = await env.DB.prepare('SELECT * FROM bugs ORDER BY at DESC LIMIT 500').all();
+  return json(results.map((b) => bugOut(b, true)), 200, { 'Cache-Control': 'no-store' });
 }
 
 async function resolvedBugs(env) {
@@ -352,6 +359,7 @@ export default {
       if (url.pathname === '/bugs' && request.method === 'POST') return await addBug(request, env);
       if (url.pathname === '/bugs/mine' && request.method === 'GET') return await myBugs(url, env);
       if (url.pathname === '/bugs/resolved' && request.method === 'GET') return await resolvedBugs(env);
+      if (url.pathname === '/bugs/public' && request.method === 'GET') return await publicBugs(env);
       if (url.pathname === '/bugs/all' && request.method === 'GET') return await allBugs(request, env);
       const mbug = url.pathname.match(/^\/bugs\/(\d+)$/);
       if (mbug && request.method === 'POST') return await updateBug(request, env, Number(mbug[1]));

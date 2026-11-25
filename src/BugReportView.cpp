@@ -16,6 +16,7 @@
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QSet>
 #include <QSettings>
 #include <QStackedWidget>
@@ -85,7 +86,6 @@ BugReportView::BugReportView(QWidget* parent)
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, [this]() { applyTheme(); refreshLists(); });
     BugFeed* feed = BugFeed::instance();
     connect(feed, &BugFeed::changed, this, [this, feed]() {
-        if (!m_picked && !m_author && m_tab == 0 && !feed->mine().isEmpty()) showTab(1);
         refreshLists();
         emit newsChanged(feed->hasNews() && !isVisible());
     });
@@ -102,9 +102,9 @@ void BugReportView::activate()
         m_authorBox->setVisible(m_author);
     }
     feed->fetchMine();
-    feed->fetchResolved();
+    feed->fetchPublic();
     if (m_author) feed->fetchAll();
-    if (m_tab == 1 || m_author) feed->markSeen();
+    if (m_tab == 2 || m_author) feed->markSeen();
     emit newsChanged(false);
 }
 
@@ -121,14 +121,14 @@ void BugReportView::build()
     uv->setSpacing(16);
     auto* tabs = new QHBoxLayout();
     tabs->setSpacing(0);
-    const QString names[3] = { tr("Novo relato"), tr("Meus bugs"), tr("Resolvidos") };
+    const QString names[3] = { tr("Novo relato"), tr("Todos os relatos"), tr("Meus bugs") };
     for (int i = 0; i < 3; ++i) {
         auto* b = new QPushButton(names[i], m_userBox);
         b->setObjectName(QStringLiteral("settingsSegBtn"));
         b->setProperty("pos", i == 0 ? "first" : i == 2 ? "last" : "mid");
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
-        connect(b, &QPushButton::clicked, this, [this, i]() { m_picked = true; showTab(i); });
+        connect(b, &QPushButton::clicked, this, [this, i]() { showTab(i); });
         tabs->addWidget(b);
         m_tabs << b;
     }
@@ -149,8 +149,24 @@ void BugReportView::build()
         v->addStretch(1);
         m_stack->addWidget(w);
     };
+    {   // todos os relatos: filtro por estágio em cima da lista
+        auto* w = new QWidget(m_stack);
+        auto* v = new QVBoxLayout(w);
+        v->setContentsMargins(0, 0, 0, 0);
+        v->setSpacing(14);
+        auto* fr = new QHBoxLayout();
+        fr->setSpacing(0);
+        m_pubFilters = makeFilters(w, fr, &m_pubFilter);
+        fr->addStretch(1);
+        v->addLayout(fr);
+        m_publicList = new QVBoxLayout();
+        m_publicList->setContentsMargins(0, 0, 0, 0);
+        m_publicList->setSpacing(12);
+        v->addLayout(m_publicList);
+        v->addStretch(1);
+        m_stack->addWidget(w);
+    }
     makeList(m_mineList);
-    makeList(m_resolvedList);
     uv->addWidget(m_stack);
     root->addWidget(m_userBox);
 
@@ -161,18 +177,7 @@ void BugReportView::build()
     av->setSpacing(14);
     auto* fl = new QHBoxLayout();
     fl->setSpacing(0);
-    const QString fkeys[4] = { QStringLiteral("all"), QStringLiteral("sent"), QStringLiteral("work"), QStringLiteral("done") };
-    for (int i = 0; i < 4; ++i) {
-        auto* b = new QPushButton(m_authorBox);
-        b->setObjectName(QStringLiteral("settingsSegBtn"));
-        b->setProperty("pos", i == 0 ? "first" : i == 3 ? "last" : "mid");
-        b->setProperty("key", fkeys[i]);
-        b->setCheckable(true);
-        b->setCursor(Qt::PointingHandCursor);
-        connect(b, &QPushButton::clicked, this, [this, k = fkeys[i]]() { m_filter = k; refreshLists(); });
-        fl->addWidget(b);
-        m_filters << b;
-    }
+    m_filters = makeFilters(m_authorBox, fl, &m_filter);
     fl->addStretch(1);
     av->addLayout(fl);
     m_allList = new QVBoxLayout();
@@ -185,7 +190,41 @@ void BugReportView::build()
     m_author = BugFeed::instance()->isAuthor();
     m_userBox->setVisible(!m_author);
     m_authorBox->setVisible(m_author);
-    showTab(BugFeed::instance()->mine().isEmpty() ? 0 : 1);
+    showTab(1);   // abre em "Todos os relatos": mostra o serviço e quem chega vê se o bug já foi contado
+}
+
+QList<QPushButton*> BugReportView::makeFilters(QWidget* parent, QHBoxLayout* row, QString* target)
+{
+    QList<QPushButton*> out;
+    const QString keys[4] = { QStringLiteral("all"), QStringLiteral("sent"), QStringLiteral("work"), QStringLiteral("done") };
+    for (int i = 0; i < 4; ++i) {
+        auto* b = new QPushButton(parent);
+        b->setObjectName(QStringLiteral("settingsSegBtn"));
+        b->setProperty("pos", i == 0 ? "first" : i == 3 ? "last" : "mid");
+        b->setProperty("key", keys[i]);
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        connect(b, &QPushButton::clicked, this, [this, target, k = keys[i]]() { *target = k; refreshLists(); });
+        row->addWidget(b);
+        out << b;
+    }
+    return out;
+}
+
+void BugReportView::paintFilters(const QList<QPushButton*>& btns, const QList<BugReport>& list, const QString& current)
+{
+    int counts[4] = { 0, 0, 0, 0 };
+    for (const BugReport& b : list) {
+        counts[0]++;
+        if (b.stage == QLatin1String("sent")) counts[1]++;
+        else if (b.stage == QLatin1String("work")) counts[2]++;
+        else counts[3]++;
+    }
+    const QString fn[4] = { tr("Todos"), tr("Enviados"), tr("Em andamento"), tr("Resolvidos") };
+    for (int i = 0; i < btns.size() && i < 4; ++i) {
+        btns.at(i)->setText(QStringLiteral("%1 (%2)").arg(fn[i]).arg(counts[i]));
+        btns.at(i)->setChecked(btns.at(i)->property("key").toString() == current);
+    }
 }
 
 void BugReportView::showTab(int tab)
@@ -193,7 +232,7 @@ void BugReportView::showTab(int tab)
     m_tab = tab;
     for (int i = 0; i < m_tabs.size(); ++i) m_tabs.at(i)->setChecked(i == tab);
     m_stack->setCurrentIndex(tab);
-    if (tab == 1) { BugFeed::instance()->markSeen(); emit newsChanged(false); }
+    if (tab == 2) { BugFeed::instance()->markSeen(); emit newsChanged(false); }
     refreshLists();
 }
 
@@ -243,7 +282,51 @@ QWidget* BugReportView::buildForm()
     name->setObjectName(QStringLiteral("bugEdit"));
     name->setMaxLength(40);
     name->setText(QSettings().value(QStringLiteral("recados/nome")).toString());
+    auto* pubNote = new QLabel(tr("Os relatos ficam visíveis para todo mundo: assim quem tiver o mesmo problema acha o seu. Não escreva dados pessoais."), f);
+    pubNote->setObjectName(QStringLiteral("bugHint"));
+    pubNote->setWordWrap(true);
+    v->addWidget(pubNote);
     field(tr("Em poucas palavras"), QString(), title);
+    auto* similar = new QLabel(f);
+    similar->setObjectName(QStringLiteral("bugSimilar"));
+    similar->setWordWrap(true);
+    similar->setTextFormat(Qt::RichText);
+    similar->hide();
+    v->addWidget(similar);
+    // enquanto digita o título: os relatos que já existem com palavras parecidas
+    auto findSimilar = [title, similar]() {
+        auto words = [](const QString& s) {
+            QSet<QString> out;
+            const QString d = s.normalized(QString::NormalizationForm_D).toLower();
+            QString plain;
+            for (const QChar c : d) if (c.category() != QChar::Mark_NonSpacing) plain += c;
+            for (const QString& w : plain.split(QRegularExpression(QStringLiteral("[^a-z0-9]+")), Qt::SkipEmptyParts))
+                if (w.size() >= 4) out.insert(w);
+            return out;
+        };
+        const QSet<QString> mineW = words(title->text());
+        if (mineW.isEmpty()) { similar->hide(); return; }
+        QList<QPair<int, BugReport>> hits;
+        for (const BugReport& b : BugFeed::instance()->publicBugs()) {
+            const int n = int((words(b.title) + words(b.body)).intersect(mineW).size());
+            if (n > 0) hits.append({ n, b });
+        }
+        std::stable_sort(hits.begin(), hits.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+        if (hits.isEmpty()) { similar->hide(); return; }
+        QString html = QStringLiteral("<b>%1</b>").arg(QCoreApplication::translate("BugReportView", "Já relatados, parecidos com o seu:").toHtmlEscaped());
+        for (int i = 0; i < hits.size() && i < 3; ++i) {
+            const BugReport& b = hits.at(i).second;
+            const QColor c = stageColor(b.stage);
+            const QString st = b.stage == QLatin1String("done") ? QCoreApplication::translate("BugReportView", "resolvido")
+                             : b.stage == QLatin1String("work") ? QCoreApplication::translate("BugReportView", "em andamento")
+                                                                : QCoreApplication::translate("BugReportView", "enviado");
+            html += QStringLiteral("<br><span style=\"color:%1;\">\u25CF</span>&nbsp;%2 <span style=\"color:%1;\">(%3)</span>")
+                        .arg(c.name(), b.title.toHtmlEscaped(), st);
+        }
+        similar->setText(html);
+        similar->show();
+    };
+    connect(title, &QLineEdit::textChanged, f, findSimilar);
     field(tr("O que aconteceu"), QString(), body,
           tr("Caso o bug apresentado ou falha do app tenha gerado algum código de erro, cole aqui também."));
     field(tr("Como repetir"), tr("opcional"), steps);
@@ -343,7 +426,7 @@ QWidget* BugReportView::buildForm()
         copy->setText(tr("copiar"));
         paintCode();
         setStatus(QString(), false);
-        showTab(1);
+        showTab(2);
         Q_UNUSED(c);
     });
     connect(BugFeed::instance(), &BugFeed::failed, f, [=](const QString& why) {
@@ -352,6 +435,7 @@ QWidget* BugReportView::buildForm()
         QString msg;
         if (why == QLatin1String("empty")) msg = tr("Escreva o título e o que aconteceu.");
         else if (why == QLatin1String("too-long")) msg = tr("O relato passou do tamanho máximo.");
+        else if (why == QLatin1String("no-links")) msg = tr("Links não são aceitos nos relatos (eles ficam públicos).");
         else if (why == QLatin1String("slow-down")) msg = tr("Muitos relatos seguidos. Tente de novo daqui a pouco.");
         else if (why == QLatin1String("banned")) msg = tr("Você não pode mais enviar relatos.");
         else msg = tr("Não foi possível enviar. Confira a internet e tente de novo.");
@@ -376,7 +460,7 @@ QWidget* BugReportView::pill(const QString& stage, const QString& version, QWidg
     return l;
 }
 
-QWidget* BugReportView::bugCard(const BugReport& b, bool author, QWidget* parent)
+QWidget* BugReportView::bugCard(const BugReport& b, bool author, QWidget* parent, bool showName, bool mine)
 {
     auto* card = new QFrame(parent);
     card->setObjectName(QStringLiteral("bugCard"));
@@ -386,9 +470,14 @@ QWidget* BugReportView::bugCard(const BugReport& b, bool author, QWidget* parent
     auto* top = new QHBoxLayout();
     top->setSpacing(10);
     top->addWidget(pill(b.stage, b.version, card));
-    auto* t = new QLabel(b.title, card);
+    auto* t = new QLabel(card);
     t->setObjectName(QStringLiteral("bugTitle"));
     t->setWordWrap(true);
+    t->setTextFormat(Qt::RichText);
+    t->setText(b.title.toHtmlEscaped() + (mine
+        ? QStringLiteral("<span style=\"color:%1; font-size:11px; font-weight:400;\">&nbsp;·&nbsp;%2</span>")
+              .arg(Theme::toColor(Theme::accentDefault()).name(), tr("o seu").toHtmlEscaped())
+        : QString()));
     top->addWidget(t, 1);
     auto* when = new QLabel(dateText(b.at), card);
     when->setObjectName(QStringLiteral("bugMeta"));
@@ -428,7 +517,7 @@ QWidget* BugReportView::bugCard(const BugReport& b, bool author, QWidget* parent
         st->setTextInteractionFlags(Qt::TextSelectableByMouse);
         v->addWidget(st);
     }
-    auto* env = new QLabel(author ? b.name + QStringLiteral(" · ") + b.env : b.env, card);
+    auto* env = new QLabel((author || showName) ? b.name + QStringLiteral(" · ") + b.env : b.env, card);
     env->setObjectName(QStringLiteral("bugMeta"));
     env->setWordWrap(true);
     v->addWidget(env);
@@ -556,7 +645,8 @@ void BugReportView::refreshLists()
     const qreal dpr = devicePixelRatioF();
     // contagem nas abas
     if (m_tabs.size() == 3) {
-        m_tabs.at(1)->setText(feed->mine().isEmpty() ? tr("Meus bugs") : tr("Meus bugs (%1)").arg(feed->mine().size()));
+        m_tabs.at(1)->setText(feed->publicBugs().isEmpty() ? tr("Todos os relatos") : tr("Todos os relatos (%1)").arg(feed->publicBugs().size()));
+        m_tabs.at(2)->setText(feed->mine().isEmpty() ? tr("Meus bugs") : tr("Meus bugs (%1)").arg(feed->mine().size()));
     }
     // meus bugs
     clearLayout(m_mineList);
@@ -569,70 +659,33 @@ void BugReportView::refreshLists()
     }
     for (const BugReport& b : feed->mine()) m_mineList->addWidget(bugCard(b, false, this));
 
-    // resolvidos, por versão
-    clearLayout(m_resolvedList);
+    // todos os relatos (público): abertos primeiro, depois os resolvidos, mais novos em cima
+    clearLayout(m_publicList);
     QSet<qint64> mineIds;
     for (const BugReport& b : feed->mine()) mineIds.insert(b.id);
-    QMap<QString, QList<ResolvedBug>> byVer;
-    for (const ResolvedBug& r : feed->resolved()) byVer[r.version].append(r);
-    QStringList vers = byVer.keys();
-    std::sort(vers.begin(), vers.end(), [](const QString& a, const QString& b) {
-        const QStringList pa = a.split(QLatin1Char('.')), pb = b.split(QLatin1Char('.'));
-        for (int i = 0; i < qMax(pa.size(), pb.size()); ++i) {
-            const int x = pa.value(i).toInt(), y = pb.value(i).toInt();
-            if (x != y) return x > y;
-        }
-        return false;
-    });
-    if (vers.isEmpty()) {
-        auto* e = new QLabel(feed->resolvedLoaded() ? tr("Ainda não há bugs resolvidos.") : tr("Carregando…"), this);
+    QList<BugReport> pub = feed->publicBugs();
+    paintFilters(m_pubFilters, pub, m_pubFilter);
+    auto rankP = [](const QString& s) { return s == QLatin1String("done") ? 1 : 0; };
+    std::stable_sort(pub.begin(), pub.end(), [&](const BugReport& a, const BugReport& b) { return rankP(a.stage) < rankP(b.stage); });
+    int shownP = 0;
+    for (const BugReport& b : pub) {
+        if (m_pubFilter != QLatin1String("all") && b.stage != m_pubFilter) continue;
+        m_publicList->addWidget(bugCard(b, false, this, true, mineIds.contains(b.id)));
+        ++shownP;
+    }
+    if (!shownP) {
+        auto* e = new QLabel(feed->publicLoaded() ? (pub.isEmpty() ? tr("Nenhum relato ainda. Se achar um bug, conte em \"Novo relato\".") : tr("Nenhum relato aqui."))
+                                                  : tr("Carregando…"), this);
         e->setObjectName(QStringLiteral("bugHint"));
-        m_resolvedList->addWidget(e);
+        e->setWordWrap(true);
+        m_publicList->addWidget(e);
     }
-    const QColor green = stageColor(QStringLiteral("done"));
-    for (const QString& ver : vers) {
-        auto* h = new QLabel(tr("VERSÃO %1").arg(ver), this);
-        h->setObjectName(QStringLiteral("bugVer"));
-        m_resolvedList->addWidget(h);
-        for (const ResolvedBug& r : byVer.value(ver)) {
-            auto* row = new QHBoxLayout();
-            row->setSpacing(10);
-            auto* ok = new QLabel(this);
-            ok->setPixmap(checkGlyph(green, 14, dpr));
-            ok->setFixedSize(14, 14);
-            row->addWidget(ok, 0, Qt::AlignTop);
-            auto* t = new QLabel(this);
-            t->setObjectName(QStringLiteral("bugBody"));
-            t->setWordWrap(true);
-            t->setTextFormat(Qt::RichText);
-            t->setText(r.title.toHtmlEscaped() + (mineIds.contains(r.id)
-                ? QStringLiteral("<span style=\"color:%1; font-size:11px;\">&nbsp;·&nbsp;%2</span>")
-                      .arg(Theme::toColor(Theme::accentDefault()).name(), tr("o seu").toHtmlEscaped())
-                : QString()));
-            row->addWidget(t, 1);
-            auto* d = new QLabel(dateText(r.updated), this);
-            d->setObjectName(QStringLiteral("bugMeta"));
-            row->addWidget(d, 0, Qt::AlignTop);
-            m_resolvedList->addLayout(row);
-        }
-        m_resolvedList->addSpacing(8);
-    }
+    Q_UNUSED(dpr);
 
     // central do autor
     clearLayout(m_allList);
     if (m_author) {
-        int counts[4] = { 0, 0, 0, 0 };
-        for (const BugReport& b : feed->all()) {
-            counts[0]++;
-            if (b.stage == QLatin1String("sent")) counts[1]++;
-            else if (b.stage == QLatin1String("work")) counts[2]++;
-            else counts[3]++;
-        }
-        const QString fn[4] = { tr("Todos"), tr("Enviados"), tr("Em andamento"), tr("Resolvidos") };
-        for (int i = 0; i < m_filters.size(); ++i) {
-            m_filters.at(i)->setText(QStringLiteral("%1 (%2)").arg(fn[i]).arg(counts[i]));
-            m_filters.at(i)->setChecked(m_filters.at(i)->property("key").toString() == m_filter);
-        }
+        paintFilters(m_filters, feed->all(), m_filter);
         QList<BugReport> list = feed->all();
         auto rank = [](const QString& s) { return s == QLatin1String("sent") ? 0 : s == QLatin1String("work") ? 1 : 2; };
         std::stable_sort(list.begin(), list.end(), [&](const BugReport& a, const BugReport& b) { return rank(a.stage) < rank(b.stage); });
@@ -686,6 +739,7 @@ void BugReportView::applyTheme()
         QLabel#bugBadge { background: %5; color: %7; border-radius: 8px; padding: 1px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
         QLabel#bugReplyWhen { color: %4; font-family: 'Crimson Pro', Georgia, serif; font-size: 12px; background: transparent; }
         QLabel#bugReplyText { color: %2; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; background: transparent; }
+        QLabel#bugSimilar { color: %2; font-size: 12px; background: %8; border: 1px solid %6; border-radius: 5px; padding: 8px 10px; }
         QLabel#bugVer { color: %4; font-size: 11px; font-weight: 600; letter-spacing: 1px; background: transparent; padding-top: 2px; }
     )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(), Theme::textMuted(),
              accent.name(), Theme::panelBorder(), ink.name(), card.name()));
