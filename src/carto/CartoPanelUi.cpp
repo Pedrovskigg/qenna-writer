@@ -48,6 +48,7 @@ void Panel::buildCartelaUi()
     m_ui = st.value(QStringLiteral("carto/ui"), QStringLiteral("astro")).toString();
     m_cartelaOn = false;   // 22/10: a Cartela saiu da tela (só vai no PNG); na interface Cartela fica a bússola no canto dela
     m_canvas->opts().sprites = st.value(QStringLiteral("carto/sprites"), true).toBool();
+    m_canvas->opts().spinLight = st.value(QStringLiteral("carto/spinLight"), false).toBool();
     m_canvas->opts().frame = st.value(QStringLiteral("carto/frame"), false).toBool();
 
     m_cartela = new Cartela(this);
@@ -242,6 +243,9 @@ void Panel::applyUiMode()
     const bool spr = m_canvas->opts().sprites;
     m_spritesChk->setChecked(spr);
     m_spritesChk->setIcon(icon(spr ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
+    const bool light = m_canvas->opts().spinLight;
+    m_spinLightChk->setChecked(light);
+    m_spinLightChk->setIcon(icon(light ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
     const bool frame = m_canvas->opts().frame;
     m_frameChk->setChecked(frame);
     m_frameChk->setIcon(icon(frame ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));

@@ -204,6 +204,7 @@ private:
     QToolButton* m_cartelaChk = nullptr;
     QToolButton* m_spritesChk = nullptr;
     QToolButton* m_frameChk = nullptr;
+    QToolButton* m_spinLightChk = nullptr;
     // exportar
     QFrame* m_export = nullptr;
     QHash<QString, QToolButton*> m_expScaleBtns;

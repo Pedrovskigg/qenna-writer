@@ -35,6 +35,7 @@ struct SceneState {
     std::vector<QRectF> avoid;    // lugares ocupados (a Cartela no PNG): nome não senta ali
     double cull = 60;             // folga fora da tela onde ainda se desenha (a camada guardada desenha além da tela)
     bool quick = false;           // a mão está mexendo a vista: vale o carimbo de letra mais perto (o certo vem quando parar)
+    bool spin = false;            // girando em 3D (desenho direto, a cada quadro): estrada num traço só, sem tracejado
     // camada do chão em azulejos: planKey identifica a vista sem o arrasto (onde cada coisa cai na tela
     // fica guardado por ela) e clip é o azulejo, em coordenadas da tela de st: só entra o que encosta nele
     QString planKey;

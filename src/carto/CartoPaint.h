@@ -54,12 +54,12 @@ inline Style styleOfMode(const QString& m)
 struct View {
     double ang = 0.0;       // rotação da mesa (rad), em volta do centro do mundo
     double pitch = 40.5;    // inclinação (graus): 90 = de cima
-    int step = 1;           // px do mundo por px da vista (1 = cheio; 2–3 = prévia)
+    double step = 1;        // px do mundo por px da vista (1 = cheio; 2–3 = prévia; 0,5–0,25 = o detalhe de perto)
     Style style = Style::Rich;
     bool info = false;      // pinta territórios
 };
 
-struct Camera { double ang, sq, liftK; int step; };
+struct Camera { double ang, sq, liftK; double step; };
 Camera cameraOf(const View& v);
 int padFor(const World& w);
 
@@ -67,7 +67,7 @@ int padFor(const World& w);
 struct Geom {
     int W = 0, H = 0;
     double cu = 0, cv = 0;
-    int step = 1;
+    double step = 1;
     double sq = 1, ang = 0;
     int pad = 0;
     double ca = 1, sa = 0, ccx = 0, ccy = 0, U = 1;
@@ -115,6 +115,11 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
 // o mesmo retângulo em faixas paralelas (threads ≤ 0 = um por núcleo); resultado idêntico
 void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1, Aux* aux,
                 const RealmPaint* realms = nullptr, int threads = 0);
+
+// um pedaço [x0,x1)×[y0,y1) da vista pintado num azulejo do tamanho dele (out e aux com a largura x1 − x0),
+// em faixas paralelas: o detalhe de perto pinta só o que está na tela
+void paintTile(World& w, const Geom& g, uint8_t* out, Aux* aux, int x0, int y0, int x1, int y1,
+               const RealmPaint* realms = nullptr, int threads = 0, const std::atomic<bool>* cancel = nullptr);
 
 struct Render { Geom g; std::vector<uint8_t> data; Aux aux; };
 Render render(World& w, const View& v, const RealmPaint* realms = nullptr, bool withAux = true, int threads = 0,

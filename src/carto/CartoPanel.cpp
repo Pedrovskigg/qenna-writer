@@ -659,6 +659,12 @@ void Panel::buildSettings()
         m_canvas->optsChanged();
         applyUiMode();
     });
+    check(tr("Giro leve (para computador mais fraco)"), &m_spinLightChk, [this](bool on) {
+        m_canvas->opts().spinLight = on;
+        QSettings().setValue(QStringLiteral("carto/spinLight"), on);
+        applyUiMode();
+    });
+    m_spinLightChk->setToolTip(tr("Girar e inclinar só torcem a pintura pronta, e o relevo aparece quando você solta. Desligado, o mapa gira em 3D."));
     check(tr("Moldura do mapa (onde dá pra desenhar)"), &m_frameChk, [this](bool on) {
         m_canvas->opts().frame = on;
         QSettings().setValue(QStringLiteral("carto/frame"), on);

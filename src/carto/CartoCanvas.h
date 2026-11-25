@@ -70,6 +70,7 @@ struct ToolOpts {
     // vista
     bool sprites = true;
     bool frame = false;     // moldura: onde a área desenhável do mapa começa e termina
+    bool spinLight = false; // giro leve: girar só torce a pintura pronta (o de antes, pra computador fraco)
 };
 
 class Canvas : public QWidget {
@@ -229,6 +230,35 @@ private:
     ToolOpts m_opts;
     // pintura atual (pode ser a prévia, com step > 1)
     std::shared_ptr<Render> m_base;
+    // Detalhe de perto: o terreno inteiro é pintado a 1 px do mundo por px, e de perto esse
+    // pixel vira um bloco (o litoral em escadinha, ao lado de sprites nítidos). Chegando perto,
+    // só o pedaço da tela é repintado a 2–4 px por px do mundo e vai por cima (24/11/2026).
+    struct Detail { Geom g; QRect r; std::vector<uint8_t> data; Aux aux; QImage img; };
+    std::shared_ptr<Detail> m_detail;
+    QTimer m_detailTimer;
+    int m_detailGen = 0;
+    std::shared_ptr<std::atomic<bool>> m_detailCancel;
+    void requestDetail();
+    void presentDetail();
+    void dropDetail();
+    // Giro em 3D (24/11/2026): enquanto a mão gira ou inclina, o relevo é repintado de verdade numa
+    // resolução que se ajusta pra caber em ~30 ms (em vez de torcer a pintura pronta); árvores, casas e
+    // estradas vão direto por cima. Soltou, a pintura nítida de sempre. Desligado no "Giro leve".
+    bool m_liveSpin = false, m_liveBusy = false, m_livePending = false;
+    int m_liveGen = 0;
+    double m_liveStep = 3, m_liveMsSum = 0; int m_liveN = 0;
+    double m_liveBudget = 650000;   // px por quadro do giro (se ajusta pelo tempo medido)
+    // só o pedaço da tela, como se fosse um mapa pequeno (Geom com a origem e o tamanho do pedaço, "linha de
+    // origem" do aux na conta dele): o chão das árvores, dos nomes e das estradas sai igual sem mudar nada lá.
+    // O quadro inteiro do giro usa a vista da hora em que o pedaço foi pedido (um quadro atrás da mão: ninguém vê)
+    struct LiveTile : Detail { double ang = 0, pitch = 40, zoom = 1, panX = 0, panY = 0; };
+    std::shared_ptr<LiveTile> m_liveTile;
+    // o último pedaço fica na tela depois que a mão solta, até a pintura nítida chegar (sem o quadro chapado no meio)
+    bool liveOn() const { return m_liveTile && !m_opts.spinLight; }
+    std::shared_ptr<std::atomic<bool>> m_liveCancel;
+    QImage m_spinLayer;   // o chão e o que fica de pé, durante o giro
+    void requestLive();
+    static void litImage(Detail& d, const std::vector<float>& lut);
     QImage m_present;                // o que vai pra tela (com a luz da hora)
     std::vector<uint8_t> m_lit;
     std::vector<float> m_lut;

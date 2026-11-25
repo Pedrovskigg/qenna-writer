@@ -2,6 +2,7 @@
 #include "CartoProf.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <atomic>
 #include <limits>
 #include <thread>
@@ -60,14 +61,14 @@ Camera cameraOf(const View& v)
     const double th = clampd(v.pitch, 20, 90) * M_PI / 180;
     const double sq = std::sin(th);
     const double liftK = (std::cos(th) / sq) / (std::cos(kMiraPitch) / std::sin(kMiraPitch));
-    return { v.ang, sq, liftK, std::max(1, v.step) };
+    return { v.ang, sq, liftK, std::max(0.25, v.step) };
 }
 int padFor(const World& w) { return static_cast<int>(std::ceil(340.0 * w.W / 1500)); }
 
 Geom viewGeom(const World& w, const View& v)
 {
     const Camera cam = cameraOf(v);
-    const int s = cam.step;
+    const double s = cam.step;
     const double WW = w.W, WH = w.H;
     const double P = padFor(w);
     const double ccx = WW / 2, ccy = WH / 2;
@@ -130,7 +131,8 @@ double liftAt(const World& w, const View& v, double qx, double qy)
 // ── o pintor ──
 DistField makeDistField(const World& world, const Geom& g, int tx0, int ty0, int tx1, int ty1, int threads)
 {
-    const int W = g.W, H = g.H, s = g.step, WW = world.W, WH = world.H;
+    const int W = g.W, H = g.H, WW = world.W, WH = world.H;
+    const double s = g.step;
     const int dM = inkFamily(g.style) ? 18 : 8, reach = g.reach, DS = 2;
     const std::vector<float>& wh = world.h;
     const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
@@ -172,7 +174,8 @@ DistField makeDistField(const World& world, const Geom& g, int tx0, int ty0, int
 void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1,
                  Aux* aux, const Dst* dst, const RealmPaint* realms, bool inkEdges, const DistField* dfIn)
 {
-    const int W = g.W, H = g.H, s = g.step;
+    const int W = g.W, H = g.H;
+    const double s = g.step;
     const int OW = dst ? dst->w : W, OX = dst ? dst->x0 : 0, OY = dst ? dst->y0 : 0;
     auto PI = [&](int x, int y) -> long long { return static_cast<long long>(y - OY) * OW + (x - OX); };
     const int WW = world.W, WH = world.H;
@@ -324,23 +327,46 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     std::vector<int8_t> idA(NB, 0);
     for (size_t i = 0; i < NB; i++) {
         if (h[i] <= 0) continue;
-        const int id = biomeId(h[i] / maxH, latCold(world, qyA[i], tw[i] / 0.09), m[i], k[i] + tw[i] * 0.4);
+        // fronteira de bioma orgânica (24/11, "a transição atual é muito abrupta"): a linha da neve (e as outras)
+        // segue a latitude, que é reta. Uma ondulação larga empurra a linha pra cima e pra baixo (línguas descendo
+        // os vales) e um grão fino espalha manchas de um bioma no outro perto da fronteira; o desfoque mistura
+        double latC = latCold(world, qyA[i], tw[i] / 0.09), moi = m[i];
+        if (NZ) {
+            latC += (tileAt(NZ->A, qxA[i] * 0.16 + 211, qyA[i] * 0.16 + 97) - 0.5) * 0.55
+                  + (tileAt(NZ->B, qxA[i] * 0.85 + 5, qyA[i] * 0.85 + 3) - 0.5) * 0.24;
+            moi += (tileAt(NZ->A, qxA[i] * 0.21 + 33, qyA[i] * 0.21 + 151) - 0.5) * 0.28;
+        }
+        const int id = biomeId(h[i] / maxH, latC, moi, k[i] + tw[i] * 0.4);
         idA[i] = static_cast<int8_t>(id);
         RGB c;
         if (rich) {
             const double n1 = tileAt(NZ->A, qxA[i] * 0.5, qyA[i] * 0.5);
             const double n2 = tileAt(NZ->A, qxA[i] * 0.17 + 91, qyA[i] * 0.17 + 37);
             double u = 0.55 * n1 + 0.45 * n2;
-            if (id == 1 || id == 2 || id == 4) u += (0.5 - m[i]) * 0.7;
+            if (id == 1 || id == 2 || id == 4) u += (0.5 - moi) * 0.7;
             c = richTone(id, clampd((u - 0.5) * 2.1 + 0.5, 0, 1));
         } else if (topo) c = topoColor(h[i] / maxH);
         else if (aqua) c = kAqua[id];
         else if (parch) { const RGB& wv = kParchWash[id]; c = { PAP[0] * 0.56 + wv[0] * 0.44, PAP[1] * 0.56 + wv[1] * 0.44, PAP[2] * 0.56 + wv[2] * 0.44 }; }
         else c = atlas ? kAtlas[id] : ink ? PAP : kBiomeColors[id];
+        // semibioma do frio (24/11, pedido do Pe): entre a neve e o resto, uma faixa larga de taiga fria (úmido,
+        // verde-escuro musgoso) ou de tundra (seco, oliva acinzentado). A cor vai da neve ao semibioma e dele
+        // ao bioma quente; na linha da neve os dois lados dão a mesma cor (sem degrau)
+        if (rich || sty == Style::Mira) {
+            const double temp = 1.0 - std::min(1.0, h[i] / maxH) * 0.72 - latC - (k[i] + tw[i] * 0.4);
+            const double wet = clampd((moi - 0.28) / 0.42, 0, 1);
+            const double uu = NZ ? tileAt(NZ->A, qxA[i] * 0.5, qyA[i] * 0.5) : 0.5;
+            const double sh = 0.88 + 0.24 * uu;
+            const RGB semi = { (176 + (88 - 176) * wet) * sh, (170 + (120 - 170) * wet) * sh, (146 + (106 - 146) * wet) * sh };
+            double f = 0;
+            if (id == 0) f = smoothstep(0.04, 0.18, temp);          // lado da neve: vai virando semibioma até a linha
+            else f = 1 - smoothstep(0.18, 0.40, temp);              // lado quente: começa semibioma e vira o bioma
+            if (f > 0) for (int q = 0; q < 3; q++) c[q] += (semi[q] - c[q]) * f;
+        }
         R[i] = static_cast<float>(c[0]); G[i] = static_cast<float>(c[1]); B[i] = static_cast<float>(c[2]); Wt[i] = 1;
     }
     // (o Topográfico fica em faixas nítidas; a Aquarela e o Pergaminho borram largo, como tinta d'água)
-    const double blurR = topo ? 0 : rich ? 2.0 : atlas ? 4.0 : aqua ? 8.0 : parch ? 6.0 : 3.0;
+    const double blurR = topo ? 0 : rich ? 3.0 : atlas ? 4.0 : aqua ? 8.0 : parch ? 6.0 : 3.0;
     if ((!ink || parch) && blurR > 0) boxBlurWeighted({ &R, &G, &B }, Wt, bw, bh, std::max(1, static_cast<int>(jsRound(blurR / s))));
 
     // a altura que ERGUE a montanha é lida suavizada; cor e sombra usam a cheia
@@ -413,27 +439,57 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             out[o] = u8c(126 - 40 * pool); out[o + 1] = u8c(176 - 36 * pool); out[o + 2] = u8c(204 - 24 * pool); out[o + 3] = u8c(A * 255);
             continue;
         }
-        const double af = 0.50 * (1 - smoothstep(0.15 * farR, farR + 2 * farS, d));
-        const double an = 0.80 * (1 - smoothstep(nearR - 2 * nearS, nearR + 2 * nearS, d));
-        const double a = an + af * (1 - an);
-        if (a <= 0.002) continue;
-        const long long o = PI(x, y) * 4;
-        double vr = 1, vg = 1, vb = 1;
-        if (rich) {
-            const double qx = bqx + x * dux + y * dvx, qy = bqy + x * duy + y * dvy;
-            const double n = tileAt(NZ->A, qx * 0.35 + 17, qy * 0.35 + 53);
-            const double near = 1 - smoothstep(0, nearR * 0.6, d);
-            vr = 0.90 + 0.14 * n - 0.10 * near; vg = 0.95 + 0.08 * n + 0.02 * near; vb = 0.97 + 0.05 * n - 0.06 * near;
-        }
         if (atlas) {
+            const double af = 0.50 * (1 - smoothstep(0.15 * farR, farR + 2 * farS, d));
+            const double an = 0.80 * (1 - smoothstep(nearR - 2 * nearS, nearR + 2 * nearS, d));
+            const double a = an + af * (1 - an);
+            if (a <= 0.002) continue;
+            const long long o = PI(x, y) * 4;
             out[o] = u8c((204 * an + 186 * af * (1 - an)) / a); out[o + 1] = u8c((226 * an + 212 * af * (1 - an)) / a); out[o + 2] = u8c((226 * an + 216 * af * (1 - an)) / a);
             out[o + 3] = u8c(a * 255);
             continue;
         }
-        out[o]     = u8c((130 * an + 110 * af * (1 - an)) / a * vr);
-        out[o + 1] = u8c((210 * an + 200 * af * (1 - an)) / a * vg);
-        out[o + 2] = u8c((240 * an + 235 * af * (1 - an)) / a * vb);
-        out[o + 3] = u8c(a * 255);
+        // Completo: turquesa na beira escurecendo pra azul-petróleo, sumindo antes do fundo, com espuma na areia
+        // (Lab da água, opção A com a espuma mais marcada, escolha do Pe em 24/11/2026; antes era um ciano claro
+        // chapado que de longe virava uma auréola em volta das ilhas)
+        {
+            const double qx = bqx + x * dux + y * dvx, qy = bqy + x * duy + y * dvy;
+            const double n = tileAt(NZ->A, qx * 0.35 + 17, qy * 0.35 + 53);
+            const double dwld = d * s;                                   // distância da costa em px do mundo
+            const double nearW = nearR * s, farW = farR * s;
+            static const double C0[3] = { 112, 206, 204 }, C1[3] = { 44, 140, 166 }, C2[3] = { 26, 88, 132 };
+            const double wob = (n - 0.5) * nearW * 0.35;                 // a borda do raso ondula (o fundo não é um compasso)
+            const double t1 = smoothstep(0, nearW * 1.1 + wob, dwld), t2 = smoothstep(nearW * 0.9 + wob, farW * 0.72, dwld);
+            double col[3];
+            for (int c = 0; c < 3; c++) {
+                const double m1 = C0[c] + (C1[c] - C0[c]) * t1;
+                col[c] = (m1 + (C2[c] - m1) * t2) * (0.94 + 0.12 * n);
+            }
+            double a = (0.9 - 0.4 * t1) * (1 - smoothstep(farW * 0.35, farW * 0.78 + wob, dwld));
+            // um tempero do brilho da Tropical: luz batendo no fundo do raso, com metade da força
+            {
+                const double ca = tileAt(NZ->A, qx * 2.6 + 5, qy * 2.6 + 9), cb = tileAt(NZ->A, qx * 2.1 + 71, qy * 2.1 + 13);
+                const double caus = std::pow(std::max(0.0, 1 - std::fabs(ca - cb) * 7), 3) * (1 - smoothstep(0, nearW * 0.9, dwld));
+                for (int c = 0; c < 3; c++) col[c] += (255 - col[c]) * caus * 0.22;
+            }
+            // espuma: a faixa branca rente à areia e um fio mais fraco logo atrás, como onda quebrando
+            const double fn = tileAt(NZ->A, qx * 1.3 + 3, qy * 1.3 + 41);
+            // (24/11: "a espuma merece mais valor": faixa mais larga e cheia, e dois fios de onda atrás)
+            const double fw0 = 3.6 * (0.7 + 0.6 * fn);
+            double foam = (1 - smoothstep(fw0 * 0.5, fw0, dwld)) * 0.97;
+            const double rw = 0.75 / s;
+            const double RK[2] = { 1.75, 2.9 }, RA[2] = { 0.78, 0.45 };
+            for (int q = 0; q < 2; q++) {
+                const double ring = fw0 * RK[q] + (tileAt(NZ->A, qx * 0.8 + 29 + q * 17, qy * 0.8 + 5) - 0.5) * 2.0;
+                const double rd = std::fabs(dwld - ring) / s;
+                if (rd < rw + 1) foam = std::max(foam, clampd(rw + 0.5 - rd, 0, 1) * RA[q] * smoothstep(0.25 + q * 0.08, 0.5 + q * 0.08, fn));
+            }
+            for (int c = 0; c < 3; c++) col[c] += (248 - col[c]) * foam;
+            a = std::max(a, foam);
+            if (a <= 0.002) continue;
+            const long long o = PI(x, y) * 4;
+            out[o] = u8c(col[0]); out[o + 1] = u8c(col[1]); out[o + 2] = u8c(col[2]); out[o + 3] = u8c(a * 255);
+        }
     }
 
     auto over = [&](long long o, double r, double gg, double b, double cov) {
@@ -474,6 +530,18 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     const double AMBIENT = 0.76, DIRECT = 0.28;
     const double o1 = 2.0 / s, o2 = 3.0 / s;
     const bool fast = s == 1;
+    // textura de montanha por pixel da tela (rachaduras em três escalas + granulado), na posição do mundo que o
+    // pixel mostra: numa encosta virada pra câmera um ponto do chão cobre vários pixels de altura, e a textura
+    // calculada uma vez por ponto virava barra vertical
+    double mtnK = 0, snowK = 0;
+    // (25/11: a versão em Perlin/Voronoi ficou artificial e o Pe mandou desfazer: voltou a esta, com a força pela metade)
+    auto texMul = [&](double qx, double qy) -> double {
+        auto ridge = [&](double f, double ox, double oy) { const double n = tileAt(NZ->B, qx * f + ox, qy * f + oy); return 1 - std::fabs(2 * n - 1); };
+        const double crack = smoothstep(0.86, 0.97, ridge(0.55, 7, 3)) * 0.85 + smoothstep(0.88, 0.98, ridge(1.3, 41, 17)) * 0.6
+                           + smoothstep(0.90, 0.99, ridge(2.9, 13, 59)) * 0.38;
+        const double grain = (tileAt(NZ->B, qx * 3.6 + 9, qy * 3.6 + 2) - 0.5) * 0.08 * mtnK;
+        return (1 - crack * mtnK * (0.22 + 0.1 * snowK)) * (1 + grain);
+    };
     auto matNoise = [](double x, double y) {
         const double t = std::sin(x * 0.41 + y * 0.83) * 43758.5453;
         return (t - std::floor(t)) * 0.06 - 0.03;
@@ -584,6 +652,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 }
             }
 
+            mtnK = 0; snowK = 0;
             if (rich) {
                 const double qx = qxA[iu], qy = qyA[iu];
                 const int id = idA[iu];
@@ -595,6 +664,21 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 const double cv = clampd(cav / maxH * 9, -1, 1) * (cav < 0 ? smoothstep(0.06, 0.16, tc) : 1);
                 const double rocky = smoothstep(40, 62, slopeFull) * smoothstep(0.10, 0.26, tc) * (id == 0 ? 0.35 : 0.6);
                 if (rocky > 0) { cr += (kRock[0] - cr) * rocky; cg += (kRock[1] - cg) * rocky; cb += (kRock[2] - cb) * rocky; }
+                // textura de montanha (24/11, ideia do Pe): da altura em que o chão vira montanha pra cima, rachaduras
+                // finas em três escalas, rocha escura aparecendo na neve onde a encosta é íngreme (neve não para em
+                // paredão) e um granulado de pedra. Ruído em coordenada do mundo: nítido em qualquer zoom, não borra
+                const double mtn = smoothstep(kBioStart + 0.06, kRockMid, tc);
+                if (mtn > 0.001) {
+                    const double crack = 0;
+                    const double snowish = clampd((cb - 196) / 36, 0, 1);
+                    const double patch = smoothstep(0.42, 0.68, tileAt(NZ->A, qx * 0.42 + 5, qy * 0.42 + 9));
+                    const double expose = clampd(smoothstep(26, 50, slopeFull) * 0.85 + patch * smoothstep(14, 34, slopeFull) * 0.5, 0, 1) * snowish * mtn * 0.6;
+                    const double vein = tileAt(NZ->B, qx * 1.9 + 3, qy * 1.9 + 31);
+                    const RGB stone = { 112 + 34 * vein, 110 + 32 * vein, 108 + 30 * vein };
+                    if (expose > 0) { cr += (stone[0] - cr) * expose; cg += (stone[1] - cg) * expose; cb += (stone[2] - cb) * expose; }
+                    (void)crack;
+                    mtnK = mtn; snowK = snowish;   // rachadura e granulado: por pixel da tela, lá embaixo (ver texMul)
+                }
                 double tex = 0;
                 if (tc < 0.035) tex = (d2 - 0.5) * 0.06 - (tc < 0.012 ? 0.12 : 0);
                 else if (tEffRock(tc) > 0.5) tex = (d2 - 0.5) * 0.14 + (d1 - 0.5) * 0.06;
@@ -693,7 +777,8 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             }
             if (low) {
                 const double ls = shade + nz;
-                double r = cr * ls * tr, gg = cg * ls * tg, b = cb * ls * tb;
+                const double tm = mtnK > 0.001 ? texMul(qxA[iu], qyA[iu]) : 1.0;
+                double r = cr * ls * tr * tm, gg = cg * ls * tg * tm, b = cb * ls * tb * tm;
                 if (cont > 0) { r += (110 - r) * 0.55 * cont; gg += (78 - gg) * 0.55 * cont; b += (52 - b) * 0.55 * cont; }
                 const bool coast = hh(i - 1) <= 0 || hh(i + 1) <= 0 || hh(i - bw) <= 0 || hh(i + bw) <= 0;
                 if (atlas && coast) { r = 120; gg = 110; b = 92; }
@@ -734,14 +819,33 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 continue;
             }
             const double earthK = tc < kBioStart ? 0.10 : 0;
+            // o vizinho da frente: até onde a coluna fica à vista, e a posição do mundo dele (pra interpolar a textura)
+            double topNext = row + 1, nqxW = qxA[iu], nqyW = qyA[iu];
+            if (mtnK > 0.001 && iu + static_cast<size_t>(bw) < NB) {
+                const size_t jn = iu + static_cast<size_t>(bw);
+                const double tln = soft ? hLift[jn] / maxH : h[jn] / maxH;
+                const double tan_ = std::max(0.0, (tln - (soft ? 0.12 : kLiftFloor)) / (soft ? 0.88 : 1 - kLiftFloor));
+                const double liftN = tan_ > 0 ? (soft ? std::pow(tan_, 1.3) * extF * 1.05 * LIFTK : std::pow(tan_, 0.55) * extF) : 0;
+                topNext = row + 1 - liftN;
+                nqxW = qxA[jn]; nqyW = qyA[jn];
+            }
+            const double visH = std::max(1.0, topNext - top);
+            double tmLast = 1;
             for (int fy = yStart; fy < yEnd; fy++) {
                 const double frac = static_cast<double>(fy - top) / colH;
                 const double earth = earthK * frac;
                 const double ls = shade * (1 - frac * 0.22) + nz;
                 const long long o = PI(col, fy) * 4;
-                const double r = (cr * (1 - earth) + 78 * earth) * ls * tr;
-                const double gg = (cg * (1 - earth) + 58 * earth) * ls * tg;
-                const double b = (cb * (1 - earth) + 42 * earth) * ls * tb;
+                // só a parte da coluna que fica à vista leva a conta da textura: o resto a coluna da frente cobre
+                // (fazer em tudo multiplicava o custo do detalhe por dez)
+                if (mtnK > 0.001 && fy <= topNext + 1) {
+                    const double f = clampd((fy - top) / visH, 0, 1);
+                    tmLast = texMul(qxA[iu] + (nqxW - qxA[iu]) * f, qyA[iu] + (nqyW - qyA[iu]) * f);
+                }
+                const double tm = mtnK > 0.001 ? tmLast : 1.0;
+                const double r = (cr * (1 - earth) + 78 * earth) * ls * tr * tm;
+                const double gg = (cg * (1 - earth) + 58 * earth) * ls * tg * tm;
+                const double b = (cb * (1 - earth) + 42 * earth) * ls * tb * tm;
                 if (AD) AD[PI(col, fy)] = static_cast<int16_t>(row);
                 if (AN) { const long long p2 = 2 * PI(col, fy); AN[p2] = nqx; AN[p2 + 1] = nqy; }
                 if (fy == top && cont > 0) {
@@ -760,7 +864,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
 // Tinta: contorno das cristas (o pixel de cima é chão bem mais ao fundo)
 void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, int tx1, int ty1, const Dst* dst)
 {
-    const int s = g.step;
+    const double s = g.step;
     const int OW = dst ? dst->w : g.W, OX = dst ? dst->x0 : 0, OY = dst ? dst->y0 : 0;
     auto PI = [&](int x, int y) -> long long { return static_cast<long long>(y - OY) * OW + (x - OX); };
     const int16_t* AD = aux.depth.data();
@@ -829,6 +933,36 @@ void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1
     work();
     for (std::thread& t : pool) t.join();
     if (inkFamily(g.style) && aux) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, nullptr);
+}
+
+void paintTile(World& w, const Geom& g0, uint8_t* out, Aux* aux, int x0, int y0, int x1, int y1,
+               const RealmPaint* realms, int threads, const std::atomic<bool>* cancel)
+{
+    CARTO_PROF("paintTile");
+    if (x1 <= x0 || y1 <= y0) return;
+    Geom g = g0;
+    g.cancel = cancel;
+    ensureTempWave(w);
+    noiseTiles();
+    const Dst dst{ x1 - x0, x0, y0 };
+    if (threads <= 0) threads = static_cast<int>(std::max(1u, std::thread::hardware_concurrency()));
+    const int cols = x1 - x0;
+    const int bands = std::max(1, std::min(cols / 48, threads * 2));
+    const DistField df = w.backdrop ? DistField() : makeDistField(w, g, x0, y0, x1, y1, threads);
+    std::atomic<int> next{ 0 };
+    auto work = [&]() {
+        for (int b; (b = next.fetch_add(1)) < bands;) {
+            if (cancel && cancel->load(std::memory_order_relaxed)) return;
+            const int a = x0 + cols * b / bands, c = x0 + cols * (b + 1) / bands;
+            paintRegion(w, g, out, a, y0, c, y1, aux, &dst, realms, false, &df);
+        }
+    };
+    std::vector<std::thread> pool;
+    for (int t = 1; t < std::min(threads, bands); t++) pool.emplace_back(work);
+    work();
+    for (std::thread& t : pool) t.join();
+    if (cancel && cancel->load()) return;
+    if (inkFamily(g.style) && aux) inkEdgePass(g, out, *aux, x0, y0, x1, y1, &dst);
 }
 
 // ── hora do dia ──
@@ -931,7 +1065,8 @@ const ClimateKind kClimate[4] = {
 };
 void paintClimate(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1)
 {
-    const int W = g.W, s = g.step, WW = w.W, WH = w.H;
+    const int W = g.W, WW = w.W, WH = w.H;
+    const double s = g.step;
     const std::vector<float>& wt = ensureTempWave(w);
     const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
     const double bqx = g.ccx - g.cu * dux - g.cv * dvx, bqy = g.ccy - g.cu * duy - g.cv * dvy;

@@ -132,6 +132,8 @@ FontEntry& fontAt(bool caps, bool italic, double px, double ls = 0)
 // nome de cidade) vira dois carimbos guardados, o halo e o miolo, desenhados em
 // duas passadas (o halo de uma letra não come a vizinha). O tamanho anda em
 // degraus de 4% e o carimbo estica o resto, pra o zoom não refazer tudo.
+// com o halo, os nomes do modo Completo saltaram: a letra encolhe, o contorno e o halo ficam como estão
+constexpr double kNameScale = 0.88;
 struct TextSprite { QImage halo, fill; QRectF rect; };
 double quantSize(double fs) { return std::pow(1.04, jsRound(std::log(std::max(1.0, fs)) / std::log(1.04))); }
 // família = tudo menos o tamanho; cada família guarda os tamanhos já carimbados
@@ -157,6 +159,35 @@ const TextSprite* findSprite(const QString& fam, double fq, double* near)
     *near = best->first / 1000.0;
     return &best->second;
 }
+// desfoque de caixa em três passadas (≈ gaussiano), na imagem pré-multiplicada: o halo macio dos nomes
+void boxBlur(QImage& img, int r)
+{
+    if (r < 1) return;
+    const int W = img.width(), H = img.height();
+    std::vector<uint32_t> tmp(static_cast<size_t>(std::max(W, H)));
+    auto pass = [&](bool horiz) {
+        const int n = horiz ? W : H, lines = horiz ? H : W;
+        for (int l = 0; l < lines; l++) {
+            uint32_t* base = horiz ? reinterpret_cast<uint32_t*>(img.scanLine(l)) : reinterpret_cast<uint32_t*>(img.bits()) + l;
+            const int stride = horiz ? 1 : img.bytesPerLine() / 4;
+            int acc[4] = { 0, 0, 0, 0 };
+            auto px = [&](int i) { return base[static_cast<ptrdiff_t>(std::clamp(i, 0, n - 1)) * stride]; };
+            for (int i = -r; i <= r; i++) { const uint32_t c = i < 0 || i >= n ? 0 : px(i); for (int k = 0; k < 4; k++) acc[k] += (c >> (8 * k)) & 255; }
+            const int d = 2 * r + 1;
+            for (int i = 0; i < n; i++) {
+                uint32_t o = 0;
+                for (int k = 0; k < 4; k++) o |= static_cast<uint32_t>(acc[k] / d) << (8 * k);
+                tmp[static_cast<size_t>(i)] = o;
+                const int a = i - r, b = i + r + 1;
+                const uint32_t ca = a < 0 ? 0 : px(a), cb = b >= n ? 0 : px(b);
+                for (int k = 0; k < 4; k++) acc[k] += static_cast<int>((cb >> (8 * k)) & 255) - static_cast<int>((ca >> (8 * k)) & 255);
+            }
+            for (int i = 0; i < n; i++) base[static_cast<ptrdiff_t>(i) * stride] = tmp[static_cast<size_t>(i)];
+        }
+    };
+    for (int t = 0; t < 3; t++) { pass(true); pass(false); }
+}
+
 const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& path, const QColor& stroke, double lw, const QColor& knock, double knockW1, double knockW2,
                              const QColor& fill, double dpr)
 {
@@ -167,7 +198,11 @@ const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& 
         if (it != C.fam.end()) { auto e = it->find(key); if (e != it->end()) return e->second; }
     }
     if (C.count > 4000) { C.fam.clear(); C.count = 0; }
-    const double pad = (knock.isValid() ? std::max(knockW1, knockW2) : lw) / 2 + 2;
+    // fora das vistas de papel, um travesseiro desfocado na cor do contorno embaixo do contorno nítido:
+    // o nome descola do relevo colorido sem ganhar caixa (pedido do Pe, 24/11/2026)
+    const double fo = fq / kNameScale;   // o tamanho de antes: o halo não encolhe junto com a letra
+    const double glowW = knock.isValid() ? 0 : std::max(lw * 2.0, fo * 0.5), glowR = knock.isValid() ? 0 : std::max(2.0, fo * 0.18);
+    const double pad = (knock.isValid() ? std::max(knockW1, knockW2) : std::max(lw, glowW)) / 2 + glowR * 1.5 + 2;
     const QRectF r = path.boundingRect().adjusted(-pad, -pad, pad, pad);
     CARTO_PROF("nomes: carimbo novo");
     TextSprite sp;
@@ -187,7 +222,28 @@ const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& 
             QColor soft = knock; soft.setAlpha(153);
             q.strokePath(path, strokePen(soft, knockW1));
             q.strokePath(path, strokePen(knock, knockW2));
-        } else q.strokePath(path, strokePen(stroke, lw));
+        } else {
+            QImage glow(px, QImage::Format_ARGB32_Premultiplied);
+            glow.fill(Qt::transparent);
+            {
+                QPainter g(&glow);
+                g.setRenderHint(QPainter::Antialiasing);
+                g.scale(dpr, dpr);
+                g.translate(-r.topLeft());
+                QColor gc = stroke; gc.setAlphaF(std::min(1.0, stroke.alphaF() * 0.85));
+                g.strokePath(path, strokePen(gc, glowW));
+                g.fillPath(path, gc);
+            }
+            // desfoque em meia resolução (4× menos conta; o halo é macio de qualquer jeito)
+            QImage half = glow.scaled(std::max(1, px.width() / 2), std::max(1, px.height() / 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            boxBlur(half, std::max(1, static_cast<int>(std::lround(glowR * dpr / 3.4))));
+            q.resetTransform();
+            q.setRenderHint(QPainter::SmoothPixmapTransform);
+            q.drawImage(QRect(QPoint(0, 0), px), half);
+            q.scale(dpr, dpr);
+            q.translate(-r.topLeft());
+            q.strokePath(path, strokePen(stroke, lw));
+        }
     }
     {
         QPainter q(&sp.fill);
@@ -564,6 +620,16 @@ void Scene::drawRoads(QPainter& p, const SceneState& st)
         runs.push_back(&r);
     }
     auto mk = [](const QColor& c, double w) { QPen pen(c, w); pen.setCapStyle(Qt::RoundCap); pen.setJoinStyle(Qt::RoundJoin); return pen; };
+    if (st.spin) {
+        // girando: um traço só por estrada, sem borda nem tracejado (o tracejado suavizado é o caro); soltou, volta inteira
+        p.setRenderHint(QPainter::Antialiasing, false);
+        for (const RoadPlan::Run* rp : runs) {
+            if (rp->n < 2) continue;
+            p.strokePath(rp->path, mk(inkM ? inkC : atlas ? rp->s->aFill : rp->s->fill, inkM ? 1.2 * kz : atlas ? 1.5 * kz : rp->inner));
+        }
+        p.restore();
+        return;
+    }
     // borda de todas primeiro, depois o miolo: cruzamento sai limpo
     for (const RoadPlan::Run* rp : runs) {
         const RoadPlan::Run& r = *rp;
@@ -666,6 +732,35 @@ const Scene::SpriteIndex& Scene::spriteIndex(const SceneState& st, const std::ve
     return ix;
 }
 
+// Planta é carimbo pequenino (6–30 px) e na escala mínima são milhares por azulejo: o pedágio de cada
+// drawImage (~1,8 µs, mesmo sem esticar nada) virava o grosso do custo do azulejo. Aqui o carimbo é
+// misturado direto nos pixels do azulejo (por cima, pré-multiplicado), na mesma ordem de desenho.
+static inline uint32_t byteMul(uint32_t x, uint32_t a)
+{
+    uint32_t t = (x & 0xff00ffu) * a;
+    t = (t + ((t >> 8) & 0xff00ffu) + 0x800080u) >> 8;
+    t &= 0xff00ffu;
+    x = ((x >> 8) & 0xff00ffu) * a;
+    x = x + ((x >> 8) & 0xff00ffu) + 0x800080u;
+    x &= 0xff00ff00u;
+    return x | t;
+}
+static void blitOver(QImage& dst, const QImage& src, int x0, int y0)
+{
+    const int W = dst.width(), H = dst.height(), sw = src.width(), sh = src.height();
+    const int ax = std::max(0, -x0), ay = std::max(0, -y0), bx = std::min(sw, W - x0), by = std::min(sh, H - y0);
+    if (ax >= bx || ay >= by) return;
+    for (int y = ay; y < by; y++) {
+        const uint32_t* sp = reinterpret_cast<const uint32_t*>(src.constScanLine(y)) + ax;
+        uint32_t* dp = reinterpret_cast<uint32_t*>(dst.scanLine(y0 + y)) + x0 + ax;
+        for (int x = ax; x < bx; x++, sp++, dp++) {
+            const uint32_t c = *sp, a = c >> 24;
+            if (!a) continue;
+            *dp = a == 255 ? c : c + byteMul(*dp, 255 - a);
+        }
+    }
+}
+
 void Scene::drawSprites(QPainter& p, const SceneState& st)
 {
     CARTO_PROF("cena: sprites");
@@ -689,6 +784,15 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
     p.save();
     p.setRenderHint(QPainter::Antialiasing);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
+    // azulejo (imagem sem recorte, sem transparência geral, só a escala do dpr): as plantas vão direto nos pixels
+    QImage* direct = nullptr;
+    QTransform devT;
+    if (p.device() && p.device()->devType() == QInternal::Image && !p.hasClipping() && p.opacity() >= 0.999
+        && p.compositionMode() == QPainter::CompositionMode_SourceOver) {
+        devT = p.deviceTransform();
+        QImage* im = static_cast<QImage*>(p.device());
+        if (devT.type() <= QTransform::TxScale && im->format() == QImage::Format_ARGB32_Premultiplied) direct = im;
+    }
     const std::vector<Item>& its = items(st);
     std::vector<int> sel;
     if (clipped) {
@@ -703,14 +807,29 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
         sel.erase(std::unique(sel.begin(), sel.end()), sel.end());
     }
     const int N = clipped ? static_cast<int>(sel.size()) : static_cast<int>(its.size());
+    // sem índice (desenho direto, no giro): antes da conta do chão, um retângulo no mundo descarta o que está
+    // longe da tela (folga embaixo pro relevo que sobe de fora da tela)
+    double wx0 = -1e18, wy0 = -1e18, wx1 = 1e18, wy1 = 1e18;
+    if (!clipped && st.zoom > 0) {
+        const double sqv = st.g ? st.g->sq : 1;
+        wx0 = wy0 = 1e18; wx1 = wy1 = -1e18;
+        const double m = std::max(W, H) * 0.12;
+        for (const QPointF c : { QPointF(-m, -m), QPointF(W + m, -m), QPointF(-m, H + m + H * 0.5), QPointF(W + m, H + m + H * 0.5) }) {
+            const auto q = planeToWorld(doc.world, st.ang, (c.x() - st.panX) / st.zoom, (c.y() - st.panY) / (st.zoom * sqv));
+            wx0 = std::min(wx0, q[0]); wx1 = std::max(wx1, q[0]); wy0 = std::min(wy0, q[1]); wy1 = std::max(wy1, q[1]);
+        }
+    }
     for (int qi = 0; qi < N; qi++) {
         const Item& it = its[clipped ? sel[qi] : qi];
         if (it.k == 0 || it.k == 9) {
             if (it.k == 9 && !info) continue;
             const Flora& o = it.k == 0 ? flora[it.idx] : info->user.trees[it.idx];
+            if (o.x < wx0 || o.x > wx1 || o.y < wy0 || o.y > wy1) continue;
             // quem fica de fora de longe é sorteado pelo próprio índice (o mesmo em todo azulejo)
             const quint32 hsh = (static_cast<quint32>(o.v * 16777215.0) * 2654435761u) >> 8;
             if (stride > 1 && (hsh % stride)) continue;
+            // girando: metade das plantas descansa (sempre as mesmas, pra nada piscar) e volta quando a mão solta (ideia do Pe, 24/11)
+            if (st.spin && ((hsh >> 5) & 1)) continue;
             if (atlas && ((hsh / stride) % 3)) continue;        // Atlas: um símbolo a cada três
             if (inkM) {
                 // mapa de livro: menos símbolos e maiores; de perto, todos. Arbusto e pedra solta não entram
@@ -728,10 +847,17 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
             const auto g = ground(st, o.x, o.y, 7);
             if (!g || !g->vis || out(*g)) continue;
             if (atlas) { spr::atlasGlyph(p, o.type, g->X, g->Y, k); continue; }
+            // carimbo já no tamanho da tela, colado no pixel inteiro (sem esticar: o caminho rápido do Qt)
             const double ppw = st.zoom * o.s * ks;
-            const spr::FloraImg& img = spr::floraImage(o.type, o.v, st.pitch, ppw * dpr, sun.mirror);
-            const double f = ppw / (2 * img.ppw);
-            p.drawImage(QRectF(g->X - img.ax * f, g->Y - img.ay * f, img.img.width() * f, img.img.height() * f), img.img);
+            const spr::FloraImg& img = spr::floraStamp(o.type, o.v, st.pitch, ppw * dpr, sun.mirror);
+            if (direct && img.img.format() == QImage::Format_ARGB32_Premultiplied) {
+                const QPointF d = devT.map(QPointF(g->X, g->Y));
+                blitOver(*direct, img.img, static_cast<int>(std::lround(d.x() - img.ax)), static_cast<int>(std::lround(d.y() - img.ay)));
+                continue;
+            }
+            const QPointF at(std::round(g->X * dpr - img.ax) / dpr, std::round(g->Y * dpr - img.ay) / dpr);
+            if (dpr == 1.0) p.drawImage(at, img.img);
+            else p.drawImage(QRectF(at, QSizeF(img.img.width() / dpr, img.img.height() / dpr)), img.img);
             continue;
         }
         if (!info) continue;
@@ -1134,7 +1260,7 @@ static bool drawName(QPainter& p, const Layout& L, const std::pair<QColor, QColo
     }
     const double dpr = p.device() ? p.device()->devicePixelRatioF() : 1.0;
     const double fq = quantSize(L.fs);
-    const double lw = std::max(2.6, fq * 0.24), k1 = std::max(9.0, fq * 0.95), k2 = std::max(5.0, fq * 0.5);
+    const double lw = std::max(2.6, fq / kNameScale * 0.24), k1 = std::max(9.0, fq * 0.95), k2 = std::max(5.0, fq * 0.5);
     const QString base = QStringLiteral("g|%1|%2|%3|%4|%5|").arg(L.caps).arg(L.it).arg(colorKey(pal.second), colorKey(pal.first)).arg(knock.isValid() ? colorKey(knock) : QStringLiteral("-")).arg(dpr);
     const QTransform t0 = p.worldTransform();
     for (int pass = 0; pass < 2; pass++) {
@@ -1213,7 +1339,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
         if (!r.area) continue;
         const auto g = ground(st, r.x, r.y);
         if (!g) continue;
-        const double size = std::max(13.0, std::min(34.0, std::sqrt(double(r.area)) * 0.42 * k));
+        const double size = std::max(13.0, std::min(34.0, std::sqrt(double(r.area)) * 0.42 * k)) * (flat ? 1.0 : kNameScale);
         const QString txt = r.name.toUpper();
         const double ls = jsRound(size * 0.28);
         FontEntry& font = fontAt(true, false, size, ls);
@@ -1257,7 +1383,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
         }
         if (a.name.isEmpty() || (!g->vis && !flat)) continue;
         const bool castle = a.kind == QLatin1String("castle");
-        const double fs = (castle ? 14 : 12) * std::min(1.5, k);
+        const double fs = (castle ? 14 : 12) * std::min(1.5, k) * (flat ? 1.0 : kNameScale);
         FontEntry& font = fontAt(castle, !castle, fs);
         const double w = font.fm.horizontalAdvance(a.name);
         const QPointF at = freeSpot(g->X, g->Y, (flat ? 9 : 16) * k, (flat ? 4 : 8) * k, w, fs);
@@ -1274,7 +1400,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
             hash.add({ box(g->X - 6 * k, g->Y - 12 * k, g->X + 6 * k, g->Y + 4 * k) });
         }
         if (!g->vis && !flat) continue;
-        const double fs = (tw.capital ? 14 : 12) * std::min(1.5, k);
+        const double fs = (tw.capital ? 14 : 12) * std::min(1.5, k) * (flat ? 1.0 : kNameScale);
         FontEntry& font = fontAt(tw.capital, !tw.capital, fs);
         const double off = flat ? (tw.capital ? 11 : 6) : (tw.capital ? 16 : 10);
         const double w = font.fm.horizontalAdvance(tw.name);
@@ -1310,7 +1436,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
             if (!lab.forced() && lab.kind != QLatin1String("ocean") && raw < sty->min * 0.62 && !(st.namesTool && st.selName == lab.ref)) continue;   // pequeno demais nesse zoom
             fs = std::max(sty->min, std::min(sty->max, raw));
         }
-        fs = jsRound(fs * lab.size * 10) / 10;
+        fs = jsRound(fs * lab.size * (flat ? 1.0 : kNameScale) * 10) / 10;
         const bool ghost = lab.hidden;
         if (ghost && !st.namesTool) continue;
         const bool sel = st.namesTool && st.selName == lab.ref;

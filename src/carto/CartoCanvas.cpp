@@ -14,6 +14,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
+#include <thread>
 
 namespace carto {
 
@@ -51,6 +53,10 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
     connect(&m_tileTimer, &QTimer::timeout, this, &Canvas::prefetchTile);
     m_fadeTimer.setInterval(16);
     connect(&m_fadeTimer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
+    m_detailTimer.setSingleShot(true);
+    m_detailTimer.setInterval(160);
+    connect(&m_detailTimer, &QTimer::timeout, this, &Canvas::requestDetail);
+    connect(this, &Canvas::viewChanged, this, [this]() { m_detailTimer.start(); });
     m_lastMove.start();
     m_strokeTick.setSingleShot(true);
     m_strokeTick.setInterval(0);
@@ -168,6 +174,11 @@ void Canvas::requestFull()
 {
     if (!m_world) return;
     m_settle.stop();
+    dropDetail();
+    // o giro acabou (ou a vista mudou de outro jeito): a pintura de prévia que estiver no meio fica velha
+    m_liveSpin = false; m_livePending = false;
+    ++m_liveGen;
+    if (m_liveCancel) m_liveCancel->store(true);
     const RealmPaint* realms = prepareRealms();
     if (m_cancel) m_cancel->store(true);               // a anterior ficou velha
     auto cancel = std::make_shared<std::atomic<bool>>(false);
@@ -201,13 +212,173 @@ void Canvas::adoptBase(std::shared_ptr<Render> r)
     if (m_base && r && (m_fadeNextBase || m_base->g.step != r->g.step || m_base->g.ang != r->g.ang || m_base->g.sq != r->g.sq)) m_fadeArm = true;
     m_fadeNextBase = false;
     m_base = std::move(r);
+    m_liveTile.reset();   // a pintura nítida chegou: o último quadro do giro sai
     if (!m_base) return;
     const Geom& g = m_base->g;
     if (m_present.width() != g.W || m_present.height() != g.H)
         m_present = QImage(g.W, g.H, QImage::Format_ARGB32_Premultiplied);
     refreshLight();
     if (m_showClimate) refreshClimate();
+    m_detailTimer.start();
     update();
+}
+
+void Canvas::requestLive()
+{
+    if (!m_world || m_world->backdrop) return;
+    m_liveSpin = true;
+    if (m_liveBusy) { m_livePending = true; return; }   // a que está pintando acaba e já sai a próxima, no ângulo da hora
+    m_liveBusy = true; m_livePending = false;
+    // só o pedaço da tela, no passo que cabe no orçamento de pixels (de perto fica nítido; de longe, o mapa todo)
+    const double dpr = devicePixelRatioF(), sqv = sq();
+    const double areaW = (width() / m_zoom) * (height() / (m_zoom * sqv));     // px do mundo na tela (aprox.)
+    double s = std::sqrt(areaW * 1.4 / std::max(1e5, m_liveBudget));
+    s = std::max({ s, 1.0 / std::min(3.0, std::ceil(m_zoom * dpr - 0.2)), 0.34 });
+    View v = currentView(1);
+    v.step = s;
+    const Geom g = viewGeom(*m_world, v);
+    double u0 = 1e18, v0 = 1e18, u1 = -1e18, v1 = -1e18;
+    for (const QPointF c : { QPointF(0, 0), QPointF(width(), 0), QPointF(0, height()), QPointF(width(), height()) }) {
+        const QPointF pl = screenToPlane(c);
+        const double u = pl.x() / s + g.cu, vv = pl.y() / s + g.cv;
+        u0 = std::min(u0, u); u1 = std::max(u1, u); v0 = std::min(v0, vv); v1 = std::max(v1, vv);
+    }
+    const int mx = 16;
+    const QRect r = QRect(QPoint(int(std::floor(u0)) - mx, int(std::floor(v0)) - mx),
+                          QPoint(int(std::ceil(u1)) + mx, int(std::ceil(v1 + g.extF)) + mx)).intersected(QRect(0, 0, g.W, g.H));
+    if (r.isEmpty()) { m_liveBusy = false; return; }
+    const RealmPaint* realms = prepareRealms();
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    m_liveCancel = cancel;
+    const int gen = m_liveGen;
+    World* w = m_world;
+    QPointer<Canvas> self(this);
+    const int threads = std::max(1, static_cast<int>(std::thread::hardware_concurrency()) - 1);
+    const std::vector<float> lut = m_lut;
+    auto L = std::make_shared<LiveTile>();
+    L->g = g; L->r = r; L->ang = m_ang; L->pitch = m_pitch; L->zoom = m_zoom; L->panX = m_panX; L->panY = m_panY;
+    QThreadPool::globalInstance()->start([self, gen, w, L, realms, cancel, threads, lut]() {
+        const auto t0 = Clock::now();
+        const QRect r = L->r;
+        L->data.assign(static_cast<size_t>(r.width()) * r.height() * 4, 0);
+        L->aux.resize(static_cast<size_t>(r.width()) * r.height());
+        paintTile(*w, L->g, L->data.data(), &L->aux, r.left(), r.top(), r.left() + r.width(), r.top() + r.height(), realms, threads, cancel.get());
+        if (!cancel->load()) {
+            // o pedaço vira um mapa pequeno: origem e tamanho dele, e a linha de origem do relevo na conta dele
+            for (int16_t& d : L->aux.depth) if (d >= 0) d = static_cast<int16_t>(d - r.top());
+            L->g.W = r.width(); L->g.H = r.height();
+            L->g.cu -= r.left(); L->g.cv -= r.top();
+            L->r = QRect(0, 0, r.width(), r.height());
+            Canvas::litImage(*L, lut);
+        }
+        const double ms = msSince(t0);
+        if (!self) return;
+        QMetaObject::invokeMethod(self, [self, gen, L, ms, cancel]() {
+            if (!self) return;
+            self->m_liveBusy = false;
+            if (gen == self->m_liveGen && !cancel->load() && self->m_liveSpin) {
+                self->m_liveTile = L;
+                self->m_liveMsSum += ms; self->m_liveN++;
+                self->m_liveStep = L->g.step;
+                // o orçamento se ajusta pra o giro caber em ~30 ms nesse computador
+                self->m_liveBudget = std::clamp(self->m_liveBudget * std::clamp(30.0 / std::max(1.0, ms), 0.7, 1.3), 1.5e5, 4e6);
+                self->update();
+            }
+            if (self->m_livePending && self->m_liveSpin) self->requestLive();
+        }, Qt::QueuedConnection);
+    });
+}
+
+void Canvas::dropDetail()
+{
+    if (m_detailCancel) m_detailCancel->store(true);
+    ++m_detailGen;
+    if (m_detail) { m_detail.reset(); update(); }
+}
+
+void Canvas::requestDetail()
+{
+    if (!m_world || !m_base || m_world->backdrop || m_showClimate || !baseMatches()) { dropDetail(); return; }
+    const double k = m_zoom * devicePixelRatioF();   // px da tela por px do mundo
+    if (k < 1.5) { dropDetail(); return; }
+    // do passo mais fino ao mais grosso: o primeiro cujo pedaço cabe (de muito perto, a folga do relevo que sobe
+    // da beira cresce e o mais fino estourava o limite, e o detalhe sumia de vez: litoral em escadinha no zoom máximo)
+    const double screenPx = double(width()) * height() * devicePixelRatioF() * devicePixelRatioF();
+    double ds = 0;
+    Geom g;
+    QRect r;
+    for (double div = std::min(4.0, std::ceil(k - 0.2)); div >= 2; div -= 1) {
+        const double tryDs = 1.0 / div;
+        View v = currentView(1);
+        v.step = tryDs;
+        const Geom tg = viewGeom(*m_world, v);
+        double u0 = 1e18, v0 = 1e18, u1 = -1e18, v1 = -1e18;
+        for (const QPointF c : { QPointF(0, 0), QPointF(width(), 0), QPointF(0, height()), QPointF(width(), height()) }) {
+            const QPointF pl = screenToPlane(c);
+            const double u = pl.x() / tryDs + tg.cu, vv = pl.y() / tryDs + tg.cv;
+            u0 = std::min(u0, u); u1 = std::max(u1, u); v0 = std::min(v0, vv); v1 = std::max(v1, vv);
+        }
+        const int mx = 24;
+        const QRect tr = QRect(QPoint(int(std::floor(u0)) - mx, int(std::floor(v0)) - mx),
+                               QPoint(int(std::ceil(u1)) + mx, int(std::ceil(v1 + tg.extF)) + mx)).intersected(QRect(0, 0, tg.W, tg.H));
+        if (tr.isEmpty()) continue;
+        if (double(tr.width()) * tr.height() <= screenPx * 3.2 || div <= 2) { ds = tryDs; g = tg; r = tr; break; }
+    }
+    if (ds <= 0 || r.isEmpty() || double(r.width()) * r.height() > screenPx * 5) { dropDetail(); return; }
+    if (m_detail && m_detail->g.step == g.step && m_detail->g.ang == g.ang && m_detail->g.sq == g.sq && m_detail->r.contains(r)) return;
+    const RealmPaint* realms = prepareRealms();
+    if (m_detailCancel) m_detailCancel->store(true);
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    m_detailCancel = cancel;
+    const int gen = ++m_detailGen;
+    World* w = m_world;
+    QPointer<Canvas> self(this);
+    m_jobs++;
+    emit statusChanged();
+    const std::vector<float> lut = m_lut;
+    const int threads = std::max(1, static_cast<int>(std::thread::hardware_concurrency()) - 1);   // um núcleo fica pra interface
+    m_pool->start([self, gen, w, g, r, realms, cancel, lut, threads]() {
+        auto d = std::make_shared<Detail>();
+        d->g = g; d->r = r;
+        d->data.assign(static_cast<size_t>(r.width()) * r.height() * 4, 0);
+        d->aux.resize(static_cast<size_t>(r.width()) * r.height());
+        paintTile(*w, g, d->data.data(), &d->aux, r.left(), r.top(), r.left() + r.width(), r.top() + r.height(), realms, threads, cancel.get());
+        if (cancel->load()) {
+            if (!self) return;
+            QMetaObject::invokeMethod(self, [self]() { if (self) { self->m_jobs--; emit self->statusChanged(); } }, Qt::QueuedConnection);
+            return;
+        }
+        Canvas::litImage(*d, lut);   // a luz da hora e a imagem pronta pra desenhar, aqui mesmo (fora da interface)
+        if (!self) return;
+        QMetaObject::invokeMethod(self, [self, gen, d, cancel, lut]() {
+            if (!self) return;
+            self->m_jobs--;
+            if (gen == self->m_detailGen && !cancel->load() && self->baseMatches()) {
+                self->m_detail = d;
+                if (lut != self->m_lut) self->presentDetail();   // a hora mudou no meio: relumina
+                self->update();
+            }
+            emit self->statusChanged();
+        }, Qt::QueuedConnection);
+    });
+}
+
+void Canvas::litImage(Detail& d, const std::vector<float>& lut)
+{
+    const int W = d.r.width(), H = d.r.height();
+    const uint8_t* src = d.data.data();
+    std::vector<uint8_t> lit;
+    if (!lut.empty() && !d.aux.nrm.empty()) {
+        lit.assign(d.data.size(), 0);
+        relight(d.data.data(), d.aux.nrm.data(), d.aux.depth.data(), lit.data(), W, 0, 0, W, H, lut);
+        src = lit.data();
+    }
+    d.img = QImage(src, W, H, W * 4, QImage::Format_RGBA8888).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+}
+
+void Canvas::presentDetail()
+{
+    if (m_detail) litImage(*m_detail, m_lut);
 }
 
 void Canvas::refreshLight()
@@ -216,6 +387,7 @@ void Canvas::refreshLight()
     m_lut = (m_world && m_world->backdrop) ? std::vector<float>() : sunLUT(m_hour, currentView(1).style);   // a imagem não tem relevo pra luz do sol
     m_litHour = m_hour;
     presentRect(0, 0, m_base->g.W, m_base->g.H);
+    presentDetail();
 }
 
 void Canvas::presentRect(int x0, int y0, int x1, int y1)
@@ -255,6 +427,8 @@ void Canvas::paintBox(const std::array<int, 4>& box, bool live)
     if (v[2] <= v[0] || v[3] <= v[1]) return;
     paintBands(*m_world, g, m_base->data.data(), v[0], v[1], v[2], v[3], &m_base->aux, g.info && m_doc ? m_doc->info.get() : nullptr);
     presentRect(v[0], v[1], v[2], v[3]);
+    dropDetail();          // o detalhe de perto ficou velho com a edição: volta quando a mão parar
+    m_detailTimer.start();
     if (m_showClimate && !m_climate.isNull())   // a camada de clima é barata: refaz só o pedaço, direto na imagem
         paintClimate(*m_world, g, m_climate.bits(), v[0], v[1], v[2], v[3]);
 }
@@ -325,8 +499,10 @@ void Canvas::setView(double ang, double pitch, bool quick)
     m_panY = c.y() - m_zoom * n[1] * sq();
     m_lastMove.restart();
     if (quick) {
-        // a imagem que existe gira e achata na hora; a nítida vem quando a mão para
+        // a imagem que existe gira e achata na hora; a nítida vem quando a mão para.
+        // Giro em 3D: enquanto isso, o relevo de verdade em resolução menor (ver requestLive)
         m_settle.start();
+        if (!m_opts.spinLight) requestLive();
         update();
     } else requestFull();
     emit viewChanged();
@@ -463,13 +639,42 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
         m_scene.drawUnder(p, su);
     }
     const Geom& g = m_base->g;
-    const bool matches = baseMatches();
+    const bool live = liveOn() && !exporting;
+    const bool matches = baseMatches() || live;
+    if (live) {
+        // girando em 3D: só o pedaço da tela, pintado na vista dele (a pintura inteira é de outro ângulo)
+        const LiveTile& L = *m_liveTile;
+        const double s = L.g.step;
+        const double zz = m_liveSpin ? L.zoom : m_zoom, px = m_liveSpin ? L.panX : m_panX, py = m_liveSpin ? L.panY : m_panY;
+        const QTransform t = QTransform::fromScale(s, s) * QTransform::fromTranslate(-L.g.cu * s, -L.g.cv * s)
+                           * QTransform::fromScale(zz, zz * L.g.sq) * QTransform::fromTranslate(px, py);
+        p.save();
+        p.setTransform(t, true);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        p.drawImage(QPointF(0, 0), L.img);
+        p.restore();
+    } else {
     p.save();
     p.setTransform(baseTransform(), true);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
     p.drawImage(QPointF(0, 0), m_present);
     if (m_showClimate && !m_climate.isNull()) p.drawImage(QPointF(0, 0), m_climate);
     p.restore();
+    }
+    // o detalhe de perto por cima (mesma conta da pintura inteira, com o passo dele e a origem do azulejo)
+    if (!live && m_detail && !m_detail->img.isNull() && matches && m_detail->g.ang == m_ang && m_detail->g.sq == sq()) {
+        const Geom& dg = m_detail->g;
+        const double s = dg.step;
+        const QTransform t = QTransform::fromTranslate(m_detail->r.left(), m_detail->r.top()) * QTransform::fromScale(s, s)
+                           * QTransform::fromTranslate(-dg.cu * s, -dg.cv * s) * QTransform().rotateRadians(m_ang - dg.ang)
+                           * QTransform::fromScale(m_zoom, m_zoom * sq()) * QTransform::fromTranslate(m_panX, m_panY);
+        p.save();
+        p.setTransform(t, true);
+        // o detalhe já vem perto de 1 px por px da tela: em movimento, sem suavizar (bem mais barato e quase igual)
+        p.setRenderHint(QPainter::SmoothPixmapTransform, exporting || m_lastMove.elapsed() >= 130);
+        p.drawImage(QPointF(0, 0), m_detail->img);
+        p.restore();
+    }
 
     // cena: plantações e estradas no chão, depois o que fica de pé
     SceneState st = sceneState();
@@ -479,6 +684,23 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
         st.namesTool = false; st.selName.clear(); st.avoid = m_avoid;
         if (st.info()) { m_scene.drawFields(p, st); m_scene.drawRoads(p, st); }
         if (!m_showClimate) m_scene.drawSprites(p, st);
+    } else if (live) {
+        // girando em 3D: os azulejos guardados são de outro ângulo; o chão e o que fica de pé vão numa
+        // camada do tamanho da tela (imagem: as plantas entram pelo caminho rápido, direto nos pixels)
+        const double dpr = devicePixelRatioF();
+        const QSize px(qRound(sz.width() * dpr), qRound(sz.height() * dpr));
+        if (m_spinLayer.size() != px) m_spinLayer = QImage(px, QImage::Format_ARGB32_Premultiplied);
+        m_spinLayer.setDevicePixelRatio(dpr);
+        m_spinLayer.fill(Qt::transparent);
+        {
+            QPainter q(&m_spinLayer);
+            q.setRenderHint(QPainter::Antialiasing);
+            SceneState ss = st;
+            ss.spin = true;
+            if (ss.info()) { m_scene.drawFields(q, ss); m_scene.drawRoads(q, ss); }
+            if (!m_showClimate) m_scene.drawSprites(q, ss);
+        }
+        p.drawImage(QPointF(0, 0), m_spinLayer);
     } else drawGroundLayer(p, st, sz);
     // girando ou inclinando, a pintura ainda é da vista anterior: o que pisa no chão espera ela chegar
     const bool steady = matches || exporting;
@@ -1002,6 +1224,13 @@ SceneState Canvas::sceneState() const
     st.g = m_base ? &m_base->g : nullptr;
     st.aux = m_base ? &m_base->aux : nullptr;
     st.ang = m_ang; st.pitch = m_pitch; st.zoom = m_zoom; st.panX = m_panX; st.panY = m_panY; st.fitZoom = m_fitZoom;
+    if (liveOn()) {   // girando em 3D: o quadro inteiro na vista do pedaço pintado (o chão confere com o relevo)
+        const LiveTile& L = *m_liveTile;
+        st.g = &L.g; st.aux = &L.aux;
+        st.ang = L.ang; st.pitch = L.pitch;
+        // girando: a vista do pedaço; já solto e esperando a nítida, arrastar e dar zoom seguem a mão
+        if (m_liveSpin) { st.zoom = L.zoom; st.panX = L.panX; st.panY = L.panY; }
+    }
     st.mode = m_mode; st.hour = m_hour; st.sprites = m_opts.sprites;
     st.vw = width(); st.vh = height();
     if (m_doc) { st.namesAuto = m_doc->labels.autoOn; st.density = m_doc->labels.density; }

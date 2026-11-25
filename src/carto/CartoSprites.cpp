@@ -489,6 +489,29 @@ const FloraImg& floraImage(int type, double v, double pitchDeg, double ppw, bool
     return cache.insert(key, img).value();
 }
 
+const FloraImg& floraStamp(int type, double v, double pitchDeg, double devPpw, bool mirror)
+{
+    static QHash<quint64, FloraImg> cache;   // chave em número: montar texto por planta custava mais que carimbar
+    const int q = static_cast<int>(jsRound(std::log(std::max(0.2, devPpw)) / std::log(1.06)));
+    const double qp = std::pow(1.06, q);
+    const int pb = static_cast<int>(jsRound(std::max(20.0, std::min(90.0, pitchDeg)) / 5)) * 5;
+    const int vb = std::min(VARIANTS - 1, static_cast<int>(std::floor(v * VARIANTS)));
+    const quint64 key = (static_cast<quint64>(type & 0xffff) << 40) | (static_cast<quint64>(vb & 0xff) << 32) | (static_cast<quint64>(pb & 0xffff) << 16)
+                      | (static_cast<quint64>((q + 512) & 0x7fff) << 1) | (mirror ? 1u : 0u);
+    auto it = cache.find(key);
+    if (it != cache.end()) return it.value();
+    const FloraImg& src = floraImage(type, v, pitchDeg, qp, mirror);
+    const double f = qp / (2 * src.ppw);   // a arte é desenhada em 2×: esse é o quanto ela encolhe
+    FloraImg st;
+    const int w = std::max(1, static_cast<int>(std::lround(src.img.width() * f))), h = std::max(1, static_cast<int>(std::lround(src.img.height() * f)));
+    st.img = src.img.scaled(w, h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    st.ax = src.ax * w / double(src.img.width());
+    st.ay = src.ay * h / double(src.img.height());
+    st.ppw = qp;
+    if (cache.size() > 8000) cache.clear();
+    return cache.insert(key, st).value();
+}
+
 const QImage& glowImage(const QString& kind)
 {
     static QHash<QString, QImage> cache;

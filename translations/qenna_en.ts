@@ -39156,17 +39156,17 @@ following days, it always resets at this new time.</translation>
 <context>
     <name>carto::Canvas</name>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="163"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="169"/>
         <source>prévia em %1 ms</source>
         <translation>preview in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="190"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="201"/>
         <source>pintou em %1 ms</source>
         <translation>painted in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1131"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1310"/>
         <source>acabamento em %1 ms</source>
         <translation>finished in %1 ms</translation>
     </message>
@@ -40310,9 +40310,9 @@ following days, it always resets at this new time.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="97"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="884"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="980"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="1256"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="890"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="986"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1262"/>
         <source>Mapa</source>
         <translation>Map</translation>
     </message>
@@ -40386,7 +40386,7 @@ following days, it always resets at this new time.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="377"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="112"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="113"/>
         <source>Passar o dia (P)</source>
         <translation>Play the day (P)</translation>
     </message>
@@ -40397,55 +40397,55 @@ following days, it always resets at this new time.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="441"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="881"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="25"/>
         <source>Mover</source>
         <translation>Move</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="443"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="866"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
         <source>Área</source>
         <translation>Area</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="444"/>
         <location filename="../src/carto/CartoPanel.cpp" line="498"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="865"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="907"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="871"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="913"/>
         <source>Pincel</source>
         <translation>Brush</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="445"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="865"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="907"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="871"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="913"/>
         <source>Clima</source>
         <translation>Climate</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="446"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="136"/>
         <source>Territórios</source>
         <translation>Territories</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="447"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="871"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="877"/>
         <source>Construir</source>
         <translation>Build</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="448"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="878"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="371"/>
         <source>Nomes</source>
         <translation>Names</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="449"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="874"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="880"/>
         <source>Explorar</source>
         <translation>Explore</translation>
     </message>
@@ -40462,7 +40462,7 @@ following days, it always resets at this new time.</translation>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="544"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="421"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="264"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
         <source>TAMANHO</source>
         <translation>SIZE</translation>
     </message>
@@ -40676,64 +40676,74 @@ following days, it always resets at this new time.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="662"/>
+        <source>Giro leve (para computador mais fraco)</source>
+        <translation>Light rotation (for slower computers)</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="667"/>
+        <source>Girar e inclinar só torcem a pintura pronta, e o relevo aparece quando você solta. Desligado, o mapa gira em 3D.</source>
+        <translation>Rotating and tilting only twist the finished painting, and the relief appears when you let go. Off, the map rotates in 3D.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="668"/>
         <source>Moldura do mapa (onde dá pra desenhar)</source>
         <translation>Map frame (where you can draw)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="165"/>
         <source>Pintar</source>
         <translation>Paint</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="165"/>
         <source>Neutro</source>
         <translation>Neutral</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="869"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="875"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="165"/>
         <source>Semear</source>
         <translation>Seed</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="873"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="879"/>
         <source>Régua</source>
         <translation>Ruler</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="886"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="892"/>
         <source>semente %1</source>
         <translation>seed %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="886"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="892"/>
         <source>da imagem</source>
         <translation>from an image</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="890"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="896"/>
         <source> · pintando…</source>
         <translation> · painting…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="916"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="922"/>
         <source>%1 × %2 px</source>
         <translation>%1 × %2 px</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="921"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="927"/>
         <source>Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Area: drag a rectangle to create land · wheel: zoom · right button: tools (drag to rotate and tilt)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="922"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="928"/>
         <source>%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>%1 · Shift inverts · [ and ] size · right button: tools (drag to rotate and tilt)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="923"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="929"/>
         <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
         <translation>Territories: seed, paint or neutral (in the dock) · Ctrl+Z undoes · right button: tools</translation>
     </message>
@@ -40742,17 +40752,17 @@ following days, it always resets at this new time.</translation>
         <translation type="vanished">Build: choose in the dock · Q/E rotate the selected item · Delete removes it · Ctrl+Z undoes</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="925"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="931"/>
         <source>Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde</source>
         <translation>Names: click a name to edit it, drag to move it · click the map to add a new name (drag and it follows the line) · Delete hides</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="932"/>
         <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
         <translation>Ruler: click to mark the path · double-click to finish · Esc clears</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="928"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="934"/>
         <source>Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Drag to move · wheel: zoom · right button: tools (drag to rotate and tilt)</translation>
     </message>
@@ -40814,12 +40824,12 @@ following days, it always resets at this new time.</translation>
         <translation>How to use the Map</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1106"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1112"/>
         <source>Neste mapa o terreno é a imagem: Área, Pincel e Clima ficam desligados.</source>
         <translation>On this map the terrain is the image: Area, Brush and Climate are off.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1212"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1218"/>
         <source>O Completo abre quando o mapa tiver um território, uma construção ou um nome. Crie um pelas ferramentas ou gere com territórios e locais.</source>
         <translation>Complete opens once the map has a territory, a building or a name. Create one with the tools or generate with territories and places.</translation>
     </message>
@@ -42412,37 +42422,37 @@ following days, it always resets at this new time.</translation>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="76"/>
         <source>Mover (H)</source>
         <translation>Move (H)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="76"/>
         <source>Área: arraste um retângulo pra criar terra (A)</source>
         <translation>Area: drag a rectangle to create land (A)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="76"/>
         <source>Pincéis de terreno (B)</source>
         <translation>Terrain brushes (B)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="76"/>
         <source>Clima (C)</source>
         <translation>Climate (C)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="129"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="130"/>
         <source>INCLINAÇÃO</source>
         <translation>TILT</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="130"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="131"/>
         <source>HORA</source>
         <translation>HOUR</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="184"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="185"/>
         <source>Região do %1</source>
         <translation>%1 Region</translation>
     </message>
@@ -42451,77 +42461,77 @@ following days, it always resets at this new time.</translation>
         <translation type="vanished">Image map: the view always stays top-down.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="216"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="217"/>
         <source>Mapa de imagem: inclina só até 70°, pra imagem não deitar.</source>
         <translation>Image map: tilts only down to 70°, so the image doesn&apos;t lie flat.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="265"/>
         <source>Exportar imagem</source>
         <translation>Export image</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="271"/>
         <source>1×</source>
         <translation>1×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="271"/>
         <source>2×</source>
         <translation>2×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="271"/>
         <source>3×</source>
         <translation>3×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="272"/>
         <source>Do tamanho da tela</source>
         <translation>Screen size</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="272"/>
         <source>Dobro: bom pra imprimir</source>
         <translation>Double: good for printing</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="272"/>
         <source>Triplo: pra página inteira do livro</source>
         <translation>Triple: for a full book page</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="278"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="282"/>
         <source>Cartela (título, escala e legenda)</source>
         <translation>Cartouche (title, scale and legend)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="283"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="287"/>
         <source>Salvar PNG…</source>
         <translation>Save PNG…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="288"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="292"/>
         <source>Sai a vista de agora, sem os botões. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation>The current view, without the buttons. In the Ink view, it becomes the map for the first pages of the book.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="310"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="314"/>
         <source>Exportar mapa</source>
         <translation>Export map</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="310"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="314"/>
         <source>Imagem PNG (*.png)</source>
         <translation>PNG image (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="336"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="340"/>
         <source>Não deu pra salvar a imagem nesse lugar.</source>
         <translation>Couldn&apos;t save the image there.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="338"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="342"/>
         <source>Imagem salva: %1</source>
         <translation>Image saved: %1</translation>
     </message>

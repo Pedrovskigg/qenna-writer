@@ -42,6 +42,10 @@ void resetSun();
 
 struct FloraImg { QImage img; double ax = 0, ay = 0, ppw = 1; };
 const FloraImg& floraImage(int type, double v, double pitchDeg, double ppw, bool mirror);
+// a mesma planta já no tamanho da tela (px de dispositivo), pra carimbar sem esticar: na escala
+// mínima são dezenas de milhares por azulejo e reduzir cada uma na hora era o grosso do custo.
+// devPpw anda em degraus de ~6% (ninguém vê) e `ax/ay` vêm em px de dispositivo.
+const FloraImg& floraStamp(int type, double v, double pitchDeg, double devPpw, bool mirror);
 const QImage& glowImage(const QString& kind);   // window · torch · beacon · lantern · arcane · fairy · fire · ghost · holy · eye
 
 void drawHouse(QPainter& p, double x, double y, double yaw, double v, int floors, bool timber, const Cam& cam, bool snowy);
