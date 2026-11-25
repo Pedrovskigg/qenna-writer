@@ -213,6 +213,7 @@ void RecadosFeed::postComment(const QString& recadoId, const QString& name, cons
     o.insert(QStringLiteral("name"), name);
     o.insert(QStringLiteral("body"), body);
     if (parent > 0) o.insert(QStringLiteral("parent"), parent);
+    o.insert(QStringLiteral("client"), clientId());   // pro ban pegar o aparelho (o servidor guarda só o hash)
     QNetworkReply* reply = network()->post(req, QJsonDocument(o).toJson(QJsonDocument::Compact));
     connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId]() {
         reply->deleteLater();
@@ -347,6 +348,26 @@ void RecadosFeed::deleteComment(const QString& recadoId, qint64 commentId)
         QList<Comentario>& list = m_comments[recadoId];   // o comentário e as respostas dele
         list.erase(std::remove_if(list.begin(), list.end(), [commentId](const Comentario& c) { return c.id == commentId || c.parent == commentId; }), list.end());
         emit commentsChanged();
+    });
+}
+
+void RecadosFeed::banComment(const QString& recadoId, qint64 commentId)
+{
+    const QString key = QSettings().value(QStringLiteral("recados/adminKey")).toString();
+    if (!commentsEnabled() || key.isEmpty()) return;
+    QNetworkRequest req{QUrl(apiBase() + QStringLiteral("/bans/") + QString::number(commentId))};
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("application/json"));
+    req.setRawHeader("Authorization", "Bearer " + key.toUtf8());
+    req.setTransferTimeout(15000);
+    QNetworkReply* reply = network()->post(req, QByteArray("{}"));
+    connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId, commentId]() {
+        reply->deleteLater();
+        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (status == 403) { setAdminKey(QString()); emit adminKeyRejected(); return; }
+        if (reply->error() != QNetworkReply::NoError) return;
+        Q_UNUSED(recadoId); Q_UNUSED(commentId);
+        fetchComments();   // o ban leva tudo o que a pessoa escreveu, em qualquer recado
     });
 }
 

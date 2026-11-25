@@ -6,6 +6,8 @@
 //   Reações nos comentários: as mesmas /reactions, com recado = "c-<id do comentário>".
 //                                     com Authorization: Bearer <ADMIN_KEY> = comentário do autor (selo "autor")
 //   DELETE /comments/<id>           (Authorization: Bearer <ADMIN_KEY>)  · só o Pe
+//   POST   /bans/<id do comentário> (Authorization: Bearer <ADMIN_KEY>)  · bane quem escreveu e apaga o comentário
+//   O POST /comments aceita "client" (o id anônimo do app/navegador), pro ban pegar o aparelho.
 //
 //   GET    /reactions?me=<id>       → { "<recado>": { heart, fire, clap, laugh, mine: [kinds] }, ... }
 //   POST   /reactions               ← { recado, kind, client }  (marca/desmarca; devolve o recado atualizado)
@@ -95,6 +97,45 @@ async function checkKey(request, env) {
   return 'bad';
 }
 
+// Ban: o aparelho pra sempre, a conexão por 30 dias (IP de celular é dividido entre muita gente).
+const IP_BAN_MS = 30 * 24 * 3600 * 1000;
+async function banHashes(env, request, client) {
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  return {
+    ip: await sha256((env.SALT || 'qenna') + '|ban-ip|' + ip),
+    client: validClient(client) ? await sha256((env.SALT || 'qenna') + '|ban-c|' + client) : null,
+  };
+}
+async function isBanned(env, h) {
+  if (h.client && await env.DB.prepare("SELECT 1 AS x FROM bans WHERE hash = ? AND kind = 'client'").bind(h.client).first()) return true;
+  return !!await env.DB.prepare("SELECT 1 AS x FROM bans WHERE hash = ? AND kind = 'ip' AND at > ?").bind(h.ip, Date.now() - IP_BAN_MS).first();
+}
+
+async function deleteThread(env, id) {
+  // some junto: as respostas dele e as reações de todos
+  const { results } = await env.DB.prepare('SELECT id FROM comments WHERE id = ? OR parent = ?').bind(id, id).all();
+  for (const c of results) await env.DB.prepare('DELETE FROM reactions WHERE recado = ?').bind('c-' + c.id).run();
+  await env.DB.prepare('DELETE FROM comments WHERE id = ? OR parent = ?').bind(id, id).run();
+}
+
+async function ban(request, env, id) {
+  const key = await checkKey(request, env);
+  if (key === 'locked') return fail('slow-down', 429);
+  if (key !== 'ok') return fail('forbidden', 403);
+  const c = await env.DB.prepare('SELECT ban_ip, ban_client FROM comments WHERE id = ?').bind(id).first();
+  if (!c) return fail('gone', 404);
+  const now = Date.now();
+  if (c.ban_ip) await env.DB.prepare("INSERT OR REPLACE INTO bans (hash, kind, at) VALUES (?, 'ip', ?)").bind(c.ban_ip, now).run();
+  if (c.ban_client) await env.DB.prepare("INSERT OR REPLACE INTO bans (hash, kind, at) VALUES (?, 'client', ?)").bind(c.ban_client, now).run();
+  // some tudo o que essa pessoa escreveu (pelo aparelho; pela conexão não, que pode ser de outra gente)
+  if (c.ban_client) {
+    const { results } = await env.DB.prepare('SELECT id FROM comments WHERE ban_client = ?').bind(c.ban_client).all();
+    for (const r of results) await deleteThread(env, r.id);
+  }
+  await deleteThread(env, id);
+  return json({ ok: true });
+}
+
 async function list(env) {
   const { results } = await env.DB.prepare(
     `SELECT id, recado, name, body, at, author, parent FROM (
@@ -124,6 +165,8 @@ async function add(request, env) {
   if (!hasKey && reserved) return fail('reserved');
   const isAuthor = hasKey && reserved;
   if (!hasKey && (LINK.test(name) || LINK.test(body))) return fail('no-links');
+  const bh = await banHashes(env, request, data.client);
+  if (!hasKey && await isBanned(env, bh)) return fail('banned', 403);
 
   const now = Date.now();
   const ip = request.headers.get('CF-Connecting-IP') || 'local';
@@ -140,8 +183,8 @@ async function add(request, env) {
     if (!p) return fail('gone');
     parent = p.parent || p.id;
   }
-  const res = await env.DB.prepare('INSERT INTO comments (recado, name, body, at, author, parent) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(recado, name, body, now, isAuthor ? 1 : 0, parent).run();
+  const res = await env.DB.prepare('INSERT INTO comments (recado, name, body, at, author, parent, ban_ip, ban_client) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .bind(recado, name, body, now, isAuthor ? 1 : 0, parent, hasKey ? null : bh.ip, hasKey ? null : bh.client).run();
   if (!hasKey) await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
   return json({ ok: true, comment: { id: res.meta.last_row_id, recado, name, body, at: now, author: isAuthor, parent } }, 201);
 }
@@ -150,10 +193,7 @@ async function remove(request, env, id) {
   const key = await checkKey(request, env);
   if (key === 'locked') return fail('slow-down', 429);
   if (key !== 'ok') return fail('forbidden', 403);
-  // some junto: as respostas dele e as reações de todos
-  const { results } = await env.DB.prepare('SELECT id FROM comments WHERE id = ? OR parent = ?').bind(id, id).all();
-  for (const c of results) await env.DB.prepare('DELETE FROM reactions WHERE recado = ?').bind('c-' + c.id).run();
-  await env.DB.prepare('DELETE FROM comments WHERE id = ? OR parent = ?').bind(id, id).run();
+  await deleteThread(env, id);
   return json({ ok: true });
 }
 
@@ -194,6 +234,7 @@ async function toggleReaction(request, env) {
   await env.DB.prepare('DELETE FROM sends WHERE at < ?').bind(now - 24 * 3600 * 1000).run();
   const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM sends WHERE who = ? AND at > ?').bind(who, now - WINDOW_MS).first();
   if (n >= MAX_TOGGLES) return fail('slow-down', 429);
+  if (await isBanned(env, await banHashes(env, request, data.client))) return fail('banned', 403);
   const voter = await voterOf(env, data.client);
   const del = await env.DB.prepare('DELETE FROM reactions WHERE recado = ? AND kind = ? AND voter = ?').bind(recado, data.kind, voter).run();
   if (!del.meta.changes) await env.DB.prepare('INSERT INTO reactions (recado, kind, voter, at) VALUES (?, ?, ?, ?)').bind(recado, data.kind, voter, now).run();
@@ -211,6 +252,8 @@ export default {
       if (url.pathname === '/comments' && request.method === 'POST') return await add(request, env);
       const m = url.pathname.match(/^\/comments\/(\d+)$/);
       if (m && request.method === 'DELETE') return await remove(request, env, Number(m[1]));
+      const mb = url.pathname.match(/^\/bans\/(\d+)$/);
+      if (mb && request.method === 'POST') return await ban(request, env, Number(mb[1]));
       if (url.pathname === '/reactions' && request.method === 'GET') return await listReactions(url, env);
       if (url.pathname === '/reactions' && request.method === 'POST') return await toggleReaction(request, env);
       return fail('not-found', 404);

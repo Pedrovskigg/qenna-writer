@@ -214,6 +214,18 @@
   .cmt-replying { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--blue); }
   .cmt-replying[hidden] { display: none; }
   .cmt-replying button { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 17px; line-height: 1; padding: 0; }
+  .rules-back { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .rules-back[hidden] { display: none; }
+  .rules { background: var(--paper-white); border: 1px solid var(--rule-strong); max-width: 540px; width: 100%; padding: 30px 30px 22px; max-height: calc(100vh - 32px); overflow: auto; }
+  .rules h3 { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; font-size: 23px; font-weight: 500; margin: 0 0 16px; color: var(--ink); }
+  .rules ol { margin: 0; padding-left: 22px; }
+  .rules li { margin: 0 0 12px; }
+  .rules li::marker { color: var(--blue); font-weight: 600; }
+  .rules li b { color: var(--ink); }
+  .rules .sig { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif; font-style: italic; color: var(--ink-faint); margin: 4px 0 18px; }
+  .rules .btns { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  .rules button { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; padding: 8px 14px; cursor: pointer; border: 1px solid var(--rule-strong); background: transparent; color: var(--ink-faint); }
+  .rules button.ok { background: var(--blue); border-color: var(--blue); color: var(--paper-white); }
   .cmts { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
   .cmts h3 { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: var(--ink-faint); margin: 0 0 14px; }
   .cmt { margin: 0 0 16px; }
@@ -274,7 +286,7 @@
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
   var API = (new URLSearchParams(location.search).get('api') || 'https://qenna-comentarios.qennawriter.workers.dev').replace(/\/$/, '');
-  var C = {"title0": "Comentários", "title": "Comentários (%1)", "none": "Ninguém comentou ainda. Seja a primeira pessoa.", "loading": "Carregando comentários…", "name": "Seu nome", "write": "Escreva um comentário", "send": "Enviar", "sending": "Enviando…", "ok": "Comentário publicado.", "empty": "Escreva o seu nome e o comentário.", "no-links": "Links não são aceitos nos comentários.", "slow-down": "Muitos comentários seguidos. Tente de novo daqui a alguns minutos.", "too-long": "O comentário passou do tamanho máximo.", "network": "Não foi possível enviar. Confira a internet e tente de novo.", "author": "autor", "reserved": "Esse nome é reservado ao autor do Qenna.", "reply": "Responder", "replying": "Respondendo a %1", "cancel": "Cancelar a resposta", "gone": "Esse comentário foi apagado; a resposta não foi enviada.", "del": "apagar", "key": "Chave de administrador", "badkey": "Chave errada."};
+  var C = {"title0": "Comentários", "title": "Comentários (%1)", "none": "Ninguém comentou ainda. Seja a primeira pessoa.", "loading": "Carregando comentários…", "name": "Seu nome", "write": "Escreva um comentário", "send": "Enviar", "sending": "Enviando…", "ok": "Comentário publicado.", "empty": "Escreva o seu nome e o comentário.", "no-links": "Links não são aceitos nos comentários.", "slow-down": "Muitos comentários seguidos. Tente de novo daqui a alguns minutos.", "too-long": "O comentário passou do tamanho máximo.", "network": "Não foi possível enviar. Confira a internet e tente de novo.", "author": "autor", "reserved": "Esse nome é reservado ao autor do Qenna.", "reply": "Responder", "replying": "Respondendo a %1", "cancel": "Cancelar a resposta", "gone": "Esse comentário foi apagado; a resposta não foi enviada.", "banned": "Você não pode mais comentar aqui.", "del": "apagar", "key": "Chave de administrador", "badkey": "Chave errada."};
   var slots = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
   var admin = location.hash === '#admin';
@@ -304,6 +316,12 @@
         del.type = 'button';
         del.onclick = function () { removeComment(id, c.id); };
         d.appendChild(del);
+        if (!c.author) {
+          var bn = el('button', 'del', "banir");
+          bn.type = 'button';
+          bn.onclick = function () { banComment(id, c.id, c.name); };
+          d.appendChild(bn);
+        }
       }
       d.appendChild(el('p', null, c.body));
       var acts = el('div', 'acts');
@@ -344,13 +362,14 @@
       ev.preventDefault();
       var n = name.value.trim(), b = text.value.trim();
       if (!n || !b) { say(C.empty, true); return; }
+      if (!store('qenna-rules-ok')) { askRules(function () { form.requestSubmit ? form.requestSubmit() : form.onsubmit(ev); }); return; }
       store('qenna-cmt-name', n);
       btn.disabled = true; btn.textContent = C.sending; say('');
       if (admin && !store('qenna-admin')) { var k = prompt(C.key) || ''; if (k) store('qenna-admin', k); }
       var hdr = { 'Content-Type': 'application/json' };
       if (admin && store('qenna-admin')) hdr.Authorization = 'Bearer ' + store('qenna-admin');
       fetch(API + '/comments', { method: 'POST', headers: hdr,
-        body: JSON.stringify({ recado: id, name: n, body: b, parent: replyTo, website: hp.value }) })
+        body: JSON.stringify({ recado: id, name: n, body: b, parent: replyTo, client: clientId(), website: hp.value }) })
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.comment) {
@@ -429,6 +448,40 @@
       reactCache = all;
       Object.keys(rslots).forEach(function (id) { rslots[id].data = all[id] || null; paintReacts(id); });
     }).catch(function () {});
+  }
+  // As regras da casa: aparecem no primeiro "Enviar" deste navegador.
+  var R = {"rtitle": "Antes de comentar e interagir, lembre-se:", "rules": [["Respeito não é opcional, é obrigatório.", "Comentários ofensivos serão apagados e o usuário pode ser banido permanentemente de comentar, a depender do contexto."], ["Discurso de ódio é CRIME aqui.", "Racismo, xenofobia, misoginia ou homofobia é ban direto e SECO. Sem segunda chance."], ["Não comente links externos ou qualquer coisa relacionada.", ""], ["Não tem problema falar palavrão, mas tenhamos classe.", ""], ["Seja ativo!", "Interaja e comente sempre que possível! Eu e a comunidade agradecemos!"]], "ragree": "Entendi e concordo com tudo!", "rcancel": "Cancelar e não comentar", "banq": "Banir %1? O comentário (e as respostas dele) some, e essa pessoa não poderá mais comentar nem reagir."};
+  function askRules(done) {
+    if (store('qenna-rules-ok')) { done(); return; }
+    var back = document.getElementById('rules-back');
+    if (!back) {
+      back = el('div', 'rules-back'); back.id = 'rules-back';
+      var box = el('div', 'rules'); box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+      box.appendChild(el('h3', null, R.rtitle));
+      var ol = el('ol');
+      R.rules.forEach(function (r) { var li = el('li'); li.appendChild(el('b', null, r[0])); if (r[1]) { li.appendChild(el('br')); li.appendChild(document.createTextNode(r[1])); } ol.appendChild(li); });
+      box.appendChild(ol);
+      box.appendChild(el('p', 'sig', '— P.H. Lobato'));
+      var btns = el('div', 'btns');
+      var no = el('button', null, R.rcancel); no.type = 'button';
+      var ok = el('button', 'ok', R.ragree); ok.type = 'button';
+      btns.appendChild(no); btns.appendChild(ok); box.appendChild(btns);
+      back.appendChild(box); document.body.appendChild(back);
+      back._no = no; back._ok = ok;
+    }
+    back.hidden = false; back._ok.focus();
+    back._ok.onclick = function () { store('qenna-rules-ok', '1'); back.hidden = true; done(); };
+    back._no.onclick = function () { back.hidden = true; };
+  }
+  function banComment(id, cid, who) {
+    if (!confirm(R.banq.replace('%1', who))) return;
+    var key = store('qenna-admin');
+    if (!key) { key = prompt(C.key) || ''; if (!key) return; store('qenna-admin', key); }
+    fetch(API + '/bans/' + cid, { method: 'POST', headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function (r) {
+        if (r.status === 403) { store('qenna-admin', null); alert(C.badkey); return; }
+        loadComments();   // o ban leva tudo o que a pessoa escreveu
+      });
   }
   function loadComments() {
     if (!API) return;

@@ -14,6 +14,7 @@
 #include <QPainterPath>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <functional>
 #include <QPlainTextEdit>
 #include <QSignalBlocker>
@@ -762,6 +763,20 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
                 const qint64 cid = c.id;
                 connect(del, &QPushButton::clicked, box, [feed, id, cid]() { feed->deleteComment(id, cid); });
                 headRow->addWidget(del);
+                if (!c.author) {
+                    auto* banBtn = new QPushButton(tr("banir"), item);
+                    banBtn->setObjectName(QStringLiteral("recCmtDel"));
+                    banBtn->setCursor(Qt::PointingHandCursor);
+                    banBtn->setFlat(true);
+                    const QString who = c.name;
+                    connect(banBtn, &QPushButton::clicked, box, [this, feed, id, cid, who]() {
+                        const auto ans = QMessageBox::question(this, tr("Banir"),
+                            tr("Banir %1? O comentário (e as respostas dele) some, e essa pessoa não poderá mais comentar nem reagir.").arg(who),
+                            QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Cancel);
+                        if (ans == QMessageBox::Yes) feed->banComment(id, cid);
+                    });
+                    headRow->addWidget(banBtn);
+                }
             }
             headRow->addStretch(1);
             iv->addLayout(headRow);
@@ -816,6 +831,7 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         const QString name = nameEdit->text().simplified();
         const QString body = bodyEdit->toPlainText().trimmed();
         if (name.isEmpty() || body.isEmpty()) { setStatus(tr("Escreva o seu nome e o comentário."), true); return; }
+        if (!QSettings().value(QStringLiteral("recados/rulesOk")).toBool() && !confirmRules()) return;   // o texto fica lá
         QSettings().setValue(QStringLiteral("recados/nome"), name);
         send->setEnabled(false);
         send->setText(tr("Enviando…"));
@@ -859,10 +875,93 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         else if (why == QLatin1String("empty")) msg = tr("Escreva o seu nome e o comentário.");
         else if (why == QLatin1String("too-long")) msg = tr("O comentário passou do tamanho máximo.");
         else if (why == QLatin1String("gone")) msg = tr("Esse comentário foi apagado; a resposta não foi enviada.");
+        else if (why == QLatin1String("banned")) msg = tr("Você não pode mais comentar aqui.");
         else msg = tr("Não foi possível enviar. Confira a internet e tente de novo.");
         setStatus(msg, true);
     });
     return box;
+}
+
+bool RecadosDialog::confirmRules()
+{
+    QDialog dlg(this);
+    dlg.setObjectName(QStringLiteral("recRules"));
+    dlg.setWindowTitle(tr("Antes de comentar"));
+    dlg.setModal(true);
+    dlg.setFixedWidth(520);
+    auto* col = new QVBoxLayout(&dlg);
+    col->setContentsMargins(30, 26, 30, 22);
+    col->setSpacing(14);
+    auto* title = new QLabel(tr("Antes de comentar e interagir, lembre-se:"), &dlg);
+    title->setObjectName(QStringLiteral("recRulesTitle"));
+    title->setWordWrap(true);
+    col->addWidget(title);
+    struct Rule { QString head, body; };
+    const Rule rules[] = {
+        { tr("Respeito não é opcional, é obrigatório."),
+          tr("Comentários ofensivos serão apagados e o usuário pode ser banido permanentemente de comentar, a depender do contexto.") },
+        { tr("Discurso de ódio é CRIME aqui."),
+          tr("Racismo, xenofobia, misoginia ou homofobia é ban direto e SECO. Sem segunda chance.") },
+        { tr("Não comente links externos ou qualquer coisa relacionada."), QString() },
+        { tr("Não tem problema falar palavrão, mas tenhamos classe."), QString() },
+        { tr("Seja ativo!"), tr("Interaja e comente sempre que possível! Eu e a comunidade agradecemos!") },
+    };
+    int n = 0;
+    for (const Rule& r : rules) {
+        auto* row = new QHBoxLayout();
+        row->setSpacing(12);
+        auto* num = new QLabel(QString::number(++n), &dlg);
+        num->setObjectName(QStringLiteral("recRulesNum"));
+        num->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+        num->setFixedWidth(22);
+        row->addWidget(num, 0, Qt::AlignTop);
+        auto* text = new QLabel(&dlg);
+        text->setObjectName(QStringLiteral("recRulesText"));
+        text->setWordWrap(true);
+        text->setTextFormat(Qt::RichText);
+        text->setText(QStringLiteral("<b>%1</b>").arg(r.head.toHtmlEscaped())
+                      + (r.body.isEmpty() ? QString() : QStringLiteral("<br>") + r.body.toHtmlEscaped()));
+        row->addWidget(text, 1);
+        col->addLayout(row);
+    }
+    auto* sig = new QLabel(QStringLiteral("— P.H. Lobato"), &dlg);
+    sig->setObjectName(QStringLiteral("recSig"));
+    col->addWidget(sig);
+    col->addSpacing(4);
+    auto* btns = new QHBoxLayout();
+    btns->setSpacing(10);
+    auto* cancel = new QPushButton(tr("Cancelar e não comentar"), &dlg);
+    cancel->setObjectName(QStringLiteral("recRulesCancel"));
+    cancel->setCursor(Qt::PointingHandCursor);
+    auto* agree = new QPushButton(tr("Entendi e concordo com tudo!"), &dlg);
+    agree->setObjectName(QStringLiteral("recClose"));
+    agree->setCursor(Qt::PointingHandCursor);
+    agree->setDefault(true);
+    btns->addStretch(1);
+    btns->addWidget(cancel);
+    btns->addWidget(agree);
+    col->addLayout(btns);
+    connect(cancel, &QPushButton::clicked, &dlg, &QDialog::reject);
+    connect(agree, &QPushButton::clicked, &dlg, &QDialog::accept);
+    const QColor accent = Theme::toColor(Theme::accentDefault());
+    const QColor ink = accent.lightnessF() > 0.62 ? QColor(QStringLiteral("#15171c")) : QColor(QStringLiteral("#f7f8fa"));
+    dlg.setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QDialog#recRules { background: %1; }
+        QLabel#recRulesTitle { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 22px; font-weight: 600; }
+        QLabel#recRulesNum { color: %5; font-family: 'Crimson Pro', Georgia, serif; font-size: 20px; font-weight: 700; }
+        QLabel#recRulesText { color: %2; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; }
+        QLabel#recSig { color: %5; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; font-style: italic; }
+        QPushButton#recRulesCancel { background: transparent; color: %4; border: 1px solid %6; border-radius: @radius-control;
+                                     padding: 7px 16px; font-size: 13px; }
+        QPushButton#recRulesCancel:hover { color: %3; border-color: %4; }
+        QPushButton#recClose { background: %5; color: %7; border: 1px solid %5; border-radius: @radius-control;
+                               padding: 7px 18px; font-size: 13px; font-weight: 600; }
+        QPushButton#recClose:hover { border-color: %3; }
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(), Theme::textMuted(),
+             accent.name(), Theme::panelBorder(), ink.name()));
+    if (dlg.exec() != QDialog::Accepted) return false;
+    QSettings().setValue(QStringLiteral("recados/rulesOk"), true);
+    return true;
 }
 
 void RecadosDialog::applyTheme()

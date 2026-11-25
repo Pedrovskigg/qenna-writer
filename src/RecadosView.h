@@ -65,4 +65,7 @@ private:
     // Os comentários de um recado: "Comentários (3)" abre a lista e o
     // formulário (nome + comentário), que publica na hora.
     QWidget* buildComments(const Recado& r, QWidget* parent);
+    // As regras da casa (texto do Pe, 25/11/2026): aparecem no primeiro "Enviar".
+    // true = a pessoa concordou (fica lembrado em recados/rulesOk).
+    bool confirmRules();
 };

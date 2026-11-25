@@ -101,13 +101,15 @@ public:
     bool isAuthor() const;
     void setAdminKey(const QString& key);
     void deleteComment(const QString& recadoId, qint64 commentId);
+    // banir: apaga o comentário e bloqueia quem escreveu (o aparelho pra sempre, a conexão por 30 dias)
+    void banComment(const QString& recadoId, qint64 commentId);
 
 signals:
     void changed();
     void stateChanged();
     void commentsChanged();
     void commentPosted(const QString& recadoId);
-    // reason: no-links, reserved, slow-down, empty, too-long, gone, network
+    // reason: no-links, reserved, slow-down, empty, too-long, gone, banned, network
     void commentFailed(const QString& recadoId, const QString& reason);
     void adminKeyRejected();
     void reactionsChanged(const QString& recadoId);   // vazio = todos
@@ -118,7 +120,9 @@ private:
     void saveState();
     static QString commentsUrl();
     QString apiBase() const;      // o endereço do servidor sem o "/comments"
+public:
     static QString clientId();
+private:
 
     QNetworkAccessManager* m_nam = nullptr;
     QList<Recado> m_recados;
