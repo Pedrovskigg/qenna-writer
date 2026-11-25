@@ -28410,75 +28410,89 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="484"/>
+        <location filename="../src/RecadosView.cpp" line="478"/>
+        <source>Comentar de novo</source>
+        <translation>Comment again</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="501"/>
         <source>Seu nome</source>
         <translation>Your name</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="490"/>
+        <location filename="../src/RecadosView.cpp" line="507"/>
         <source>Escreva um comentário</source>
         <translation>Write a comment</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="505"/>
-        <location filename="../src/RecadosView.cpp" line="582"/>
-        <location filename="../src/RecadosView.cpp" line="588"/>
+        <location filename="../src/RecadosView.cpp" line="522"/>
+        <location filename="../src/RecadosView.cpp" line="610"/>
+        <location filename="../src/RecadosView.cpp" line="618"/>
         <source>Enviar</source>
         <translation>Send</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="536"/>
+        <location filename="../src/RecadosView.cpp" line="553"/>
         <source>Comentar</source>
         <translation>Comment</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="536"/>
+        <location filename="../src/RecadosView.cpp" line="553"/>
         <source>Comentários (%1)</source>
         <translation>Comments (%1)</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="538"/>
+        <location filename="../src/RecadosView.cpp" line="555"/>
         <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
         <translation>No comments yet. Be the first.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="539"/>
+        <location filename="../src/RecadosView.cpp" line="556"/>
         <source>Carregando comentários…</source>
         <translation>Loading comments…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="571"/>
-        <location filename="../src/RecadosView.cpp" line="592"/>
+        <location filename="../src/RecadosView.cpp" line="568"/>
+        <source>AUTOR</source>
+        <translation>AUTHOR</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="599"/>
+        <location filename="../src/RecadosView.cpp" line="623"/>
         <source>Escreva o seu nome e o comentário.</source>
         <translation>Please write your name and the comment.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="574"/>
+        <location filename="../src/RecadosView.cpp" line="602"/>
         <source>Enviando…</source>
         <translation>Sending…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="583"/>
         <source>Comentário publicado.</source>
-        <translation>Comment published.</translation>
+        <translation type="vanished">Comment published.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="590"/>
+        <location filename="../src/RecadosView.cpp" line="620"/>
         <source>Links não são aceitos nos comentários.</source>
         <translation>Links are not allowed in comments.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="591"/>
+        <location filename="../src/RecadosView.cpp" line="621"/>
+        <source>Esse nome é reservado ao autor do Qenna.</source>
+        <translation>This name is reserved for the author of Qenna.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="622"/>
         <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
         <translation>Too many comments in a row. Please try again in a few minutes.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="593"/>
+        <location filename="../src/RecadosView.cpp" line="624"/>
         <source>O comentário passou do tamanho máximo.</source>
         <translation>The comment is longer than the limit.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="594"/>
+        <location filename="../src/RecadosView.cpp" line="625"/>
         <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation>Could not send. Please check your connection and try again.</translation>
     </message>

@@ -474,39 +474,56 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
     lv->setSpacing(4);
     pv->addWidget(listHost);
 
-    auto* sep = new QFrame(panel);
+    // depois de publicar, o formulário fecha e fica só "Comentar de novo"
+    auto* again = new QPushButton(tr("Comentar de novo"), panel);
+    again->setObjectName(QStringLiteral("recCmtToggle"));
+    again->setCursor(Qt::PointingHandCursor);
+    again->setFlat(true);
+    again->hide();
+    auto* againRow = new QHBoxLayout();
+    againRow->addWidget(again);
+    againRow->addStretch(1);
+    pv->addLayout(againRow);
+
+    auto* form = new QWidget(panel);
+    auto* fv = new QVBoxLayout(form);
+    fv->setContentsMargins(0, 0, 0, 0);
+    fv->setSpacing(12);
+    pv->addWidget(form);
+
+    auto* sep = new QFrame(form);
     sep->setObjectName(QStringLiteral("recSep"));
     sep->setFixedHeight(1);
-    pv->addWidget(sep);
+    fv->addWidget(sep);
 
-    auto* nameEdit = new QLineEdit(panel);
+    auto* nameEdit = new QLineEdit(form);
     nameEdit->setObjectName(QStringLiteral("recCmtNameEdit"));
     nameEdit->setPlaceholderText(tr("Seu nome"));
     nameEdit->setMaxLength(40);
     nameEdit->setText(QSettings().value(QStringLiteral("recados/nome")).toString());
-    pv->addWidget(nameEdit);
-    auto* bodyEdit = new QPlainTextEdit(panel);
+    fv->addWidget(nameEdit);
+    auto* bodyEdit = new QPlainTextEdit(form);
     bodyEdit->setObjectName(QStringLiteral("recCmtEdit"));
     bodyEdit->setPlaceholderText(tr("Escreva um comentário"));
     bodyEdit->setFixedHeight(84);
     bodyEdit->setTabChangesFocus(true);
-    pv->addWidget(bodyEdit);
+    fv->addWidget(bodyEdit);
 
     auto* row = new QHBoxLayout();
     row->setSpacing(10);
-    auto* status = new QLabel(panel);
+    auto* status = new QLabel(form);
     status->setObjectName(QStringLiteral("recCmtStatus"));
     status->setWordWrap(true);
     row->addWidget(status, 1);
-    auto* count = new QLabel(panel);
+    auto* count = new QLabel(form);
     count->setObjectName(QStringLiteral("recCmtStatus"));
     count->hide();
     row->addWidget(count);
-    auto* send = new QPushButton(tr("Enviar"), panel);
+    auto* send = new QPushButton(tr("Enviar"), form);
     send->setObjectName(QStringLiteral("recCmtSend"));
     send->setCursor(Qt::PointingHandCursor);
     row->addWidget(send);
-    pv->addLayout(row);
+    fv->addLayout(row);
     v->addWidget(panel);
 
     const int kMax = 1000;
@@ -546,8 +563,12 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             auto* head = new QLabel(listHost);
             head->setObjectName(QStringLiteral("recCmtHead"));
             head->setTextFormat(Qt::RichText);
-            head->setText(QStringLiteral("<b>%1</b>&nbsp;&nbsp;<span style=\"font-size:11px; font-weight:400;\">%2</span>")
-                              .arg(c.name.toHtmlEscaped(), longDate(c.at.toLocalTime().date()).toHtmlEscaped()));
+            const QString badge = c.author
+                ? QStringLiteral("&nbsp;&nbsp;<span style=\"color:%1; font-size:11px; font-weight:600; letter-spacing:1px;\">%2</span>")
+                      .arg(Theme::toColor(Theme::accentDefault()).name(), tr("AUTOR"))
+                : QString();
+            head->setText(QStringLiteral("<b>%1</b>%3&nbsp;&nbsp;<span style=\"font-size:11px; font-weight:400;\">%2</span>")
+                              .arg(c.name.toHtmlEscaped(), longDate(c.at.toLocalTime().date()).toHtmlEscaped(), badge));
             lv->addWidget(head);
             auto* body = new QLabel(c.body, listHost);
             body->setObjectName(QStringLiteral("recCmtBody"));
@@ -559,8 +580,15 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
     };
     rebuild();
     connect(feed, &RecadosFeed::commentsChanged, box, rebuild);
-    connect(toggle, &QPushButton::clicked, box, [panel, rebuild, bodyEdit, nameEdit]() {
+    connect(again, &QPushButton::clicked, box, [form, again, bodyEdit]() {
+        again->hide();
+        form->show();
+        bodyEdit->setFocus();
+    });
+    connect(toggle, &QPushButton::clicked, box, [panel, rebuild, bodyEdit, nameEdit, form, again]() {
         panel->setVisible(!panel->isVisible());
+        form->show();
+        again->hide();
         rebuild();
         if (panel->isVisible()) (nameEdit->text().isEmpty() ? static_cast<QWidget*>(nameEdit) : bodyEdit)->setFocus();
     });
@@ -575,12 +603,14 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         setStatus(QString(), false);
         feed->postComment(id, name, body);
     });
-    connect(feed, &RecadosFeed::commentPosted, box, [this, id, bodyEdit, send, setStatus](const QString& rid) {
+    connect(feed, &RecadosFeed::commentPosted, box, [this, id, bodyEdit, send, setStatus, form, again](const QString& rid) {
         if (rid != id) return;
         bodyEdit->clear();
         send->setEnabled(true);
         send->setText(tr("Enviar"));
-        setStatus(tr("Comentário publicado."), false);
+        setStatus(QString(), false);
+        form->hide();       // o comentário já aparece na lista
+        again->show();
     });
     connect(feed, &RecadosFeed::commentFailed, box, [this, id, send, setStatus](const QString& rid, const QString& why) {
         if (rid != id) return;
@@ -588,6 +618,7 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
         send->setText(tr("Enviar"));
         QString msg;
         if (why == QLatin1String("no-links")) msg = tr("Links não são aceitos nos comentários.");
+        else if (why == QLatin1String("reserved")) msg = tr("Esse nome é reservado ao autor do Qenna.");
         else if (why == QLatin1String("slow-down")) msg = tr("Muitos comentários seguidos. Tente de novo daqui a alguns minutos.");
         else if (why == QLatin1String("empty")) msg = tr("Escreva o seu nome e o comentário.");
         else if (why == QLatin1String("too-long")) msg = tr("O comentário passou do tamanho máximo.");

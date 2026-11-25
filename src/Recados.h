@@ -47,6 +47,7 @@ struct Comentario {
     QString name;
     QString body;
     QDateTime at;
+    bool author = false;   // o Pe (comentou com a chave de admin, pelo blog)
 };
 
 class RecadosFeed : public QObject {
@@ -81,7 +82,7 @@ signals:
     void stateChanged();
     void commentsChanged();
     void commentPosted(const QString& recadoId);
-    // reason: no-links, slow-down, empty, too-long, network
+    // reason: no-links, reserved, slow-down, empty, too-long, network
     void commentFailed(const QString& recadoId, const QString& reason);
 
 private:

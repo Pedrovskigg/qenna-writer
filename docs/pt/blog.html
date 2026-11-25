@@ -195,11 +195,13 @@
   .cmts h3 { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: var(--ink-faint); margin: 0 0 14px; }
   .cmt { margin: 0 0 16px; }
   .cmt .who { font-weight: 600; color: var(--ink); }
+  .cmt .badge { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); margin-left: 8px; }
   .cmt time { font-size: 12.5px; color: var(--ink-faint); margin-left: 8px; }
   .cmt p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
   .cmt .del { margin-left: 10px; font-size: 12px; color: var(--ink-faint); background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
   .cmt-none { color: var(--ink-faint); font-style: italic; margin: 0 0 14px; }
   .cmt-form { display: grid; gap: 10px; margin-top: 6px; }
+  .cmt-form[hidden], .cmt-again[hidden] { display: none; }
   .cmt-form input, .cmt-form textarea { font: inherit; font-size: 15px; color: var(--ink); background: transparent; border: 1px solid var(--rule-strong); padding: 8px 10px; border-radius: 0; width: 100%; box-sizing: border-box; }
   .cmt-form textarea { min-height: 90px; resize: vertical; }
   .cmt-form input:focus, .cmt-form textarea:focus { outline: none; border-color: var(--blue); }
@@ -209,6 +211,7 @@
   .cmt-form button { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; border: 1px solid var(--rule-strong); padding: 7px 16px; background: transparent; color: var(--ink); cursor: pointer; }
   .cmt-form button:hover { border-color: var(--blue); color: var(--blue); }
   .cmt-form button:disabled { opacity: .5; cursor: default; }
+  .cmt-again { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; background: none; border: none; padding: 0; color: var(--blue); cursor: pointer; text-decoration: underline; }
   .cmt-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 
@@ -247,7 +250,7 @@
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
   var API = (new URLSearchParams(location.search).get('api') || 'https://qenna-comentarios.qennawriter.workers.dev').replace(/\/$/, '');
-  var C = {"title0": "Comentários", "title": "Comentários (%1)", "none": "Ninguém comentou ainda. Seja a primeira pessoa.", "loading": "Carregando comentários…", "name": "Seu nome", "write": "Escreva um comentário", "send": "Enviar", "sending": "Enviando…", "ok": "Comentário publicado.", "empty": "Escreva o seu nome e o comentário.", "no-links": "Links não são aceitos nos comentários.", "slow-down": "Muitos comentários seguidos. Tente de novo daqui a alguns minutos.", "too-long": "O comentário passou do tamanho máximo.", "network": "Não foi possível enviar. Confira a internet e tente de novo.", "del": "apagar", "key": "Chave de administrador", "badkey": "Chave errada."};
+  var C = {"title0": "Comentários", "title": "Comentários (%1)", "none": "Ninguém comentou ainda. Seja a primeira pessoa.", "loading": "Carregando comentários…", "name": "Seu nome", "write": "Escreva um comentário", "send": "Enviar", "sending": "Enviando…", "ok": "Comentário publicado.", "empty": "Escreva o seu nome e o comentário.", "no-links": "Links não são aceitos nos comentários.", "slow-down": "Muitos comentários seguidos. Tente de novo daqui a alguns minutos.", "too-long": "O comentário passou do tamanho máximo.", "network": "Não foi possível enviar. Confira a internet e tente de novo.", "author": "autor", "reserved": "Esse nome é reservado ao autor do Qenna.", "del": "apagar", "key": "Chave de administrador", "badkey": "Chave errada."};
   var slots = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
   var admin = location.hash === '#admin';
@@ -261,6 +264,7 @@
     items.forEach(function (c) {
       var d = el('div', 'cmt');
       d.appendChild(el('span', 'who', c.name));
+      if (c.author) d.appendChild(el('span', 'badge', C.author));
       d.appendChild(el('time', null, fmt(c.at)));
       if (admin) {
         var del = el('button', 'del', C.del);
@@ -286,25 +290,32 @@
     row.appendChild(msg); row.appendChild(btn);
     form.appendChild(name); form.appendChild(text); form.appendChild(hp); form.appendChild(row);
     function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
+    var again = el('button', 'cmt-again', 'Comentar de novo');
+    again.type = 'button'; again.hidden = true;
+    again.onclick = function () { again.hidden = true; form.hidden = false; text.focus(); };
     form.onsubmit = function (ev) {
       ev.preventDefault();
       var n = name.value.trim(), b = text.value.trim();
       if (!n || !b) { say(C.empty, true); return; }
       store('qenna-cmt-name', n);
       btn.disabled = true; btn.textContent = C.sending; say('');
-      fetch(API + '/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      if (admin && !store('qenna-admin')) { var k = prompt(C.key) || ''; if (k) store('qenna-admin', k); }
+      var hdr = { 'Content-Type': 'application/json' };
+      if (admin && store('qenna-admin')) hdr.Authorization = 'Bearer ' + store('qenna-admin');
+      fetch(API + '/comments', { method: 'POST', headers: hdr,
         body: JSON.stringify({ recado: id, name: n, body: b, website: hp.value }) })
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.comment) {
             (slots[id].items = slots[id].items || []).push(res.comment);
-            renderList(id); text.value = ''; say(C.ok);
+            renderList(id); text.value = ''; say('');
+            form.hidden = true; again.hidden = false;   // o comentário já aparece na lista
           } else say(C[res.error] || C.network, true);
         })
         .catch(function () { say(C.network, true); })
         .then(function () { btn.disabled = false; btn.textContent = C.send; });
     };
-    sec.appendChild(h); sec.appendChild(list); sec.appendChild(form);
+    sec.appendChild(h); sec.appendChild(list); sec.appendChild(again); sec.appendChild(form);
     slots[id] = { h: h, list: list, items: [], loaded: false };
     renderList(id);
     return sec;

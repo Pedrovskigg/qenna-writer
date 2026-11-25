@@ -25,6 +25,7 @@ Comentario parseComment(const QJsonObject& o)
     c.name = o.value(QStringLiteral("name")).toString();
     c.body = o.value(QStringLiteral("body")).toString();
     c.at = QDateTime::fromMSecsSinceEpoch(o.value(QStringLiteral("at")).toInteger());
+    c.author = o.value(QStringLiteral("author")).toBool();
     return c;
 }
 
