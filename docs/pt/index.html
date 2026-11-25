@@ -253,7 +253,8 @@
 
   .bleed { margin-inline: -56px; }
   @media (max-width: 760px) { .bleed { margin-inline: -22px; } }
-  .bleed img { width: 100%; border-block: 1px solid var(--rule); }
+  .bleed img, .bleed video { width: 100%; height: auto; display: block; border-block: 1px solid var(--rule); }
+  .cols video { width: 100%; height: auto; display: block; }
 
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
   @media (max-width: 780px) { .cols { grid-template-columns: 1fr; } }
@@ -420,13 +421,17 @@
   <h2>O mundo onde a sua história acontece, num mapa que dá pra explorar</h2>
   <p class="lede">Gere um continente a partir de uma semente ou pinte um à mão. O terreno é relevo de verdade: <strong>montanha é altura, não desenho de montanha</strong>. A altitude, a latitude e a umidade decidem o clima e o bioma de cada pedaço de chão, e daí vêm os rios, as costas e as florestas.</p>
   <div class="bleed">
-    <img src="../img/map-full.webp" alt="O Mapa do Qenna Writer: um continente gerado, com montanhas, florestas, estradas, cidades e reinos com nome em letra caligráfica, visto de lado, à tarde" width="1500" height="880" loading="lazy">
+    <video src="../vid/map-nav.mp4" poster="../vid/map-nav.webp" width="1500" height="880" autoplay muted loop playsinline preload="metadata" aria-label="Navegando pelo Mapa: o continente inteiro, uma aproximação nas montanhas e florestas, um arrasto pela terra e o mapa girando e inclinando em 3D"></video>
   </div>
-  <p class="shot-cap" style="text-align:left;margin-top:14px">Lands of Quelmar: gerado a partir de uma semente, com castelos, uma catedral e um colosso colocados à mão.</p>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">Lands of Quelmar, gerado a partir de uma semente. Arraste para mover, use a roda do mouse para aproximar e arraste com o botão direito para girar e inclinar o mapa em 3D.</p>
 
   <h3 class="sub">Construa em cima dele</h3>
   <p class="lede">Castelos, monumentos, ruínas, navios, monstros no mar. Escolha a peça no catálogo e clique onde ela vai; ela assenta no relevo, e o morro da frente esconde o que está atrás dele.</p>
-  <div class="cols">
+  <div class="bleed">
+    <video src="../vid/map-build.mp4" poster="../vid/map-build.webp" width="1500" height="880" autoplay muted loop playsinline preload="metadata" aria-label="Construindo no Mapa: dois castelos, uma catedral e um colosso colocados pelo catálogo com um clique cada, e depois uma pincelada que pinta uma vila"></video>
+  </div>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">Um clique para cada peça. Os pincéis pintam vilas, cidades, plantações e florestas numa pincelada só.</p>
+  <div class="cols" style="margin-top:22px">
     <figure>
       <img src="../img/map-build.webp" alt="O catálogo do Construir aberto embaixo do mapa, com os estilos de castelo: humano, normando, com fosso, château, penhasco, élfico, anão e orc" width="1500" height="880" loading="lazy">
       <figcaption>O catálogo do Construir: castelos em uma dúzia de estilos, monumentos, lendas, o mar e pincéis que pintam cidades e florestas inteiras.</figcaption>
@@ -440,9 +445,9 @@
   <h3 class="sub">Os seus documentos moram nele</h3>
   <p class="lede">Cada território é um grupo do seu projeto. Clique nele no mapa e os documentos abrem ali mesmo: as leis, as estradas, as pessoas que vivem lá, para ler e editar <strong>sem sair do mapa</strong>. Dê nome a um castelo e ele vira um lugar próprio, dentro do reino.</p>
   <div class="bleed">
-    <img src="../img/map-explore.webp" alt="O modo Explorar: o reino de Valdren contornado no mapa, a árvore de grupos à esquerda e um documento aberto ao lado" width="1500" height="880" loading="lazy">
+    <video src="../vid/map-explore.mp4" poster="../vid/map-explore.webp" width="1500" height="880" autoplay muted loop playsinline preload="metadata" aria-label="O modo Explorar: um clique no reino de Valdren leva o mapa até lá, os três documentos dele aparecem na árvore à esquerda e o documento The Crown's laws abre ao lado"></video>
   </div>
-  <p class="shot-cap" style="text-align:left;margin-top:14px">Explorar: a árvore à esquerda leva o mapa até cada lugar, e o documento abre ao lado.</p>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">Explorar: clique num território e o mapa leva você até ele. Os documentos dele aparecem na árvore à esquerda e abrem ao lado.</p>
   <ul class="ticks" style="margin-top:22px">
     <li><strong>Grupos dentro de grupos</strong>: o castelo dentro do reino, a família dentro do castelo. O que é do reino aparece também no castelo.</li>
     <li><strong>Lugares e gente</strong>: uma família ou uma guilda não é um lugar, então ela pode ser marcada como atuante nos territórios por onde se espalha.</li>
