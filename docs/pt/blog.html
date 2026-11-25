@@ -246,7 +246,7 @@
   var box = document.getElementById('posts');
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
-  var API = (new URLSearchParams(location.search).get('api') || '').replace(/\/$/, '');
+  var API = (new URLSearchParams(location.search).get('api') || 'https://qenna-comentarios.qennawriter.workers.dev').replace(/\/$/, '');
   var C = {"title0": "Comentários", "title": "Comentários (%1)", "none": "Ninguém comentou ainda. Seja a primeira pessoa.", "loading": "Carregando comentários…", "name": "Seu nome", "write": "Escreva um comentário", "send": "Enviar", "sending": "Enviando…", "ok": "Comentário publicado.", "empty": "Escreva o seu nome e o comentário.", "no-links": "Links não são aceitos nos comentários.", "slow-down": "Muitos comentários seguidos. Tente de novo daqui a alguns minutos.", "too-long": "O comentário passou do tamanho máximo.", "network": "Não foi possível enviar. Confira a internet e tente de novo.", "del": "apagar", "key": "Chave de administrador", "badkey": "Chave errada."};
   var slots = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }

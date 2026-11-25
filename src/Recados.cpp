@@ -15,8 +15,8 @@
 
 namespace {
 const char* kRecadosUrl = "https://qennawriter.com/recados.json";
-// Vazio = comentários desligados (o leitor nem mostra a parte deles).
-const char* kComentariosUrl = "";
+// Worker na conta Cloudflare do Qenna (tools/comentarios-worker). Vazio = comentários desligados.
+const char* kComentariosUrl = "https://qenna-comentarios.qennawriter.workers.dev/comments";
 
 Comentario parseComment(const QJsonObject& o)
 {

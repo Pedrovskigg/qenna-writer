@@ -7,4 +7,4 @@ compatibility_date = "2024-11-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "qenna-comentarios"
-database_id = "LOCAL"
+database_id = "4ab2f41a-2897-4dce-bfb5-8510eea64d14"

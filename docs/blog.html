@@ -247,7 +247,7 @@
   var box = document.getElementById('posts');
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
-  var API = (new URLSearchParams(location.search).get('api') || '').replace(/\/$/, '');
+  var API = (new URLSearchParams(location.search).get('api') || 'https://qenna-comentarios.qennawriter.workers.dev').replace(/\/$/, '');
   var C = {"title0": "Comments", "title": "Comments (%1)", "none": "No comments yet. Be the first.", "loading": "Loading comments…", "name": "Your name", "write": "Write a comment", "send": "Send", "sending": "Sending…", "ok": "Comment published.", "empty": "Please write your name and the comment.", "no-links": "Links are not allowed in comments.", "slow-down": "Too many comments in a row. Please try again in a few minutes.", "too-long": "The comment is longer than the limit.", "network": "Could not send. Please check your connection and try again.", "del": "delete", "key": "Admin key", "badkey": "Wrong key."};
   var slots = {};
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
