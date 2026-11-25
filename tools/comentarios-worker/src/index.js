@@ -85,9 +85,13 @@ async function add(request, env) {
   const body = clean(data.body, MAX_BODY);
   if (!name || !body) return fail('empty');
   if (name.length > MAX_NAME || body.length > MAX_BODY) return fail('too-long');
-  const isAuthor = !!env.ADMIN_KEY && (request.headers.get('Authorization') || '') === 'Bearer ' + env.ADMIN_KEY;
-  if (!isAuthor && reservedName(name)) return fail('reserved');
-  if (!isAuthor && (LINK.test(name) || LINK.test(body))) return fail('no-links');
+  // A chave libera a assinatura; o selo "autor" só sai quando o nome É a assinatura
+  // (o Pe comentando com outro nome, mesmo com a chave no app, sai como comentário comum).
+  const hasKey = !!env.ADMIN_KEY && (request.headers.get('Authorization') || '') === 'Bearer ' + env.ADMIN_KEY;
+  const reserved = reservedName(name);
+  if (!hasKey && reserved) return fail('reserved');
+  const isAuthor = hasKey && reserved;
+  if (!hasKey && (LINK.test(name) || LINK.test(body))) return fail('no-links');
 
   const now = Date.now();
   const ip = request.headers.get('CF-Connecting-IP') || 'local';
@@ -95,11 +99,11 @@ async function add(request, env) {
   await env.DB.prepare('DELETE FROM sends WHERE at < ?').bind(now - 24 * 3600 * 1000).run();
   const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM sends WHERE who = ? AND at > ?')
     .bind(who, now - WINDOW_MS).first();
-  if (!isAuthor && n >= MAX_SENDS) return fail('slow-down', 429);
+  if (!hasKey && n >= MAX_SENDS) return fail('slow-down', 429);
 
   const res = await env.DB.prepare('INSERT INTO comments (recado, name, body, at, author) VALUES (?, ?, ?, ?, ?)')
     .bind(recado, name, body, now, isAuthor ? 1 : 0).run();
-  if (!isAuthor) await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
+  if (!hasKey) await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
   return json({ ok: true, comment: { id: res.meta.last_row_id, recado, name, body, at: now, author: isAuthor } }, 201);
 }
 
