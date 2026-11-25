@@ -191,6 +191,25 @@
   .post .go { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; border: 1px solid var(--rule-strong); padding: 7px 14px; text-decoration: none; color: var(--ink); }
   .post .go:hover { border-color: var(--blue); color: var(--blue); }
   .empty { text-align: center; color: var(--ink-faint); font-style: italic; }
+  .cmts { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
+  .cmts h3 { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: var(--ink-faint); margin: 0 0 14px; }
+  .cmt { margin: 0 0 16px; }
+  .cmt .who { font-weight: 600; color: var(--ink); }
+  .cmt time { font-size: 12.5px; color: var(--ink-faint); margin-left: 8px; }
+  .cmt p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .cmt .del { margin-left: 10px; font-size: 12px; color: var(--ink-faint); background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+  .cmt-none { color: var(--ink-faint); font-style: italic; margin: 0 0 14px; }
+  .cmt-form { display: grid; gap: 10px; margin-top: 6px; }
+  .cmt-form input, .cmt-form textarea { font: inherit; font-size: 15px; color: var(--ink); background: transparent; border: 1px solid var(--rule-strong); padding: 8px 10px; border-radius: 0; width: 100%; box-sizing: border-box; }
+  .cmt-form textarea { min-height: 90px; resize: vertical; }
+  .cmt-form input:focus, .cmt-form textarea:focus { outline: none; border-color: var(--blue); }
+  .cmt-form .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .cmt-form .msg { font-size: 13px; color: var(--ink-faint); }
+  .cmt-form .msg.err { color: var(--blue); }
+  .cmt-form button { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; border: 1px solid var(--rule-strong); padding: 7px 16px; background: transparent; color: var(--ink); cursor: pointer; }
+  .cmt-form button:hover { border-color: var(--blue); color: var(--blue); }
+  .cmt-form button:disabled { opacity: .5; cursor: default; }
+  .cmt-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 </style>
 
 <header class="bar">
@@ -226,6 +245,87 @@
   var LANG = 'en', LOCALE = 'en-US';
   var T = {"none": "No notes here yet.", "fail": "Could not load the notes right now. Please try again in a moment.", "note": "Note"};
   var box = document.getElementById('posts');
+  // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
+  // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).
+  var API = (new URLSearchParams(location.search).get('api') || '').replace(/\/$/, '');
+  var C = {"title0": "Comments", "title": "Comments (%1)", "none": "No comments yet. Be the first.", "loading": "Loading comments…", "name": "Your name", "write": "Write a comment", "send": "Send", "sending": "Sending…", "ok": "Comment published.", "empty": "Please write your name and the comment.", "no-links": "Links are not allowed in comments.", "slow-down": "Too many comments in a row. Please try again in a few minutes.", "too-long": "The comment is longer than the limit.", "network": "Could not send. Please check your connection and try again.", "del": "delete", "key": "Admin key", "badkey": "Wrong key."};
+  var slots = {};
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
+  var admin = location.hash === '#admin';
+  function fmt(ms) { return new Date(ms).toLocaleDateString(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }); }
+  function renderList(id) {
+    var s = slots[id]; if (!s) return;
+    s.list.textContent = '';
+    var items = s.items || [];
+    s.h.textContent = items.length ? C.title.replace('%1', items.length) : C.title0;
+    if (!items.length) { s.list.appendChild(el('p', 'cmt-none', s.loaded ? C.none : C.loading)); return; }
+    items.forEach(function (c) {
+      var d = el('div', 'cmt');
+      d.appendChild(el('span', 'who', c.name));
+      d.appendChild(el('time', null, fmt(c.at)));
+      if (admin) {
+        var del = el('button', 'del', C.del);
+        del.type = 'button';
+        del.onclick = function () { removeComment(id, c.id); };
+        d.appendChild(del);
+      }
+      d.appendChild(el('p', null, c.body));
+      s.list.appendChild(d);
+    });
+  }
+  function commentsFor(id) {
+    var sec = el('section', 'cmts');
+    var h = el('h3', null, C.title0);
+    var list = el('div');
+    var form = el('form', 'cmt-form');
+    var name = el('input'); name.maxLength = 40; name.placeholder = C.name; name.value = store('qenna-cmt-name'); name.setAttribute('aria-label', C.name);
+    var text = el('textarea'); text.maxLength = 1000; text.placeholder = C.write; text.setAttribute('aria-label', C.write);
+    var hp = el('input', 'hp'); hp.name = 'website'; hp.tabIndex = -1; hp.autocomplete = 'off'; hp.setAttribute('aria-hidden', 'true');
+    var row = el('div', 'row');
+    var msg = el('span', 'msg');
+    var btn = el('button', null, C.send); btn.type = 'submit';
+    row.appendChild(msg); row.appendChild(btn);
+    form.appendChild(name); form.appendChild(text); form.appendChild(hp); form.appendChild(row);
+    function say(t, err) { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); }
+    form.onsubmit = function (ev) {
+      ev.preventDefault();
+      var n = name.value.trim(), b = text.value.trim();
+      if (!n || !b) { say(C.empty, true); return; }
+      store('qenna-cmt-name', n);
+      btn.disabled = true; btn.textContent = C.sending; say('');
+      fetch(API + '/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recado: id, name: n, body: b, website: hp.value }) })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (res.ok && res.comment) {
+            (slots[id].items = slots[id].items || []).push(res.comment);
+            renderList(id); text.value = ''; say(C.ok);
+          } else say(C[res.error] || C.network, true);
+        })
+        .catch(function () { say(C.network, true); })
+        .then(function () { btn.disabled = false; btn.textContent = C.send; });
+    };
+    sec.appendChild(h); sec.appendChild(list); sec.appendChild(form);
+    slots[id] = { h: h, list: list, items: [], loaded: false };
+    renderList(id);
+    return sec;
+  }
+  function loadComments() {
+    if (!API) return;
+    fetch(API + '/comments', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (all) {
+      Object.keys(slots).forEach(function (id) { slots[id].items = all[id] || []; slots[id].loaded = true; renderList(id); });
+    }).catch(function () {});
+  }
+  function removeComment(id, cid) {
+    var key = store('qenna-admin');
+    if (!key) { key = prompt(C.key) || ''; if (!key) return; store('qenna-admin', key); }
+    fetch(API + '/comments/' + cid, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + key } })
+      .then(function (r) {
+        if (r.status === 403) { store('qenna-admin', null); alert(C.badkey); return; }
+        slots[id].items = slots[id].items.filter(function (c) { return c.id !== cid; });
+        renderList(id);
+      });
+  }
   function pick(v) {
     if (!v) return '';
     if (typeof v === 'string') return v;
@@ -268,8 +368,10 @@
         foot.appendChild(a);
       }
       art.appendChild(foot);
+      if (API) art.appendChild(commentsFor(x.id));
       box.appendChild(art);
     });
+    loadComments();
   }).catch(function () {
     box.textContent = '';
     box.appendChild(el('div', 'leaf empty', T.fail));

@@ -25884,12 +25884,12 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
 <context>
     <name>RecadosBell</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="270"/>
+        <location filename="../src/RecadosView.cpp" line="274"/>
         <source>Recados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="271"/>
+        <location filename="../src/RecadosView.cpp" line="275"/>
         <source>Ler os recados do autor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25897,60 +25897,133 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
 <context>
     <name>RecadosDialog</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="315"/>
+        <location filename="../src/RecadosView.cpp" line="319"/>
         <source>Recados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="351"/>
+        <location filename="../src/RecadosView.cpp" line="355"/>
         <source>Novo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="402"/>
+        <location filename="../src/RecadosView.cpp" line="406"/>
         <source>Abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="418"/>
+        <location filename="../src/RecadosView.cpp" line="426"/>
         <source>Fechar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="484"/>
+        <source>Seu nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="490"/>
+        <source>Escreva um comentário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="505"/>
+        <location filename="../src/RecadosView.cpp" line="582"/>
+        <location filename="../src/RecadosView.cpp" line="588"/>
+        <source>Enviar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="536"/>
+        <source>Comentar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="536"/>
+        <source>Comentários (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="538"/>
+        <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="539"/>
+        <source>Carregando comentários…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="571"/>
+        <location filename="../src/RecadosView.cpp" line="592"/>
+        <source>Escreva o seu nome e o comentário.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="574"/>
+        <source>Enviando…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="583"/>
+        <source>Comentário publicado.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="590"/>
+        <source>Links não são aceitos nos comentários.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="591"/>
+        <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="593"/>
+        <source>O comentário passou do tamanho máximo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="594"/>
+        <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>RecadosStrip</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="166"/>
+        <location filename="../src/RecadosView.cpp" line="170"/>
         <source>Recado anterior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="172"/>
+        <location filename="../src/RecadosView.cpp" line="176"/>
         <source>Próximo recado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="176"/>
+        <location filename="../src/RecadosView.cpp" line="180"/>
         <source>Ler</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="183"/>
+        <location filename="../src/RecadosView.cpp" line="187"/>
         <source>Dispensar (volta quando chegar recado novo)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="212"/>
+        <location filename="../src/RecadosView.cpp" line="216"/>
         <source>RECADO NOVO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="212"/>
+        <location filename="../src/RecadosView.cpp" line="216"/>
         <source>RECADO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="223"/>
+        <location filename="../src/RecadosView.cpp" line="227"/>
         <source>%1 de %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -35964,7 +36037,7 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1310"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1360"/>
         <source>acabamento em %1 ms</source>
         <translation type="unfinished"></translation>
     </message>

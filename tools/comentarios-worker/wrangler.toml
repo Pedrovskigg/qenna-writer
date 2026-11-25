@@ -1,0 +1,10 @@
+# Comentários dos recados (app e blog). Cloudflare Worker + D1, plano grátis.
+# Deploy: npx wrangler deploy   ·   Chave de apagar: npx wrangler secret put ADMIN_KEY
+name = "qenna-comentarios"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qenna-comentarios"
+database_id = "LOCAL"

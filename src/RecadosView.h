@@ -53,6 +53,8 @@ private:
     void refresh();
 };
 
+struct Recado;
+
 class RecadosDialog : public QDialog {
     Q_OBJECT
 public:
@@ -60,4 +62,7 @@ public:
 
 private:
     void applyTheme();
+    // Os comentários de um recado: "Comentários (3)" abre a lista e o
+    // formulário (nome + comentário), que publica na hora.
+    QWidget* buildComments(const Recado& r, QWidget* parent);
 };

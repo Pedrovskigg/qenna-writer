@@ -12,6 +12,10 @@
 #include <QNetworkRequest>
 #include <QPainter>
 #include <QPainterPath>
+#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QSignalBlocker>
+#include <QTextCursor>
 #include <QPointer>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -407,6 +411,10 @@ RecadosDialog::RecadosDialog(QWidget* parent)
             foot->addWidget(go);
         }
         col->addLayout(foot);
+        if (feed->commentsEnabled()) {
+            col->addSpacing(10);
+            col->addWidget(buildComments(r, inner));
+        }
     }
     col->addStretch(1);
     scroll->setWidget(inner);
@@ -430,9 +438,163 @@ RecadosDialog::RecadosDialog(QWidget* parent)
 
     // Abriu o leitor = leu tudo (a faixa troca "Recado novo" por "Recado").
     feed->markAllRead();
+    feed->fetchComments();
 
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, &RecadosDialog::applyTheme);
+}
+
+QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
+{
+    RecadosFeed* feed = RecadosFeed::instance();
+    const QString id = r.id;
+    auto* box = new QWidget(parent);
+    auto* v = new QVBoxLayout(box);
+    v->setContentsMargins(0, 0, 0, 0);
+    v->setSpacing(10);
+
+    auto* toggle = new QPushButton(box);
+    toggle->setObjectName(QStringLiteral("recCmtToggle"));
+    toggle->setCursor(Qt::PointingHandCursor);
+    toggle->setFlat(true);
+    auto* toggleRow = new QHBoxLayout();
+    toggleRow->addWidget(toggle);
+    toggleRow->addStretch(1);
+    v->addLayout(toggleRow);
+
+    auto* panel = new QFrame(box);
+    panel->setObjectName(QStringLiteral("recCmtPanel"));
+    panel->hide();
+    auto* pv = new QVBoxLayout(panel);
+    pv->setContentsMargins(16, 14, 16, 14);
+    pv->setSpacing(12);
+    auto* listHost = new QWidget(panel);
+    auto* lv = new QVBoxLayout(listHost);
+    lv->setContentsMargins(0, 0, 0, 0);
+    lv->setSpacing(4);
+    pv->addWidget(listHost);
+
+    auto* sep = new QFrame(panel);
+    sep->setObjectName(QStringLiteral("recSep"));
+    sep->setFixedHeight(1);
+    pv->addWidget(sep);
+
+    auto* nameEdit = new QLineEdit(panel);
+    nameEdit->setObjectName(QStringLiteral("recCmtNameEdit"));
+    nameEdit->setPlaceholderText(tr("Seu nome"));
+    nameEdit->setMaxLength(40);
+    nameEdit->setText(QSettings().value(QStringLiteral("recados/nome")).toString());
+    pv->addWidget(nameEdit);
+    auto* bodyEdit = new QPlainTextEdit(panel);
+    bodyEdit->setObjectName(QStringLiteral("recCmtEdit"));
+    bodyEdit->setPlaceholderText(tr("Escreva um comentário"));
+    bodyEdit->setFixedHeight(84);
+    bodyEdit->setTabChangesFocus(true);
+    pv->addWidget(bodyEdit);
+
+    auto* row = new QHBoxLayout();
+    row->setSpacing(10);
+    auto* status = new QLabel(panel);
+    status->setObjectName(QStringLiteral("recCmtStatus"));
+    status->setWordWrap(true);
+    row->addWidget(status, 1);
+    auto* count = new QLabel(panel);
+    count->setObjectName(QStringLiteral("recCmtStatus"));
+    count->hide();
+    row->addWidget(count);
+    auto* send = new QPushButton(tr("Enviar"), panel);
+    send->setObjectName(QStringLiteral("recCmtSend"));
+    send->setCursor(Qt::PointingHandCursor);
+    row->addWidget(send);
+    pv->addLayout(row);
+    v->addWidget(panel);
+
+    const int kMax = 1000;
+    connect(bodyEdit, &QPlainTextEdit::textChanged, box, [bodyEdit, count, kMax]() {
+        const QString t = bodyEdit->toPlainText();
+        if (t.size() > kMax) {
+            const QSignalBlocker block(bodyEdit);
+            bodyEdit->setPlainText(t.left(kMax));
+            bodyEdit->moveCursor(QTextCursor::End);
+        }
+        const int n = qMin(int(t.size()), kMax);
+        count->setVisible(n > kMax - 200);
+        count->setText(QStringLiteral("%1/%2").arg(n).arg(kMax));
+    });
+
+    auto setStatus = [status](const QString& text, bool err) {
+        status->setText(text);
+        status->setProperty("err", err);
+        status->style()->unpolish(status);
+        status->style()->polish(status);
+    };
+
+    auto rebuild = [this, feed, id, lv, listHost, toggle, panel]() {
+        while (QLayoutItem* it = lv->takeAt(0)) { if (it->widget()) it->widget()->deleteLater(); delete it; }
+        const QList<Comentario> list = feed->comments(id);
+        const QString arrow = panel->isVisible() ? QStringLiteral("  \u25B4") : QStringLiteral("  \u25BE");
+        toggle->setText((list.isEmpty() ? tr("Comentar") : tr("Comentários (%1)").arg(list.size())) + arrow);
+        if (list.isEmpty()) {
+            auto* empty = new QLabel(feed->commentsLoaded() ? tr("Ninguém comentou ainda. Seja a primeira pessoa.")
+                                                            : tr("Carregando comentários…"), listHost);
+            empty->setObjectName(QStringLiteral("recCmtEmpty"));
+            empty->setWordWrap(true);
+            lv->addWidget(empty);
+            return;
+        }
+        for (const Comentario& c : list) {
+            auto* head = new QLabel(listHost);
+            head->setObjectName(QStringLiteral("recCmtHead"));
+            head->setTextFormat(Qt::RichText);
+            head->setText(QStringLiteral("<b>%1</b>&nbsp;&nbsp;<span style=\"font-size:11px; font-weight:400;\">%2</span>")
+                              .arg(c.name.toHtmlEscaped(), longDate(c.at.toLocalTime().date()).toHtmlEscaped()));
+            lv->addWidget(head);
+            auto* body = new QLabel(c.body, listHost);
+            body->setObjectName(QStringLiteral("recCmtBody"));
+            body->setTextFormat(Qt::PlainText);
+            body->setWordWrap(true);
+            body->setTextInteractionFlags(Qt::TextSelectableByMouse);
+            lv->addWidget(body);
+        }
+    };
+    rebuild();
+    connect(feed, &RecadosFeed::commentsChanged, box, rebuild);
+    connect(toggle, &QPushButton::clicked, box, [panel, rebuild, bodyEdit, nameEdit]() {
+        panel->setVisible(!panel->isVisible());
+        rebuild();
+        if (panel->isVisible()) (nameEdit->text().isEmpty() ? static_cast<QWidget*>(nameEdit) : bodyEdit)->setFocus();
+    });
+
+    connect(send, &QPushButton::clicked, box, [this, feed, id, nameEdit, bodyEdit, send, setStatus]() {
+        const QString name = nameEdit->text().simplified();
+        const QString body = bodyEdit->toPlainText().trimmed();
+        if (name.isEmpty() || body.isEmpty()) { setStatus(tr("Escreva o seu nome e o comentário."), true); return; }
+        QSettings().setValue(QStringLiteral("recados/nome"), name);
+        send->setEnabled(false);
+        send->setText(tr("Enviando…"));
+        setStatus(QString(), false);
+        feed->postComment(id, name, body);
+    });
+    connect(feed, &RecadosFeed::commentPosted, box, [this, id, bodyEdit, send, setStatus](const QString& rid) {
+        if (rid != id) return;
+        bodyEdit->clear();
+        send->setEnabled(true);
+        send->setText(tr("Enviar"));
+        setStatus(tr("Comentário publicado."), false);
+    });
+    connect(feed, &RecadosFeed::commentFailed, box, [this, id, send, setStatus](const QString& rid, const QString& why) {
+        if (rid != id) return;
+        send->setEnabled(true);
+        send->setText(tr("Enviar"));
+        QString msg;
+        if (why == QLatin1String("no-links")) msg = tr("Links não são aceitos nos comentários.");
+        else if (why == QLatin1String("slow-down")) msg = tr("Muitos comentários seguidos. Tente de novo daqui a alguns minutos.");
+        else if (why == QLatin1String("empty")) msg = tr("Escreva o seu nome e o comentário.");
+        else if (why == QLatin1String("too-long")) msg = tr("O comentário passou do tamanho máximo.");
+        else msg = tr("Não foi possível enviar. Confira a internet e tente de novo.");
+        setStatus(msg, true);
+    });
+    return box;
 }
 
 void RecadosDialog::applyTheme()
@@ -453,6 +615,25 @@ void RecadosDialog::applyTheme()
         QPushButton#recClose { background: %5; color: %7; border: 1px solid %5; border-radius: @radius-control;
                                padding: 7px 20px; font-size: 13px; font-weight: 600; }
         QPushButton#recClose:hover { border-color: %3; }
+        QPushButton#recCmtToggle { background: transparent; border: none; padding: 0px; color: %5;
+                                   font-size: 13px; font-weight: 600; text-align: left; }
+        QPushButton#recCmtToggle:hover { text-decoration: underline; }
+        QFrame#recCmtPanel { background: %8; border: 1px solid %6; border-radius: @radius-control; }
+        QLabel#recCmtHead { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; background: transparent; }
+        QLabel#recCmtBody { color: %2; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; background: transparent;
+                            margin-bottom: 8px; }
+        QLabel#recCmtEmpty { color: %4; font-size: 13px; background: transparent; }
+        QLabel#recCmtStatus { color: %4; font-size: 12px; background: transparent; }
+        QLabel#recCmtStatus[err="true"] { color: %5; }
+        QLineEdit#recCmtNameEdit, QPlainTextEdit#recCmtEdit { background: %1; color: %2; border: 1px solid %6;
+                                   border-radius: @radius-control; padding: 6px 8px; font-size: 13px; }
+        QLineEdit#recCmtNameEdit:focus, QPlainTextEdit#recCmtEdit:focus { border-color: %5; }
+        QPushButton#recCmtSend { background: transparent; color: %5; border: 1px solid %5; border-radius: @radius-control;
+                                 padding: 6px 16px; font-size: 13px; font-weight: 600; }
+        QPushButton#recCmtSend:hover { background: %9; }
+        QPushButton#recCmtSend:disabled { color: %4; border-color: %6; }
     )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(), Theme::textMuted(),
-             accent.name(), Theme::panelBorder(), ink.name()));
+             accent.name(), Theme::panelBorder(), ink.name(),
+             mix(Theme::toColor(Theme::panelBackground()), Theme::toColor(Theme::textPrimary()), 0.04).name(),
+             Theme::hoverOverlay()));
 }

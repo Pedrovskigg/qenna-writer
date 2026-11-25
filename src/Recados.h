@@ -15,8 +15,16 @@
 //                    "image": "https://qennawriter.com/img/recados/x.webp" } ] }      // opcional
 // Idiomas: pt, en, es, it, fr; o que faltar cai no inglês e depois no português.
 // QENNA_RECADOS_URL troca o endereço (http ou file://), pra testar um arquivo local.
+//
+// Comentários (25/11/2026, ideia do Pe): nome + comentário, publicados na hora,
+// no app e no blog. Moram num Worker da Cloudflare (tools/comentarios-worker),
+// não no site, que só serve arquivo. Travas no servidor: sem link, tamanho
+// máximo, poucos envios seguidos; o Pe apaga o que precisar pelo blog.
+// QENNA_COMENTARIOS_URL troca o endereço (ex.: http://127.0.0.1:8787/comments).
 
 #include <QDate>
+#include <QDateTime>
+#include <QHash>
 #include <QList>
 #include <QObject>
 #include <QSet>
@@ -32,6 +40,13 @@ struct Recado {
     QString linkUrl;
     QString linkLabel;
     QString imageUrl;
+};
+
+struct Comentario {
+    qint64 id = 0;
+    QString name;
+    QString body;
+    QDateTime at;
 };
 
 class RecadosFeed : public QObject {
@@ -54,18 +69,32 @@ public:
 
     QNetworkAccessManager* network();
 
+    // ── comentários ──
+    bool commentsEnabled() const { return !commentsUrl().isEmpty(); }
+    void fetchComments();                                   // ao abrir o leitor
+    QList<Comentario> comments(const QString& recadoId) const { return m_comments.value(recadoId); }
+    bool commentsLoaded() const { return m_commentsLoaded; }
+    void postComment(const QString& recadoId, const QString& name, const QString& body);
+
 signals:
     void changed();
     void stateChanged();
+    void commentsChanged();
+    void commentPosted(const QString& recadoId);
+    // reason: no-links, slow-down, empty, too-long, network
+    void commentFailed(const QString& recadoId, const QString& reason);
 
 private:
     explicit RecadosFeed(QObject* parent = nullptr);
     void parse(const QByteArray& json);
     void saveState();
+    static QString commentsUrl();
 
     QNetworkAccessManager* m_nam = nullptr;
     QList<Recado> m_recados;
     QSet<QString> m_read;
     QSet<QString> m_dismissedIds;
     bool m_fetched = false;
+    QHash<QString, QList<Comentario>> m_comments;
+    bool m_commentsLoaded = false;
 };

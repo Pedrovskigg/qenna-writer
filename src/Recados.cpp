@@ -15,6 +15,18 @@
 
 namespace {
 const char* kRecadosUrl = "https://qennawriter.com/recados.json";
+// Vazio = comentários desligados (o leitor nem mostra a parte deles).
+const char* kComentariosUrl = "";
+
+Comentario parseComment(const QJsonObject& o)
+{
+    Comentario c;
+    c.id = o.value(QStringLiteral("id")).toInteger();
+    c.name = o.value(QStringLiteral("name")).toString();
+    c.body = o.value(QStringLiteral("body")).toString();
+    c.at = QDateTime::fromMSecsSinceEpoch(o.value(QStringLiteral("at")).toInteger());
+    return c;
+}
 
 // "pt_BR" -> "pt"; o resto já vem com duas letras.
 QString langKey()
@@ -150,6 +162,64 @@ void RecadosFeed::dismissStrip()
     for (const Recado& r : m_recados) m_dismissedIds.insert(r.id);
     saveState();
     emit stateChanged();
+}
+
+QString RecadosFeed::commentsUrl()
+{
+    const QString override = qEnvironmentVariable("QENNA_COMENTARIOS_URL");
+    return override.isEmpty() ? QString::fromLatin1(kComentariosUrl) : override;
+}
+
+void RecadosFeed::fetchComments()
+{
+    if (!commentsEnabled()) return;
+    QNetworkRequest req{QUrl(commentsUrl())};
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setTransferTimeout(15000);
+    req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    QNetworkReply* reply = network()->get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        if (reply->error() != QNetworkReply::NoError) return;
+        const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        if (!doc.isObject()) return;
+        m_comments.clear();
+        const QJsonObject all = doc.object();
+        for (auto it = all.begin(); it != all.end(); ++it) {
+            QList<Comentario> list;
+            for (const QJsonValue& v : it.value().toArray()) list.append(parseComment(v.toObject()));
+            m_comments.insert(it.key(), list);
+        }
+        m_commentsLoaded = true;
+        emit commentsChanged();
+    });
+}
+
+void RecadosFeed::postComment(const QString& recadoId, const QString& name, const QString& body)
+{
+    if (!commentsEnabled()) return;
+    QNetworkRequest req{QUrl(commentsUrl())};
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("application/json"));
+    req.setTransferTimeout(15000);
+    QJsonObject o;
+    o.insert(QStringLiteral("recado"), recadoId);
+    o.insert(QStringLiteral("name"), name);
+    o.insert(QStringLiteral("body"), body);
+    QNetworkReply* reply = network()->post(req, QJsonDocument(o).toJson(QJsonDocument::Compact));
+    connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId]() {
+        reply->deleteLater();
+        const QJsonObject res = QJsonDocument::fromJson(reply->readAll()).object();
+        const QJsonObject c = res.value(QStringLiteral("comment")).toObject();
+        if (res.value(QStringLiteral("ok")).toBool() && !c.isEmpty()) {
+            m_comments[recadoId].append(parseComment(c));
+            emit commentsChanged();
+            emit commentPosted(recadoId);
+            return;
+        }
+        const QString err = res.value(QStringLiteral("error")).toString();
+        emit commentFailed(recadoId, err.isEmpty() ? QStringLiteral("network") : err);
+    });
 }
 
 void RecadosFeed::saveState()

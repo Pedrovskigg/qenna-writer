@@ -28377,12 +28377,12 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
 <context>
     <name>RecadosBell</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="270"/>
+        <location filename="../src/RecadosView.cpp" line="274"/>
         <source>Recados</source>
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="271"/>
+        <location filename="../src/RecadosView.cpp" line="275"/>
         <source>Ler os recados do autor</source>
         <translation>Read the author&apos;s notes</translation>
     </message>
@@ -28390,60 +28390,133 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
 <context>
     <name>RecadosDialog</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="315"/>
+        <location filename="../src/RecadosView.cpp" line="319"/>
         <source>Recados</source>
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="351"/>
+        <location filename="../src/RecadosView.cpp" line="355"/>
         <source>Novo</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="402"/>
+        <location filename="../src/RecadosView.cpp" line="406"/>
         <source>Abrir</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="418"/>
+        <location filename="../src/RecadosView.cpp" line="426"/>
         <source>Fechar</source>
         <translation>Close</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="484"/>
+        <source>Seu nome</source>
+        <translation>Your name</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="490"/>
+        <source>Escreva um comentário</source>
+        <translation>Write a comment</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="505"/>
+        <location filename="../src/RecadosView.cpp" line="582"/>
+        <location filename="../src/RecadosView.cpp" line="588"/>
+        <source>Enviar</source>
+        <translation>Send</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="536"/>
+        <source>Comentar</source>
+        <translation>Comment</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="536"/>
+        <source>Comentários (%1)</source>
+        <translation>Comments (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="538"/>
+        <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
+        <translation>No comments yet. Be the first.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="539"/>
+        <source>Carregando comentários…</source>
+        <translation>Loading comments…</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="571"/>
+        <location filename="../src/RecadosView.cpp" line="592"/>
+        <source>Escreva o seu nome e o comentário.</source>
+        <translation>Please write your name and the comment.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="574"/>
+        <source>Enviando…</source>
+        <translation>Sending…</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="583"/>
+        <source>Comentário publicado.</source>
+        <translation>Comment published.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="590"/>
+        <source>Links não são aceitos nos comentários.</source>
+        <translation>Links are not allowed in comments.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="591"/>
+        <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
+        <translation>Too many comments in a row. Please try again in a few minutes.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="593"/>
+        <source>O comentário passou do tamanho máximo.</source>
+        <translation>The comment is longer than the limit.</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="594"/>
+        <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
+        <translation>Could not send. Please check your connection and try again.</translation>
     </message>
 </context>
 <context>
     <name>RecadosStrip</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="166"/>
+        <location filename="../src/RecadosView.cpp" line="170"/>
         <source>Recado anterior</source>
         <translation>Previous note</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="172"/>
+        <location filename="../src/RecadosView.cpp" line="176"/>
         <source>Próximo recado</source>
         <translation>Next note</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="176"/>
+        <location filename="../src/RecadosView.cpp" line="180"/>
         <source>Ler</source>
         <translation>Read</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="183"/>
+        <location filename="../src/RecadosView.cpp" line="187"/>
         <source>Dispensar (volta quando chegar recado novo)</source>
         <translation>Dismiss (comes back when there is a new note)</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="212"/>
+        <location filename="../src/RecadosView.cpp" line="216"/>
         <source>RECADO NOVO</source>
         <translation>NEW NOTE</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="212"/>
+        <location filename="../src/RecadosView.cpp" line="216"/>
         <source>RECADO</source>
         <translation>NOTE</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="223"/>
+        <location filename="../src/RecadosView.cpp" line="227"/>
         <source>%1 de %2</source>
         <translation>%1 of %2</translation>
     </message>
@@ -39166,7 +39239,7 @@ following days, it always resets at this new time.</translation>
         <translation>painted in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1310"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1360"/>
         <source>acabamento em %1 ms</source>
         <translation>finished in %1 ms</translation>
     </message>
