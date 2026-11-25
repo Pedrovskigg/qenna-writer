@@ -50,6 +50,16 @@ struct Comentario {
     bool author = false;   // o Pe (comentou com a chave de admin, pelo blog)
 };
 
+// Reações (25/11/2026, aprovadas pelo Pe): coração, fogo, palmas e risada. Uma de
+// cada por pessoa e recado; a pessoa é um id anônimo sorteado e guardado no
+// QSettings (recados/clientId), que o servidor só guarda como hash.
+enum class Reacao { Heart = 0, Fire, Clap, Laugh };
+constexpr int kReacoes = 4;
+struct Reacoes {
+    int count[kReacoes] = { 0, 0, 0, 0 };
+    bool mine[kReacoes] = { false, false, false, false };
+};
+
 class RecadosFeed : public QObject {
     Q_OBJECT
 public:
@@ -80,6 +90,11 @@ public:
     // O autor (o Pe) no app: a chave de admin fica guardada no QSettings do PC dele
     // (recados/adminKey). Com ela, a assinatura reservada passa (selo "autor") e
     // aparece o "apagar" em cada comentário. Quem não tem a chave não vê nada disso.
+    // ── reações ──
+    void fetchReactions();
+    Reacoes reactions(const QString& recadoId) const { return m_reactions.value(recadoId); }
+    void toggleReaction(const QString& recadoId, Reacao kind);
+
     bool isAuthor() const;
     void setAdminKey(const QString& key);
     void deleteComment(const QString& recadoId, qint64 commentId);
@@ -92,12 +107,15 @@ signals:
     // reason: no-links, reserved, slow-down, empty, too-long, network
     void commentFailed(const QString& recadoId, const QString& reason);
     void adminKeyRejected();
+    void reactionsChanged(const QString& recadoId);   // vazio = todos
 
 private:
     explicit RecadosFeed(QObject* parent = nullptr);
     void parse(const QByteArray& json);
     void saveState();
     static QString commentsUrl();
+    QString apiBase() const;      // o endereço do servidor sem o "/comments"
+    static QString clientId();
 
     QNetworkAccessManager* m_nam = nullptr;
     QList<Recado> m_recados;
@@ -106,4 +124,5 @@ private:
     bool m_fetched = false;
     QHash<QString, QList<Comentario>> m_comments;
     bool m_commentsLoaded = false;
+    QHash<QString, Reacoes> m_reactions;
 };

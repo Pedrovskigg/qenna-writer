@@ -53,10 +53,10 @@ QColor mix(const QColor& a, const QColor& b, qreal t)
                             a.blueF() + (b.blueF() - a.blueF()) * t);
 }
 
-enum class Glyph { Pin, Left, Right, Close, Bell };
+enum class Glyph { Pin, Left, Right, Close, Bell, Heart, Fire, Clap, Laugh };
 
 // Ícones desenhados (sem caractere de fonte, que no Linux pode faltar).
-QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr)
+QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr, bool filled = false)
 {
     QPixmap pm(QSize(size, size) * dpr);
     pm.setDevicePixelRatio(dpr);
@@ -96,6 +96,89 @@ QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr)
         p.drawLine(QPointF(7, 7), QPointF(17, 17));
         p.drawLine(QPointF(17, 7), QPointF(7, 17));
         break;
+    // ── as reações (traço; "filled" = a pessoa marcou) ──
+    case Glyph::Heart: {
+        QPainterPath path;
+        path.moveTo(12, 20);
+        path.cubicTo(5, 15, 3.5, 11.5, 3.5, 8.8);
+        path.cubicTo(3.5, 6.2, 5.5, 4.5, 7.8, 4.5);
+        path.cubicTo(9.6, 4.5, 11.2, 5.6, 12, 7.2);
+        path.cubicTo(12.8, 5.6, 14.4, 4.5, 16.2, 4.5);
+        path.cubicTo(18.5, 4.5, 20.5, 6.2, 20.5, 8.8);
+        path.cubicTo(20.5, 11.5, 19, 15, 12, 20);
+        path.closeSubpath();
+        if (filled) p.setBrush(c);
+        p.drawPath(path);
+        break;
+    }
+    case Glyph::Fire: {
+        QPainterPath out;
+        out.moveTo(12, 21);
+        out.cubicTo(8, 21, 5.5, 18.3, 5.5, 14.8);
+        out.cubicTo(5.5, 11.2, 8.5, 9.5, 9, 6);
+        out.cubicTo(11, 7.5, 11.8, 9.2, 11.6, 11);
+        out.cubicTo(13.2, 9.6, 13.8, 6.4, 13, 3);
+        out.cubicTo(16.8, 5.5, 18.5, 10, 18.5, 14.8);
+        out.cubicTo(18.5, 18.3, 16, 21, 12, 21);
+        out.closeSubpath();
+        QPainterPath in;
+        in.moveTo(12, 21);
+        in.cubicTo(10.2, 21, 9.2, 19.7, 9.2, 18.2);
+        in.cubicTo(9.2, 16.4, 10.8, 15.6, 11.3, 13.8);
+        in.cubicTo(13.2, 15, 14.8, 16.5, 14.8, 18.2);
+        in.cubicTo(14.8, 19.8, 13.6, 21, 12, 21);
+        // a chama de dentro sempre cheia (dá forma no tamanho pequeno); marcado = a de fora também
+        if (filled) { QColor soft = c; soft.setAlphaF(0.45); p.setBrush(soft); }
+        p.drawPath(out);
+        p.setPen(Qt::NoPen);
+        p.setBrush(c);
+        p.drawPath(in);
+        break;
+    }
+    case Glyph::Clap: {
+        // duas palmas batendo (silhueta unida, uma mais alta que a outra) + o estalo em cima
+        auto palm = [](QPointF at, qreal deg) {
+            QPainterPath h;
+            h.addRoundedRect(QRectF(-3.3, -6.6, 6.6, 13.2), 3.3, 3.3);
+            return QTransform().translate(at.x(), at.y()).rotate(deg).map(h);
+        };
+        // a mão da frente: palma + polegar, com os vãos dos dedos (é o que faz ler "mão")
+        const QTransform tf = QTransform().translate(10.4, 15.2).rotate(-18);
+        QPainterPath frontLocal;
+        frontLocal.addRoundedRect(QRectF(-3.4, -7.2, 6.8, 13.6), 3.2, 3.2);
+        QPainterPath thumb;
+        thumb.addRoundedRect(QRectF(-6.4, -1.2, 4.6, 2.9), 1.45, 1.45);
+        const QPainterPath front = tf.map(frontLocal.united(QTransform().rotate(-38).map(thumb)));
+        const QPainterPath back = palm(QPointF(15.2, 13.6), 26);
+        QColor soft = c; soft.setAlphaF(filled ? 0.45 : 0.0);
+        p.setBrush(soft);
+        p.drawPath(back.subtracted(front));
+        p.drawPath(front);
+        p.setBrush(Qt::NoBrush);
+        p.drawLine(tf.map(QLineF(-1.1, -7.0, -1.1, -3.4)));
+        p.drawLine(tf.map(QLineF(1.1, -7.0, 1.1, -3.4)));
+        p.drawLine(QPointF(4.6, 6.6), QPointF(6.4, 8.4));
+        p.drawLine(QPointF(8.6, 3.4), QPointF(9.2, 5.8));
+        p.drawLine(QPointF(13.2, 3.2), QPointF(12.4, 5.6));
+        break;
+    }
+    case Glyph::Laugh: {
+        QColor soft = c; soft.setAlphaF(filled ? 0.3 : 0.0);
+        p.setBrush(soft);
+        p.drawEllipse(QPointF(12, 12), 8.6, 8.6);
+        p.setBrush(Qt::NoBrush);
+        p.drawPolyline(QPolygonF({ QPointF(7.6, 10.4), QPointF(9, 8.9), QPointF(10.4, 10.4) }));
+        p.drawPolyline(QPolygonF({ QPointF(13.6, 10.4), QPointF(15, 8.9), QPointF(16.4, 10.4) }));
+        QPainterPath mouth;
+        mouth.moveTo(7.6, 13.2);
+        mouth.lineTo(16.4, 13.2);
+        mouth.cubicTo(16.1, 16.4, 14.2, 17.9, 12, 17.9);
+        mouth.cubicTo(9.8, 17.9, 7.9, 16.4, 7.6, 13.2);
+        mouth.closeSubpath();
+        p.setBrush(c);
+        p.drawPath(mouth);
+        break;
+    }
     }
     return QIcon(pm);
 }
@@ -441,6 +524,7 @@ RecadosDialog::RecadosDialog(QWidget* parent)
     // Abriu o leitor = leu tudo (a faixa troca "Recado novo" por "Recado").
     feed->markAllRead();
     feed->fetchComments();
+    feed->fetchReactions();
 
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, &RecadosDialog::applyTheme);
@@ -460,6 +544,39 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
     toggle->setCursor(Qt::PointingHandCursor);
     toggle->setFlat(true);
     auto* toggleRow = new QHBoxLayout();
+    toggleRow->setSpacing(6);
+    const Glyph glyphs[kReacoes] = { Glyph::Heart, Glyph::Fire, Glyph::Clap, Glyph::Laugh };
+    const QString tips[kReacoes] = { tr("Amei"), tr("Que demais"), tr("Mandou bem"), tr("Kkkkk") };
+    QList<QToolButton*> reacts;
+    for (int k = 0; k < kReacoes; ++k) {
+        auto* b = new QToolButton(box);
+        b->setObjectName(QStringLiteral("recReact"));
+        b->setCursor(Qt::PointingHandCursor);
+        b->setCheckable(true);
+        b->setToolTip(tips[k]);
+        b->setIconSize(QSize(18, 18));
+        b->setFixedHeight(26);
+        connect(b, &QToolButton::clicked, box, [feed, id, k]() { feed->toggleReaction(id, Reacao(k)); });
+        toggleRow->addWidget(b);
+        reacts << b;
+    }
+    auto paintReacts = [feed, id, reacts, glyphs, box]() {
+        const Reacoes r = feed->reactions(id);
+        const QColor accent = Theme::toColor(Theme::accentDefault());
+        const QColor muted = Theme::toColor(Theme::textMuted());
+        const qreal dpr = box->devicePixelRatioF();
+        for (int k = 0; k < kReacoes; ++k) {
+            QToolButton* b = reacts.at(k);
+            b->setChecked(r.mine[k]);
+            b->setIcon(glyphIcon(glyphs[k], r.mine[k] ? accent : muted, 18, dpr, r.mine[k]));
+            b->setText(r.count[k] > 0 ? QString::number(r.count[k]) : QString());
+            b->setToolButtonStyle(r.count[k] > 0 ? Qt::ToolButtonTextBesideIcon : Qt::ToolButtonIconOnly);
+        }
+    };
+    paintReacts();
+    connect(feed, &RecadosFeed::reactionsChanged, box, [paintReacts, id](const QString& rid) { if (rid.isEmpty() || rid == id) paintReacts(); });
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, box, paintReacts);
+    toggleRow->addSpacing(10);
     toggleRow->addWidget(toggle);
     toggleRow->addStretch(1);
     v->addLayout(toggleRow);
@@ -692,6 +809,10 @@ void RecadosDialog::applyTheme()
         QPushButton#recCmtToggle { background: transparent; border: none; padding: 0px; color: %5;
                                    font-size: 13px; font-weight: 600; text-align: left; }
         QPushButton#recCmtToggle:hover { text-decoration: underline; }
+        QToolButton#recReact { background: transparent; color: %4; border: 1px solid %6; border-radius: 13px;
+                               padding: 1px 8px; font-size: 12px; font-weight: 600; }
+        QToolButton#recReact:hover { border-color: %5; }
+        QToolButton#recReact:checked { color: %5; border-color: %5; background: %10; }
         QFrame#recCmtPanel { background: %8; border: 1px solid %6; border-radius: @radius-control; }
         QLabel#recCmtHead { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; background: transparent; }
         QLabel#recCmtHead[author="true"] { color: %5; }
@@ -716,5 +837,6 @@ void RecadosDialog::applyTheme()
     )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(), Theme::textMuted(),
              accent.name(), Theme::panelBorder(), ink.name(),
              mix(Theme::toColor(Theme::panelBackground()), Theme::toColor(Theme::textPrimary()), 0.04).name(),
-             Theme::hoverOverlay()));
+             Theme::hoverOverlay())
+         .arg(mix(Theme::toColor(Theme::panelBackground()), accent, 0.12).name()));
 }

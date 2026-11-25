@@ -5,6 +5,10 @@
 //                                     com Authorization: Bearer <ADMIN_KEY> = comentário do autor (selo "autor")
 //   DELETE /comments/<id>           (Authorization: Bearer <ADMIN_KEY>)  · só o Pe
 //
+//   GET    /reactions?me=<id>       → { "<recado>": { heart, fire, clap, laugh, mine: [kinds] }, ... }
+//   POST   /reactions               ← { recado, kind, client }  (marca/desmarca; devolve o recado atualizado)
+//   client = id anônimo que o app/navegador sorteia e guarda; aqui só entra o hash dele com sal.
+//
 // Publica na hora. As travas contra spam: nada de link, tamanho máximo, poucos
 // envios por pessoa em 10 minutos e a isca de robô. A assinatura do Pe ("P.H. Lobato" em
 // qualquer grafia) é reservada: só passa com a chave de admin. O IP nunca é guardado: só um
@@ -114,6 +118,51 @@ async function remove(request, env, id) {
   return json({ ok: true });
 }
 
+const KINDS = ['heart', 'fire', 'clap', 'laugh'];
+const MAX_TOGGLES = 60;         // marcar/desmarcar por pessoa a cada 10 minutos
+
+const validClient = (c) => typeof c === 'string' && /^[A-Za-z0-9-]{16,64}$/.test(c);
+const voterOf = (env, client) => sha256((env.SALT || 'qenna') + '|r|' + client);
+
+async function reactionsOf(env, voter, recado) {
+  const q = recado
+    ? env.DB.prepare('SELECT recado, kind, COUNT(*) AS n, SUM(voter = ?) AS me FROM reactions WHERE recado = ? GROUP BY recado, kind').bind(voter || '', recado)
+    : env.DB.prepare('SELECT recado, kind, COUNT(*) AS n, SUM(voter = ?) AS me FROM reactions GROUP BY recado, kind').bind(voter || '');
+  const { results } = await q.all();
+  const out = {};
+  for (const r of results) {
+    const o = (out[r.recado] ||= { heart: 0, fire: 0, clap: 0, laugh: 0, mine: [] });
+    o[r.kind] = r.n;
+    if (r.me) o.mine.push(r.kind);
+  }
+  return out;
+}
+
+async function listReactions(url, env) {
+  const me = url.searchParams.get('me');
+  const voter = validClient(me) ? await voterOf(env, me) : '';
+  return json(await reactionsOf(env, voter), 200, { 'Cache-Control': 'no-store' });
+}
+
+async function toggleReaction(request, env) {
+  let data;
+  try { data = await request.json(); } catch { return fail('bad-request'); }
+  const recado = String(data.recado ?? '');
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{1,63}$/.test(recado) || !KINDS.includes(data.kind) || !validClient(data.client)) return fail('bad-request');
+  const now = Date.now();
+  const ip = request.headers.get('CF-Connecting-IP') || 'local';
+  const who = 'r:' + await sha256((env.SALT || 'qenna') + '|' + ip);
+  await env.DB.prepare('DELETE FROM sends WHERE at < ?').bind(now - 24 * 3600 * 1000).run();
+  const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM sends WHERE who = ? AND at > ?').bind(who, now - WINDOW_MS).first();
+  if (n >= MAX_TOGGLES) return fail('slow-down', 429);
+  const voter = await voterOf(env, data.client);
+  const del = await env.DB.prepare('DELETE FROM reactions WHERE recado = ? AND kind = ? AND voter = ?').bind(recado, data.kind, voter).run();
+  if (!del.meta.changes) await env.DB.prepare('INSERT INTO reactions (recado, kind, voter, at) VALUES (?, ?, ?, ?)').bind(recado, data.kind, voter, now).run();
+  await env.DB.prepare('INSERT INTO sends (who, at) VALUES (?, ?)').bind(who, now).run();
+  const all = await reactionsOf(env, voter, recado);
+  return json({ ok: true, recado, reactions: all[recado] || { heart: 0, fire: 0, clap: 0, laugh: 0, mine: [] } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -123,6 +172,8 @@ export default {
       if (url.pathname === '/comments' && request.method === 'POST') return await add(request, env);
       const m = url.pathname.match(/^\/comments\/(\d+)$/);
       if (m && request.method === 'DELETE') return await remove(request, env, Number(m[1]));
+      if (url.pathname === '/reactions' && request.method === 'GET') return await listReactions(url, env);
+      if (url.pathname === '/reactions' && request.method === 'POST') return await toggleReaction(request, env);
       return fail('not-found', 404);
     } catch (e) {
       return fail('server', 500);

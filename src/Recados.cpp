@@ -11,6 +11,8 @@
 #include <QNetworkRequest>
 #include <QSettings>
 #include <QUrl>
+#include <QUrlQuery>
+#include <QUuid>
 #include <algorithm>
 
 namespace {
@@ -222,6 +224,95 @@ void RecadosFeed::postComment(const QString& recadoId, const QString& name, cons
         }
         const QString err = res.value(QStringLiteral("error")).toString();
         emit commentFailed(recadoId, err.isEmpty() ? QStringLiteral("network") : err);
+    });
+}
+
+namespace {
+const char* const kReacaoKeys[kReacoes] = { "heart", "fire", "clap", "laugh" };
+
+Reacoes parseReactions(const QJsonObject& o)
+{
+    Reacoes r;
+    for (int i = 0; i < kReacoes; ++i) r.count[i] = o.value(QLatin1String(kReacaoKeys[i])).toInt();
+    for (const QJsonValue& v : o.value(QStringLiteral("mine")).toArray())
+        for (int i = 0; i < kReacoes; ++i)
+            if (v.toString() == QLatin1String(kReacaoKeys[i])) r.mine[i] = true;
+    return r;
+}
+}
+
+QString RecadosFeed::apiBase() const
+{
+    QString u = commentsUrl();
+    if (u.endsWith(QLatin1String("/comments"))) u.chop(9);
+    return u;
+}
+
+QString RecadosFeed::clientId()
+{
+    QSettings qs;
+    QString id = qs.value(QStringLiteral("recados/clientId")).toString();
+    if (id.isEmpty()) {
+        id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        qs.setValue(QStringLiteral("recados/clientId"), id);
+    }
+    return id;
+}
+
+void RecadosFeed::fetchReactions()
+{
+    if (!commentsEnabled()) return;
+    QUrl url(apiBase() + QStringLiteral("/reactions"));
+    QUrlQuery q;
+    q.addQueryItem(QStringLiteral("me"), clientId());
+    url.setQuery(q);
+    QNetworkRequest req(url);
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setTransferTimeout(15000);
+    req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    QNetworkReply* reply = network()->get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        reply->deleteLater();
+        if (reply->error() != QNetworkReply::NoError) return;
+        const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        if (!doc.isObject()) return;
+        m_reactions.clear();
+        const QJsonObject all = doc.object();
+        for (auto it = all.begin(); it != all.end(); ++it) m_reactions.insert(it.key(), parseReactions(it.value().toObject()));
+        emit reactionsChanged(QString());
+    });
+}
+
+void RecadosFeed::toggleReaction(const QString& recadoId, Reacao kind)
+{
+    if (!commentsEnabled()) return;
+    const int k = int(kind);
+    // na hora, sem esperar a rede; a resposta do servidor acerta os números
+    Reacoes& r = m_reactions[recadoId];
+    r.mine[k] = !r.mine[k];
+    r.count[k] = qMax(0, r.count[k] + (r.mine[k] ? 1 : -1));
+    emit reactionsChanged(recadoId);
+
+    QNetworkRequest req{QUrl(apiBase() + QStringLiteral("/reactions"))};
+    req.setHeader(QNetworkRequest::UserAgentHeader, QByteArray("qenna-writer-recados"));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("application/json"));
+    req.setTransferTimeout(15000);
+    QJsonObject o;
+    o.insert(QStringLiteral("recado"), recadoId);
+    o.insert(QStringLiteral("kind"), QLatin1String(kReacaoKeys[k]));
+    o.insert(QStringLiteral("client"), clientId());
+    QNetworkReply* reply = network()->post(req, QJsonDocument(o).toJson(QJsonDocument::Compact));
+    connect(reply, &QNetworkReply::finished, this, [this, reply, recadoId, k]() {
+        reply->deleteLater();
+        const QJsonObject res = QJsonDocument::fromJson(reply->readAll()).object();
+        if (res.value(QStringLiteral("ok")).toBool()) {
+            m_reactions[recadoId] = parseReactions(res.value(QStringLiteral("reactions")).toObject());
+        } else {
+            Reacoes& r = m_reactions[recadoId];   // não foi: desfaz
+            r.mine[k] = !r.mine[k];
+            r.count[k] = qMax(0, r.count[k] + (r.mine[k] ? 1 : -1));
+        }
+        emit reactionsChanged(recadoId);
     });
 }
 

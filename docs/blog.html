@@ -191,6 +191,18 @@
   .post .go { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; letter-spacing: .03em; border: 1px solid var(--rule-strong); padding: 7px 14px; text-decoration: none; color: var(--ink); }
   .post .go:hover { border-color: var(--blue); color: var(--blue); }
   .empty { text-align: center; color: var(--ink-faint); font-style: italic; }
+  .reacts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .react { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border: 1px solid var(--rule-strong); border-radius: 999px; background: transparent; color: var(--ink-faint); font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; cursor: pointer; }
+  .react:hover { border-color: var(--blue); }
+  .react svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .react svg .solid { fill: currentColor; stroke: none; }
+  .react svg .cover { fill: var(--paper-white); }
+  .react svg .soft { fill: transparent; }
+  .react.on { color: var(--blue); border-color: var(--blue); background: color-mix(in srgb, var(--blue) 10%, transparent); }
+  .react.on svg .soft, .react.on .heart { fill: currentColor; fill-opacity: .45; }
+  .react.on .heart { fill-opacity: 1; }
+  .react.on svg .cover { fill: color-mix(in srgb, var(--blue) 45%, var(--paper-white)); }
+  .react .n:empty { display: none; }
   .cmts { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
   .cmts h3 { font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: var(--ink-faint); margin: 0 0 14px; }
   .cmt { margin: 0 0 16px; }
@@ -322,6 +334,64 @@
     renderList(id);
     return sec;
   }
+  // Reações (as mesmas do app, desenhadas igual): uma de cada por pessoa; a pessoa é um id anônimo do navegador.
+  var KINDS = ['heart', 'fire', 'clap', 'laugh'];
+  var TIPS = ['Love it', 'So cool', 'Well done', 'Haha'];
+  var ICON = {
+    heart: '<path class="heart" d="M12 20C5 15 3.5 11.5 3.5 8.8C3.5 6.2 5.5 4.5 7.8 4.5C9.6 4.5 11.2 5.6 12 7.2C12.8 5.6 14.4 4.5 16.2 4.5C18.5 4.5 20.5 6.2 20.5 8.8C20.5 11.5 19 15 12 20Z"/>',
+    fire: '<path class="soft" d="M12 21C8 21 5.5 18.3 5.5 14.8C5.5 11.2 8.5 9.5 9 6C11 7.5 11.8 9.2 11.6 11C13.2 9.6 13.8 6.4 13 3C16.8 5.5 18.5 10 18.5 14.8C18.5 18.3 16 21 12 21Z"/><path class="solid" d="M12 21C10.2 21 9.2 19.7 9.2 18.2C9.2 16.4 10.8 15.6 11.3 13.8C13.2 15 14.8 16.5 14.8 18.2C14.8 19.8 13.6 21 12 21Z"/>',
+    clap: '<rect class="soft" transform="translate(15.2 13.6) rotate(26)" x="-3.3" y="-6.6" width="6.6" height="13.2" rx="3.3"/><g transform="translate(10.4 15.2) rotate(-18)"><rect class="cover" stroke="none" x="-3.4" y="-7.2" width="6.8" height="13.6" rx="3.2"/><rect class="cover" transform="rotate(-38)" x="-6.4" y="-1.2" width="4.6" height="2.9" rx="1.45"/><rect class="cover" x="-3.4" y="-7.2" width="6.8" height="13.6" rx="3.2"/><path d="M-1.1 -7V-3.4M1.1 -7V-3.4"/></g><path d="M4.6 6.6L6.4 8.4M8.6 3.4L9.2 5.8M13.2 3.2L12.4 5.6"/>',
+    laugh: '<circle class="soft" cx="12" cy="12" r="8.6"/><path d="M7.6 10.4L9 8.9L10.4 10.4M13.6 10.4L15 8.9L16.4 10.4"/><path class="solid" d="M7.6 13.2H16.4C16.1 16.4 14.2 17.9 12 17.9C9.8 17.9 7.9 16.4 7.6 13.2Z"/>'
+  };
+  var rslots = {};
+  function clientId() {
+    var id = store('qenna-client');
+    if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2, 12)); store('qenna-client', id); }
+    return id;
+  }
+  function paintReacts(id) {
+    var s = rslots[id]; if (!s) return;
+    var r = s.data || {};
+    KINDS.forEach(function (k, i) {
+      var b = s.btns[i];
+      var on = (r.mine || []).indexOf(k) >= 0;
+      b.className = 'react' + (on ? ' on' : '');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.querySelector('.n').textContent = r[k] ? r[k] : '';
+    });
+  }
+  function reactsFor(id) {
+    var row = el('div', 'reacts');
+    var btns = KINDS.map(function (k, i) {
+      var b = el('button', 'react');
+      b.type = 'button'; b.title = TIPS[i]; b.setAttribute('aria-label', TIPS[i]);
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[k] + '</svg><span class="n"></span>';
+      b.onclick = function () { toggleReact(id, k); };
+      row.appendChild(b);
+      return b;
+    });
+    rslots[id] = { btns: btns, data: null };
+    paintReacts(id);
+    return row;
+  }
+  function toggleReact(id, k) {
+    var s = rslots[id]; var r = s.data || (s.data = { heart: 0, fire: 0, clap: 0, laugh: 0, mine: [] });
+    var was = r.mine.indexOf(k) >= 0;
+    r.mine = was ? r.mine.filter(function (x) { return x !== k; }) : r.mine.concat(k);
+    r[k] = Math.max(0, (r[k] || 0) + (was ? -1 : 1));
+    paintReacts(id);
+    fetch(API + '/reactions', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recado: id, kind: k, client: clientId() }) })
+      .then(function (res) { return res.json(); })
+      .then(function (res) { if (res.ok) { s.data = res.reactions; paintReacts(id); } else loadReacts(); })
+      .catch(loadReacts);
+  }
+  function loadReacts() {
+    if (!API) return;
+    fetch(API + '/reactions?me=' + encodeURIComponent(clientId()), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (all) {
+      Object.keys(rslots).forEach(function (id) { rslots[id].data = all[id] || null; paintReacts(id); });
+    }).catch(function () {});
+  }
   function loadComments() {
     if (!API) return;
     fetch(API + '/comments', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (all) {
@@ -380,10 +450,11 @@
         foot.appendChild(a);
       }
       art.appendChild(foot);
-      if (API) art.appendChild(commentsFor(x.id));
+      if (API) { art.appendChild(reactsFor(x.id)); art.appendChild(commentsFor(x.id)); }
       box.appendChild(art);
     });
     loadComments();
+    loadReacts();
   }).catch(function () {
     box.textContent = '';
     box.appendChild(el('div', 'leaf empty', T.fail));
