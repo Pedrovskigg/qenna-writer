@@ -574,13 +574,18 @@ QWidget* RecadosDialog::buildComments(const Recado& r, QWidget* parent)
             auto* head = new QLabel(listHost);
             head->setObjectName(QStringLiteral("recCmtHead"));
             head->setTextFormat(Qt::RichText);
-            const QString badge = c.author
-                ? QStringLiteral("&nbsp;&nbsp;<span style=\"color:%1; font-size:11px; font-weight:600; letter-spacing:1px;\">%2</span>")
-                      .arg(Theme::toColor(Theme::accentDefault()).name(), tr("AUTOR"))
-                : QString();
-            head->setText(QStringLiteral("<b>%1</b>%3&nbsp;&nbsp;<span style=\"font-size:11px; font-weight:400;\">%2</span>")
-                              .arg(c.name.toHtmlEscaped(), longDate(c.at.toLocalTime().date()).toHtmlEscaped(), badge));
+            // o autor: nome na cor de destaque + pílula "AUTOR" preenchida (de longe dá pra ver que é ele)
+            head->setProperty("author", c.author);
+            head->setText(QStringLiteral("<b>%1</b>").arg(c.name.toHtmlEscaped()));
             headRow->addWidget(head);
+            if (c.author) {
+                auto* badge = new QLabel(tr("AUTOR"), listHost);
+                badge->setObjectName(QStringLiteral("recCmtBadge"));
+                headRow->addWidget(badge);
+            }
+            auto* when = new QLabel(longDate(c.at.toLocalTime().date()), listHost);
+            when->setObjectName(QStringLiteral("recCmtWhen"));
+            headRow->addWidget(when);
             if (feed->isAuthor()) {   // só no PC do autor (tem a chave)
                 auto* del = new QPushButton(tr("apagar"), listHost);
                 del->setObjectName(QStringLiteral("recCmtDel"));
@@ -689,6 +694,10 @@ void RecadosDialog::applyTheme()
         QPushButton#recCmtToggle:hover { text-decoration: underline; }
         QFrame#recCmtPanel { background: %8; border: 1px solid %6; border-radius: @radius-control; }
         QLabel#recCmtHead { color: %3; font-family: 'Crimson Pro', Georgia, serif; font-size: 15px; background: transparent; }
+        QLabel#recCmtHead[author="true"] { color: %5; }
+        QLabel#recCmtBadge { background: %5; color: %7; border-radius: 8px; padding: 1px 8px;
+                             font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+        QLabel#recCmtWhen { color: %4; font-family: 'Crimson Pro', Georgia, serif; font-size: 12px; background: transparent; }
         QLabel#recCmtBody { color: %2; font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; background: transparent;
                             margin-bottom: 8px; }
         QLabel#recCmtEmpty { color: %4; font-size: 13px; background: transparent; }
