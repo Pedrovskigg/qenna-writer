@@ -515,7 +515,7 @@ void Scene::drawFields(QPainter& p, const SceneState& st)
     const Info& info = *st.doc->info;
     const UserLayer& U = info.user;
     p.save();
-    p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::Antialiasing, !st.aliased);
     auto one = [&](const Field& f) {
         const auto g = ground(st, f.x, f.y);
         if (!g || !g->vis) return;
@@ -577,7 +577,7 @@ void Scene::drawRoads(QPainter& p, const SceneState& st)
     const Info& info = *st.doc->info;
     const UserLayer& U = info.user;
     p.save();
-    p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::Antialiasing, !st.aliased);
     if (isAtlasLike(st) || isInk(st)) drawAtlasWalls(p, st, U);
     const bool atlas = isAtlasLike(st), inkM = isInk(st), flat = atlas || inkM;
     const ArtPal* P = artPal(st.mode);
@@ -782,8 +782,8 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
     auto out = [&](const Ground& g) { return g.X < -pad || g.Y < -pad || g.X > W + pad || g.Y > H + pad; };
     const double dpr = p.device() ? p.device()->devicePixelRatioF() : 1.0;
     p.save();
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    p.setRenderHint(QPainter::Antialiasing, !st.aliased);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, !st.aliased);
     // azulejo (imagem sem recorte, sem transparência geral, só a escala do dpr): as plantas vão direto nos pixels
     QImage* direct = nullptr;
     QTransform devT;

@@ -50,6 +50,8 @@ void Panel::buildCartelaUi()
     m_canvas->opts().sprites = st.value(QStringLiteral("carto/sprites"), true).toBool();
     m_canvas->opts().spinLight = st.value(QStringLiteral("carto/spinLight"), false).toBool();
     m_canvas->opts().frame = st.value(QStringLiteral("carto/frame"), false).toBool();
+    m_canvas->opts().terrainQ = std::clamp(st.value(QStringLiteral("carto/terrainQ"), 2).toInt(), 0, 3);
+    m_canvas->opts().spriteQ = std::clamp(st.value(QStringLiteral("carto/spriteQ"), 2).toInt(), 0, 3);
 
     m_cartela = new Cartela(this);
     std::vector<CartelaItem> items;
@@ -237,6 +239,8 @@ void Panel::applyUiMode()
     m_cartela->setVisible(false);
     m_rose->setVisible(cartelaUi);
     for (auto it = m_uiBtns.begin(); it != m_uiBtns.end(); ++it) it.value()->setChecked(it.key() == m_ui);
+    for (auto it = m_terrainQBtns.begin(); it != m_terrainQBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == m_canvas->opts().terrainQ);
+    for (auto it = m_spriteQBtns.begin(); it != m_spriteQBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == m_canvas->opts().spriteQ);
     m_cartelaChk->setVisible(false);
     m_cartelaChk->setChecked(m_cartelaOn);
     m_cartelaChk->setIcon(icon(m_cartelaOn ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));

@@ -201,6 +201,7 @@ private:
     QToolButton* m_helpBtn = nullptr;
     std::function<void(const QString&)> m_openHelp;
     QHash<QString, QToolButton*> m_uiBtns;
+    QHash<QString, QToolButton*> m_terrainQBtns, m_spriteQBtns;   // qualidade: "0" baixa … "3" ultra
     QToolButton* m_cartelaChk = nullptr;
     QToolButton* m_spritesChk = nullptr;
     QToolButton* m_frameChk = nullptr;

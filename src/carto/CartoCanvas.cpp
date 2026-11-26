@@ -86,7 +86,7 @@ Canvas::~Canvas()
 
 double Canvas::sq() const { View v; v.pitch = m_pitch; return cameraOf(v).sq; }
 
-View Canvas::currentView(int step) const
+View Canvas::currentView(double step) const
 {
     View v;
     v.ang = m_ang; v.pitch = m_pitch; v.step = step;
@@ -185,7 +185,7 @@ void Canvas::requestFull()
     m_cancel = cancel;
     const int gen = ++m_gen;
     World* w = m_world;
-    const View v = currentView(lodStep());
+    const View v = currentView(baseStep());
     QPointer<Canvas> self(this);
     m_jobs++;
     emit statusChanged();
@@ -300,14 +300,19 @@ void Canvas::requestDetail()
 {
     if (!m_world || !m_base || m_world->backdrop || m_showClimate || !baseMatches()) { dropDetail(); return; }
     const double k = m_zoom * devicePixelRatioF();   // px da tela por px do mundo
-    if (k < 1.5) { dropDetail(); return; }
+    // qualidade do terreno: Baixa fica no passo cheio (sem o refinado de perto), Média refina até 2×,
+    // Alta até 4× (o de sempre), Ultra até 4× e já a partir de mais longe, com mais folga de tela
+    const int q = m_opts.terrainQ;
+    const double maxDiv = q <= 0 ? 1.0 : q == 1 ? 2.0 : 4.0, minDiv = q <= 0 ? 1.0 : 2.0;
+    const double roomK = q >= 3 ? 5.0 : 3.2;
+    if (k < (q >= 3 ? 1.0 : 1.5)) { dropDetail(); return; }
     // do passo mais fino ao mais grosso: o primeiro cujo pedaço cabe (de muito perto, a folga do relevo que sobe
     // da beira cresce e o mais fino estourava o limite, e o detalhe sumia de vez: litoral em escadinha no zoom máximo)
     const double screenPx = double(width()) * height() * devicePixelRatioF() * devicePixelRatioF();
     double ds = 0;
     Geom g;
     QRect r;
-    for (double div = std::min(4.0, std::ceil(k - 0.2)); div >= 2; div -= 1) {
+    for (double div = std::max(minDiv, std::min(maxDiv, std::ceil(k - 0.2))); div >= minDiv; div -= 1) {
         const double tryDs = 1.0 / div;
         View v = currentView(1);
         v.step = tryDs;
@@ -322,7 +327,7 @@ void Canvas::requestDetail()
         const QRect tr = QRect(QPoint(int(std::floor(u0)) - mx, int(std::floor(v0)) - mx),
                                QPoint(int(std::ceil(u1)) + mx, int(std::ceil(v1 + tg.extF)) + mx)).intersected(QRect(0, 0, tg.W, tg.H));
         if (tr.isEmpty()) continue;
-        if (double(tr.width()) * tr.height() <= screenPx * 3.2 || div <= 2) { ds = tryDs; g = tg; r = tr; break; }
+        if (double(tr.width()) * tr.height() <= screenPx * roomK || div <= minDiv) { ds = tryDs; g = tg; r = tr; break; }
     }
     if (ds <= 0 || r.isEmpty() || double(r.width()) * r.height() > screenPx * 5) { dropDetail(); return; }
     if (m_detail && m_detail->g.step == g.step && m_detail->g.ang == g.ang && m_detail->g.sq == g.sq && m_detail->r.contains(r)) return;
@@ -475,7 +480,7 @@ void Canvas::zoomBy(double f, QPointF at)
     m_panY = at.y() - (at.y() - m_panY) * (nz / m_zoom);
     m_zoom = nz;
     m_lastMove.restart();
-    if (m_base && m_base->g.step != lodStep()) m_settle.start();   // chegou perto (ou longe): outro nível de detalhe
+    if (m_base && m_base->g.step != baseStep()) m_settle.start();   // chegou perto (ou longe): outro nível de detalhe
     update();
     emit viewChanged();
 }
@@ -607,6 +612,17 @@ QImage Canvas::exportImage(double scale, const std::function<void(QPainter&)>& e
 {
     m_avoid = avoid;
     waitIdle();
+    // terreno em Baixa ou Média na tela: o PNG (pro livro) pinta na Alta, e a tela volta como estava
+    const bool coarse = m_opts.terrainQ < 2 && m_world && !m_world->backdrop && m_base && baseMatches();
+    std::shared_ptr<Render> keepBase;
+    QImage keepPresent;
+    if (coarse) {
+        keepBase = m_base;
+        keepPresent = m_present;
+        m_base = std::make_shared<Render>(carto::render(*m_world, currentView(lodStep()), prepareRealms()));
+        m_present = QImage(m_base->g.W, m_base->g.H, QImage::Format_ARGB32_Premultiplied);
+        refreshLight();
+    }
     QImage img(qRound(width() * scale), qRound(height() * scale), QImage::Format_ARGB32_Premultiplied);
     img.setDevicePixelRatio(scale);
     img.fill(Qt::transparent);
@@ -616,6 +632,10 @@ QImage Canvas::exportImage(double scale, const std::function<void(QPainter&)>& e
     m_avoid.clear();
     if (extra) extra(p);
     p.end();
+    if (coarse) {
+        m_base = keepBase;
+        m_present = keepPresent;
+    }
     return img;
 }
 
@@ -687,7 +707,7 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     } else if (live) {
         // girando em 3D: os azulejos guardados são de outro ângulo; o chão e o que fica de pé vão numa
         // camada do tamanho da tela (imagem: as plantas entram pelo caminho rápido, direto nos pixels)
-        const double dpr = devicePixelRatioF();
+        const double dpr = devicePixelRatioF() * spriteScale();
         const QSize px(qRound(sz.width() * dpr), qRound(sz.height() * dpr));
         if (m_spinLayer.size() != px) m_spinLayer = QImage(px, QImage::Format_ARGB32_Premultiplied);
         m_spinLayer.setDevicePixelRatio(dpr);
@@ -697,10 +717,11 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
             q.setRenderHint(QPainter::Antialiasing);
             SceneState ss = st;
             ss.spin = true;
+            ss.aliased = m_opts.spriteQ <= 0;
             if (ss.info()) { m_scene.drawFields(q, ss); m_scene.drawRoads(q, ss); }
             if (!m_showClimate) m_scene.drawSprites(q, ss);
         }
-        p.drawImage(QPointF(0, 0), m_spinLayer);
+        p.drawImage(QRectF(QPointF(0, 0), QSizeF(sz)), m_spinLayer);   // destino explícito: a camada pode ter menos pixels que a tela
     } else drawGroundLayer(p, st, sz);
     // girando ou inclinando, a pintura ainda é da vista anterior: o que pisa no chão espera ela chegar
     const bool steady = matches || exporting;
@@ -894,7 +915,7 @@ QString roadsSig(const UserLayer& U)
 QImage Canvas::renderTile(const SceneState& st, int i, int j)
 {
     CARTO_PROF("azulejo do chão");
-    const double dpr = devicePixelRatioF();
+    const double dpr = devicePixelRatioF() * spriteScale();   // qualidade dos sprites: menos pixels, serrilhado ao esticar
     QImage img(qRound(kTile * dpr), qRound(kTile * dpr), QImage::Format_ARGB32_Premultiplied);
     img.setDevicePixelRatio(dpr);
     img.fill(Qt::transparent);
@@ -906,6 +927,7 @@ QImage Canvas::renderTile(const SceneState& st, int i, int j)
     s2.clip = QRectF(0, 0, kTile, kTile);
     s2.planKey = m_sceneKey;
     s2.roadKey = m_roadKey;
+    s2.aliased = m_opts.spriteQ <= 0;
     if (s2.info()) { m_scene.drawFields(q, s2); m_scene.drawRoads(q, s2); }
     if (!m_showClimate) m_scene.drawSprites(q, s2);
     q.end();
@@ -926,7 +948,7 @@ void Canvas::drawGroundLayer(QPainter& p, const SceneState& st, QSize sz)
         p.setRenderHint(QPainter::SmoothPixmapTransform);
         for (auto it = m_tiles.cbegin(); it != m_tiles.cend(); ++it) {
             const int i = static_cast<int>(it.key() >> 32), j = static_cast<int>(static_cast<qint32>(it.key() & 0xffffffff));
-            p.drawImage(QPointF(m_cachePanX + static_cast<double>(i) * kTile, m_cachePanY + static_cast<double>(j) * kTile), it.value());
+            p.drawImage(QRectF(m_cachePanX + static_cast<double>(i) * kTile, m_cachePanY + static_cast<double>(j) * kTile, kTile, kTile), it.value());
         }
         p.restore();
         m_tileTimer.stop();
@@ -1001,7 +1023,9 @@ void Canvas::drawGroundLayer(QPainter& p, const SceneState& st, QSize sz)
         for (int i = i0; i <= i1; i++) {
             auto it = m_tiles.find(tileId(i, j));
             if (it == m_tiles.end()) it = m_tiles.insert(tileId(i, j), renderTile(st, i, j));
-            p.drawImage(QPointF(m_panX + static_cast<double>(i) * kTile, m_panY + static_cast<double>(j) * kTile), it.value());
+            // destino explícito: com a qualidade dos sprites abaixo da Alta, o azulejo tem menos pixels que a
+            // tela, e o drawImage(QPointF) com devicePixelRatio < 1 colava só um canto dele
+            p.drawImage(QRectF(m_panX + static_cast<double>(i) * kTile, m_panY + static_cast<double>(j) * kTile, kTile, kTile), it.value());
         }
     // a volta da tela, adiantada aos poucos (um azulejo por vez entre os quadros)
     bool ring = false;
@@ -1067,6 +1091,39 @@ int Canvas::lodStep() const
 {
     const double k = m_zoom * devicePixelRatioF();   // px da tela por px do mundo
     return k >= 0.75 ? 1 : k >= 0.42 ? 2 : k >= 0.28 ? 3 : 4;
+}
+
+// Qualidade do terreno (25/11/2026, teste do Pe num Pentium T3400: um continente levava 20-25 s pra
+// ficar nítido): Baixa pinta com metade da resolução (4× menos pixels), Média com 2/3, Ultra fica
+// nítida de mais longe. O PNG exportado sai sempre na Alta (ver exportImage).
+double Canvas::baseStep() const
+{
+    const int s = lodStep();
+    switch (m_opts.terrainQ) {
+    case 0: return s * 2.0;
+    case 1: return s * 1.5;
+    case 3: return std::max(1, s - 1);
+    default: return s;
+    }
+}
+
+double Canvas::spriteScale() const
+{
+    switch (m_opts.spriteQ) {
+    case 0: return 0.5;
+    case 1: return 0.75;
+    case 3: return 1.5;
+    default: return 1.0;
+    }
+}
+
+void Canvas::qualityChanged()
+{
+    m_tiles.clear();
+    m_sceneKey.clear();     // os azulejos voltam na resolução nova
+    dropDetail();
+    requestFull();
+    update();
 }
 
 QTransform Canvas::baseTransform() const
@@ -1246,7 +1303,7 @@ void Canvas::startStroke(QPointF pos, bool inverse)
     waitIdle();
     if (!m_base || !baseMatches()) {
         // a pintura precisa ser da vista de agora pra repintar só o pedaço
-        auto r = std::make_shared<Render>(carto::render(*m_world, currentView(lodStep()), prepareRealms()));
+        auto r = std::make_shared<Render>(carto::render(*m_world, currentView(baseStep()), prepareRealms()));
         adoptBase(r);
     }
     // o relevo mais alto de antes: quem a pincelada destapar atrás dele também se refaz

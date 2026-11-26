@@ -71,6 +71,10 @@ struct ToolOpts {
     bool sprites = true;
     bool frame = false;     // moldura: onde a área desenhável do mapa começa e termina
     bool spinLight = false; // giro leve: girar só torce a pintura pronta (o de antes, pra computador fraco)
+    // qualidade (Ajustes do mapa), separada pro terreno e pros sprites: 0 baixa · 1 média · 2 alta · 3 ultra.
+    // Alta é o desenho de sempre. Nada some do mapa: só muda em quantos pixels se pinta.
+    int terrainQ = 2;
+    int spriteQ = 2;
 };
 
 class Canvas : public QWidget {
@@ -119,6 +123,7 @@ public:
     void setBrushStrength(double s) { m_brushStr = s; }
     ToolOpts& opts() { return m_opts; }
     void optsChanged();               // a doca mudou uma opção
+    void qualityChanged();            // a qualidade do terreno ou dos sprites mudou: pinta de novo
     QString selArt() const { return m_selArt; }
     void setSelArt(const QString& id);
     Art* selectedArt();
@@ -184,7 +189,7 @@ protected:
     void leaveEvent(QEvent*) override;
 
 private:
-    View currentView(int step) const;
+    View currentView(double step) const;
     const RealmPaint* prepareRealms();
     void paintPreview(int step);
     void requestFull();
@@ -370,6 +375,8 @@ private:
     std::shared_ptr<std::atomic<bool>> m_cancel;   // da pintura de fundo em curso
     bool baseMatches() const;
     int lodStep() const;                           // px do mundo por px pintado, pelo zoom (de longe não precisa de tudo)
+    double baseStep() const;                       // o lodStep com a qualidade do terreno
+    double spriteScale() const;                    // fração da resolução da tela em que os sprites se pintam
     QTransform baseTransform() const;              // imagem pintada → tela (gira e achata se a vista mudou)
     Path m_ruler;                  // pontos da régua (mundo)
     bool m_rulerDone = false;

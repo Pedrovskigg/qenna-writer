@@ -624,6 +624,35 @@ void Panel::buildSettings()
         scheduleSave();
     });
     l->addLayout(row);
+    // Qualidade, separada pro terreno e pros sprites (ideia do Pe, 25/11/2026, depois do teste num
+    // Pentium de 2008): dá pra deixar o terreno bonito e economizar nas árvores, ou o contrário.
+    const QStringList qKeys = { QStringLiteral("0"), QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3") };
+    const QStringList qLabels = { tr("Baixa"), tr("Média"), tr("Alta"), tr("Ultra") };
+    auto* tqcap = new QLabel(tr("QUALIDADE DO TERRENO"), m_settings);
+    tqcap->setObjectName(QStringLiteral("cartoCaption"));
+    l->addWidget(tqcap);
+    l->addLayout(newSeg(m_settings, qKeys, qLabels,
+                        { tr("Metade da resolução: bem mais leve, mais pixelado"), tr("Um meio-termo entre leveza e nitidez"),
+                          tr("O desenho de sempre"), tr("Mais nítido de perto e de longe, e mais pesado") },
+                        m_terrainQBtns, [this](const QString& v) {
+                            m_canvas->opts().terrainQ = v.toInt();
+                            QSettings().setValue(QStringLiteral("carto/terrainQ"), v.toInt());
+                            m_canvas->qualityChanged();
+                            applyUiMode();
+                        }));
+    auto* sqcap = new QLabel(tr("QUALIDADE DOS SPRITES"), m_settings);
+    sqcap->setObjectName(QStringLiteral("cartoCaption"));
+    sqcap->setToolTip(tr("Árvores, casas, castelos e tudo o que fica de pé no mapa. A quantidade não muda, só a nitidez."));
+    l->addWidget(sqcap);
+    l->addLayout(newSeg(m_settings, qKeys, qLabels,
+                        { tr("Metade dos pixels: bem mais leve, serrilhado"), tr("Um meio-termo entre leveza e nitidez"),
+                          tr("O desenho de sempre"), tr("Mais pixels que a tela: contornos mais lisos, e mais pesado") },
+                        m_spriteQBtns, [this](const QString& v) {
+                            m_canvas->opts().spriteQ = v.toInt();
+                            QSettings().setValue(QStringLiteral("carto/spriteQ"), v.toInt());
+                            m_canvas->qualityChanged();
+                            applyUiMode();
+                        }));
     auto* ucap = new QLabel(tr("INTERFACE"), m_settings);
     ucap->setObjectName(QStringLiteral("cartoCaption"));
     l->addWidget(ucap);
