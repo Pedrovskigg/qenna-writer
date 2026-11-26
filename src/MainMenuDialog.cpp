@@ -1393,17 +1393,19 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     titleCol->addWidget(m_headingLabel);
     titleCol->addWidget(m_countLabel);
     header->addLayout(titleCol);
-    header->addSpacing(16);
+    header->addSpacing(10);
 
-    // As vistas cabem num botão só, colado no título ("Continuar ▾"), que
-    // abre a lista das sete. Eram sete botões soltos à direita; o Pe pediu
-    // um só para aliviar a tela (26/11/2026). Mesma ordem do enum ViewMode.
+    // As vistas cabem num ícone pequeno colado no título, que abre a lista
+    // das sete. Eram sete botões soltos à direita; o Pe pediu um botão só
+    // para aliviar a tela e depois "bem mais discreto, só um iconezinho"
+    // (26/11/2026). Mesma ordem do enum ViewMode.
     m_viewNames = { tr("Continuar"), tr("Vitrine"), tr("Cinema"),
                     tr("Seu dia"), tr("Estante"), tr("Pilha"), tr("Destaque") };
     m_viewPick = new QPushButton(m_header);
     m_viewPick->setObjectName(QStringLiteral("menuViewPick"));
     m_viewPick->setCursor(Qt::PointingHandCursor);
-    m_viewPick->setToolTip(tr("Trocar a vista da Biblioteca"));
+    m_viewPick->setFixedSize(28, 28);
+    m_viewPick->setIconSize(QSize(16, 16));
     m_viewMenu = new QMenu(m_viewPick);
     auto* group = new QActionGroup(m_viewMenu);
     for (int i = 0; i < m_viewNames.size(); ++i) {
@@ -1419,21 +1421,20 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
         m_viewMenu->setMinimumWidth(m_viewPick->width());
         m_viewMenu->popup(m_viewPick->mapToGlobal(QPoint(0, m_viewPick->height() + 4)));
     });
-    m_viewPick->setText(m_viewNames.value(int(m_viewMode)) + QStringLiteral("  \u25BE"));
-    header->addWidget(m_viewPick, 0, Qt::AlignVCenter);
-    header->addSpacing(20);
+    m_viewPick->setToolTip(tr("Trocar a vista da Biblioteca (agora: %1)").arg(m_viewNames.value(int(m_viewMode))));
+    header->addWidget(m_viewPick, 0, Qt::AlignTop);
+    header->addStretch(1);
+    col->addWidget(m_header);
 
-    // --- Recados do autor: na mesma linha do título, ocupando o resto da
-    // largura (em qualquer vista). Some quando não há recado ou quando a
-    // pessoa fecha no ×; ver Recados.h.
-    m_recadosStrip = new RecadosStrip(m_header);
+    // --- Recados do autor: uma linha logo abaixo do título, em cima da
+    // vista (qualquer uma). Some quando não há recado ou quando a pessoa
+    // fecha no ×; ver Recados.h.
+    m_recadosStrip = new RecadosStrip(this);
     connect(m_recadosStrip, &RecadosStrip::readRequested, this, [this]() {
         RecadosDialog dlg(this);
         dlg.exec();
     });
-    header->addWidget(m_recadosStrip, 1, Qt::AlignVCenter);
-    header->addStretch(0);
-    col->addWidget(m_header);
+    col->addWidget(m_recadosStrip);
     RecadosFeed::instance()->fetch();
 
     // --- Área da vista ativa: cada vista é montada do zero em
@@ -1475,7 +1476,7 @@ void MainMenuDialog::setViewMode(ViewMode mode)
     const bool changed = (mode != m_viewMode);
     m_viewMode = mode;
     for (int i = 0; i < m_viewActions.size(); ++i) m_viewActions[i]->setChecked(i == int(mode));
-    if (m_viewPick) m_viewPick->setText(m_viewNames.value(int(mode)) + QStringLiteral("  \u25BE"));
+    if (m_viewPick) m_viewPick->setToolTip(tr("Trocar a vista da Biblioteca (agora: %1)").arg(m_viewNames.value(int(mode))));
     if (changed && m_viewHost && m_viewHost->isVisible()) PanelMotion::swapOut(m_viewHost);
     populateActiveView();
 
@@ -1778,6 +1779,10 @@ void MainMenuDialog::populateActiveView()
 
 void MainMenuDialog::refreshActionIcons()
 {
+    if (m_viewPick) {
+        const QColor ic(Theme::textMuted()), ih(Theme::textBright());
+        m_viewPick->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"), ic, ih, ih, QSize(16, 16)));
+    }
     if (m_newBtn) {
         // Ícone claro fixo sobre o preenchimento de acento (independe do tema).
         const QColor onAccent(245, 247, 246);
@@ -2227,16 +2232,12 @@ void MainMenuDialog::applyDialogStyle()
         }
         QPushButton#menuViewToggle:hover { color: %3; border-color: %9; }
         QPushButton#menuViewPick {
-            background: %5;
-            color: %3;
-            border: 1px solid %6;
+            background: transparent;
+            border: 1px solid transparent;
             border-radius: @radius-control;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            min-height: 22px;
+            padding: 0;
         }
-        QPushButton#menuViewPick:hover { border-color: %9; background: %7; }
+        QPushButton#menuViewPick:hover { border-color: %6; background: %7; }
         QPushButton#menuViewToggle:checked {
             background: %7;
             color: %3;

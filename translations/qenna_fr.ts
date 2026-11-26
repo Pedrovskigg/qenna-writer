@@ -1552,27 +1552,27 @@ Profitez-en.</translation>
 <context>
     <name>BookCard</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1602"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1603"/>
         <source>Abrir automaticamente</source>
         <translation>Ouvrir automatiquement</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1605"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1606"/>
         <source>Editar projeto</source>
         <translation>Modifier le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1606"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1607"/>
         <source>Criar capa</source>
         <translation>Créer une couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1608"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1609"/>
         <source>Remover dos recentes</source>
         <translation>Retirer des récents</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1609"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1610"/>
         <source>Excluir projeto</source>
         <translation>Supprimer le projet</translation>
     </message>
@@ -12846,9 +12846,15 @@ En cas de doute, les sections ci-dessous expliquent tout.</translation>
         <translation>Bibliothèque</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1403"/>
         <source>Estante</source>
         <translation>Étagère</translation>
+    </message>
+    <message>
+        <location filename="../src/MainMenuDialog.cpp" line="1424"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1479"/>
+        <source>Trocar a vista da Biblioteca (agora: %1)</source>
+        <translation>Changer la vue de la Bibliothèque (actuelle : %1)</translation>
     </message>
     <message>
         <source>Lista</source>
@@ -12859,7 +12865,7 @@ En cas de doute, les sections ci-dessous expliquent tout.</translation>
         <translation type="vanished">Rayonnage</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1403"/>
         <source>Pilha</source>
         <translation>Pile</translation>
     </message>
@@ -12878,12 +12884,12 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucun projet pour l&apos;instant</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1664"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1665"/>
         <source>1 projeto</source>
         <translation>1 projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1664"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1665"/>
         <source>%1 projetos</source>
         <translation>%1 projets</translation>
     </message>
@@ -12896,18 +12902,18 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucune</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1815"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1869"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1820"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1874"/>
         <source>Erro</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1816"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1821"/>
         <source>Não foi possível ler o projeto para edição.</source>
         <translation>Impossible de lire le projet pour le modifier.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1870"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1875"/>
         <source>Não foi possível salvar as alterações:
 %1</source>
         <translation>Impossible d&apos;enregistrer les modifications&#xa0;:
@@ -12930,57 +12936,56 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation type="vanished">Exécutez &apos;npm run build&apos; dans le dossier mira-cover pour activer le créateur de couvertures en mode développement.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1401"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
         <source>Continuar</source>
         <translation>Continuer</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1401"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
         <source>Vitrine</source>
         <translation>Vitrine</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1401"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
         <source>Cinema</source>
         <translation>Cinéma</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1403"/>
         <source>Seu dia</source>
         <translation>Votre journée</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1402"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1403"/>
         <source>Destaque</source>
         <translation>À la une</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1406"/>
         <source>Trocar a vista da Biblioteca</source>
-        <translation>Changer la vue de la Bibliothèque</translation>
+        <translation type="vanished">Changer la vue de la Bibliothèque</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1529"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1530"/>
         <source>Capítulo %1</source>
         <translation>Chapitre %1</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1534"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1535"/>
         <source>cap. %1 · %2</source>
         <translation>chap. %1 · %2</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1599"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1600"/>
         <source>Abrir</source>
         <translation>Ouvrir</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1600"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1601"/>
         <source>Continuar de onde parei</source>
         <translation>Reprendre là où j&apos;en étais</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1997"/>
+        <location filename="../src/MainMenuDialog.cpp" line="2002"/>
         <source>Cor sólida do tema</source>
         <translation>Couleur unie du thème</translation>
     </message>
