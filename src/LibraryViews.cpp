@@ -1296,6 +1296,8 @@ protected:
 
     void paintEvent(QPaintEvent* ev) override
     {
+        QElapsedTimer cost;
+        cost.start();
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);
         p.setRenderHint(QPainter::SmoothPixmapTransform, true);
@@ -1341,7 +1343,15 @@ protected:
         QVector<int> order(m_items.size());
         for (int k = 0; k < order.size(); ++k) order[k] = k;
         std::sort(order.begin(), order.end(), [this](int a, int b) { return m_items[a].to.z < m_items[b].to.z; });
-        for (int k : order) paintBook(p, k, s, now);
+        const QRect dirty = ev->rect();
+        for (int k : order) {
+            // livro parado fora da área a redesenhar: não precisa pintar de novo
+            const Item& it = m_items.at(k);
+            const bool still = m_moveStart < 0 && it.bobAmp < 0.01 && std::abs(it.ry - it.try_) < 0.05
+                && std::abs(it.rx - it.trx) < 0.05 && std::abs(it.tz - it.ttz) < 0.1;
+            if (still && !it.bounds.isEmpty() && !dirty.intersects(it.bounds.toAlignedRect().adjusted(-6, -6, 6, 6))) continue;
+            paintBook(p, k, s, now);
+        }
 
         // Vinheta no canto de baixo à direita: a fileira some em vez de acabar seca.
         {
@@ -1364,6 +1374,9 @@ protected:
         }
 
         paintText(p, s);
+        // Quanto o quadro custa (média móvel): é o que decide o ritmo da flutuação.
+        const qreal ms = cost.nsecsElapsed() / 1e6;
+        m_paintMs = m_paintMs <= 0 ? ms : m_paintMs * 0.9 + ms * 0.1;
     }
 
     void mouseMoveEvent(QMouseEvent* e) override
@@ -1548,7 +1561,7 @@ private:
         if (m_moveStart >= 0 || m_textStart >= 0 || m_bgStart >= 0) return true;
         for (const Item& it : m_items) {
             if (std::abs(it.ry - it.try_) > 0.05 || std::abs(it.rx - it.trx) > 0.05 || std::abs(it.tz - it.ttz) > 0.1) return true;
-            const qreal amp = it.to.floating ? 1.0 : 0.0;
+            const qreal amp = (it.to.floating && motion() && !m_floatOff) ? 1.0 : 0.0;
             if (std::abs(it.bobAmp - amp) > 0.01) return true;
         }
         return false;
@@ -1563,7 +1576,7 @@ private:
             it.ry += (it.try_ - it.ry) * k;
             it.rx += (it.trx - it.rx) * k;
             it.tz += (it.ttz - it.tz) * k;
-            const qreal amp = (it.to.floating && motion()) ? 1.0 : 0.0;
+            const qreal amp = (it.to.floating && motion() && !m_floatOff) ? 1.0 : 0.0;
             it.bobAmp += (amp - it.bobAmp) * (motion() ? 1.0 - std::pow(1.0 - 0.06, dt) : 1.0);
         }
         if (m_moveStart >= 0 && now - m_moveStart >= kMoveMs) {
@@ -1582,9 +1595,14 @@ private:
             update();
             return;
         }
-        if (motion() && m_entries.size() > 0) {
-            // Só flutuando: repinta em volta dos livros que se mexem.
-            if (m_tick->interval() != 33) m_tick->setInterval(33);
+        if (motion() && !m_floatOff && m_entries.size() > 0) {
+            // Só flutuando: repinta em volta dos livros que se mexem, a 60
+            // quadros. Em computador fraco o próprio custo do quadro freia:
+            // 30 quadros, e se nem assim der, os livros param de flutuar
+            // (um Pentium não fica a 100% só por estar no menu).
+            if (m_paintMs > 18) { m_floatOff = true; update(); return; }
+            const int iv = m_paintMs < 7 ? 16 : 33;
+            if (m_tick->interval() != iv) m_tick->setInterval(iv);
             QRegion reg;
             for (const Item& it : m_items)
                 if (it.to.floating && !it.bounds.isEmpty()) reg += it.bounds.toAlignedRect().adjusted(-24, -24, 24, 70);
@@ -1942,6 +1960,8 @@ private:
     QPixmap m_bgScaled, m_prevScaled;
     QImage m_vignette;
     QColor m_vignetteColor;
+    qreal m_paintMs = 0;
+    bool m_floatOff = false;
 };
 
 } // namespace
