@@ -47,6 +47,7 @@ include(cmake/LibMyPaint.cmake)
 
 qt_add_executable(qenna-writer
     src/main.cpp
+    src/PerfProbe.cpp
     src/CrashLogger.cpp
     src/CrashLogger.h
     src/MainWindow.cpp

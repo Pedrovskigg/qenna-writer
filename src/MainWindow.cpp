@@ -10452,12 +10452,13 @@ void MainWindow::syncDeskPages()
 // Windows, pra conferir.
 static bool deskPaintsPageShadow()
 {
-#ifdef Q_OS_MACOS
-    return Theme::pageShadowEnabled();
-#else
-    static const bool forced = qEnvironmentVariableIntValue("QENNA_DESK_SHADOW") == 1;
-    return forced && Theme::pageShadowEnabled();
-#endif
+    // Em todos os sistemas desde 25/11/2026: o QGraphicsDropShadowEffect refazia
+    // o desfoque da folha inteira a cada tecla e a cada piscada do cursor (o
+    // texto tremia e a digitação arrastava num Pentium T3400 no Linux).
+    // QENNA_DESK_SHADOW=0 volta ao efeito antigo, para comparar.
+    static const bool legacy = qEnvironmentVariableIsSet("QENNA_DESK_SHADOW")
+                               && qEnvironmentVariableIntValue("QENNA_DESK_SHADOW") == 0;
+    return !legacy && Theme::pageShadowEnabled();
 }
 
 void MainWindow::applyPageShadow()

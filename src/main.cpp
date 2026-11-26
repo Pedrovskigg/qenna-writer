@@ -1,4 +1,5 @@
 #include <QApplication>
+#include "PerfProbe.h"
 #include "AppPaths.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -507,7 +508,7 @@ int main(int argc, char *argv[])
     UiScale::applyAppZoomBeforeApp(qEnvironmentVariableIsSet("QENNA_FRESH_PROFILE")
         ? QStringLiteral("Qenna Writer (Fresh Test)") : QStringLiteral("Qenna Writer"));
 
-    QApplication app(argc, argv);
+    QennaApplication app(argc, argv);   // QENNA_PERF=1 liga o cronômetro (PerfProbe.h)
 
     // Modo de teste: QENNA_FRESH_PROFILE=1 faz o QSettings (registro do
     // Windows) apontar pra uma chave separada, sempre vazia — simula "abrir o
