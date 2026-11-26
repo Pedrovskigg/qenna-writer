@@ -1,5 +1,8 @@
 #pragma once
 
+class QAction;
+class QMenu;
+
 #include <QDialog>
 #include <QHash>
 #include <QImage>
@@ -153,8 +156,11 @@ private:
     QLabel* m_countLabel = nullptr;
     UpdateBanner* m_updateBanner = nullptr;
     RecadosStrip* m_recadosStrip = nullptr;
-    QWidget* m_header = nullptr;          // título + botões das vistas (some sem projeto)
-    QList<QPushButton*> m_viewBtns;       // índice = ViewMode
+    QWidget* m_header = nullptr;          // título + botão das vistas + recados
+    QPushButton* m_viewPick = nullptr;    // "Continuar ▾": abre a lista das vistas
+    QMenu* m_viewMenu = nullptr;
+    QList<QAction*> m_viewActions;        // índice = ViewMode
+    QStringList m_viewNames;
     QWidget* m_viewHost = nullptr;        // onde a vista ativa mora
     QWidget* m_currentView = nullptr;     // vista montada agora (menos a Pilha)
     StackView* m_stackView = nullptr;     // pilha — fixa, só esconde

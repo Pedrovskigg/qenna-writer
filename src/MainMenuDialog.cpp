@@ -51,6 +51,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QLinearGradient>
+#include <QActionGroup>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -1392,36 +1393,47 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     titleCol->addWidget(m_headingLabel);
     titleCol->addWidget(m_countLabel);
     header->addLayout(titleCol);
-    header->addStretch(1);
+    header->addSpacing(16);
 
-    // Mesma ordem do enum ViewMode: o índice do botão é o modo.
-    const QStringList names = { tr("Continuar"), tr("Vitrine"), tr("Cinema"),
-                                tr("Seu dia"), tr("Estante"), tr("Pilha"), tr("Destaque") };
-    auto* toggleWrap = new QHBoxLayout();
-    toggleWrap->setSpacing(6);
-    for (int i = 0; i < names.size(); ++i) {
-        auto* b = new QPushButton(names.at(i), m_header);
-        b->setObjectName(QStringLiteral("menuViewToggle"));
-        b->setCheckable(true);
-        b->setCursor(Qt::PointingHandCursor);
-        b->setChecked(i == int(m_viewMode));
+    // As vistas cabem num botão só, colado no título ("Continuar ▾"), que
+    // abre a lista das sete. Eram sete botões soltos à direita; o Pe pediu
+    // um só para aliviar a tela (26/11/2026). Mesma ordem do enum ViewMode.
+    m_viewNames = { tr("Continuar"), tr("Vitrine"), tr("Cinema"),
+                    tr("Seu dia"), tr("Estante"), tr("Pilha"), tr("Destaque") };
+    m_viewPick = new QPushButton(m_header);
+    m_viewPick->setObjectName(QStringLiteral("menuViewPick"));
+    m_viewPick->setCursor(Qt::PointingHandCursor);
+    m_viewPick->setToolTip(tr("Trocar a vista da Biblioteca"));
+    m_viewMenu = new QMenu(m_viewPick);
+    auto* group = new QActionGroup(m_viewMenu);
+    for (int i = 0; i < m_viewNames.size(); ++i) {
+        QAction* a = m_viewMenu->addAction(m_viewNames.at(i));
+        a->setCheckable(true);
+        a->setChecked(i == int(m_viewMode));
+        group->addAction(a);
         const ViewMode mode = ViewMode(i);
-        connect(b, &QPushButton::clicked, this, [this, mode]() { setViewMode(mode); });
-        toggleWrap->addWidget(b);
-        m_viewBtns.append(b);
+        connect(a, &QAction::triggered, this, [this, mode]() { setViewMode(mode); });
+        m_viewActions.append(a);
     }
-    header->addLayout(toggleWrap);
-    col->addWidget(m_header);
+    connect(m_viewPick, &QPushButton::clicked, this, [this]() {
+        m_viewMenu->setMinimumWidth(m_viewPick->width());
+        m_viewMenu->popup(m_viewPick->mapToGlobal(QPoint(0, m_viewPick->height() + 4)));
+    });
+    m_viewPick->setText(m_viewNames.value(int(m_viewMode)) + QStringLiteral("  \u25BE"));
+    header->addWidget(m_viewPick, 0, Qt::AlignVCenter);
+    header->addSpacing(20);
 
-    // --- Recados do autor: uma linha logo abaixo do título, em qualquer vista
-    // (é o único lugar que existe igual nas seis). Some quando não há recado
-    // ou quando a pessoa fecha no ×; ver Recados.h.
-    m_recadosStrip = new RecadosStrip(this);
+    // --- Recados do autor: na mesma linha do título, ocupando o resto da
+    // largura (em qualquer vista). Some quando não há recado ou quando a
+    // pessoa fecha no ×; ver Recados.h.
+    m_recadosStrip = new RecadosStrip(m_header);
     connect(m_recadosStrip, &RecadosStrip::readRequested, this, [this]() {
         RecadosDialog dlg(this);
         dlg.exec();
     });
-    col->addWidget(m_recadosStrip);
+    header->addWidget(m_recadosStrip, 1, Qt::AlignVCenter);
+    header->addStretch(0);
+    col->addWidget(m_header);
     RecadosFeed::instance()->fetch();
 
     // --- Área da vista ativa: cada vista é montada do zero em
@@ -1462,7 +1474,8 @@ void MainMenuDialog::setViewMode(ViewMode mode)
 {
     const bool changed = (mode != m_viewMode);
     m_viewMode = mode;
-    for (int i = 0; i < m_viewBtns.size(); ++i) m_viewBtns[i]->setChecked(i == int(mode));
+    for (int i = 0; i < m_viewActions.size(); ++i) m_viewActions[i]->setChecked(i == int(mode));
+    if (m_viewPick) m_viewPick->setText(m_viewNames.value(int(mode)) + QStringLiteral("  \u25BE"));
     if (changed && m_viewHost && m_viewHost->isVisible()) PanelMotion::swapOut(m_viewHost);
     populateActiveView();
 
@@ -1650,7 +1663,10 @@ void MainMenuDialog::populateActiveView()
     if (m_countLabel) {
         m_countLabel->setText(n == 1 ? tr("1 projeto") : tr("%1 projetos").arg(n));
     }
-    if (m_header) m_header->setVisible(n > 0);
+    // Sem projeto, some o título e o botão das vistas; os recados ficam.
+    if (m_headingLabel) m_headingLabel->setVisible(n > 0);
+    if (m_countLabel) m_countLabel->setVisible(n > 0);
+    if (m_viewPick) m_viewPick->setVisible(n > 0);
 
     auto* hostCol = static_cast<QVBoxLayout*>(m_viewHost->layout());
     const LibraryHooks hooks = makeHooks();
@@ -2210,6 +2226,17 @@ void MainMenuDialog::applyDialogStyle()
             min-height: 22px;
         }
         QPushButton#menuViewToggle:hover { color: %3; border-color: %9; }
+        QPushButton#menuViewPick {
+            background: %5;
+            color: %3;
+            border: 1px solid %6;
+            border-radius: @radius-control;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            min-height: 22px;
+        }
+        QPushButton#menuViewPick:hover { border-color: %9; background: %7; }
         QPushButton#menuViewToggle:checked {
             background: %7;
             color: %3;
