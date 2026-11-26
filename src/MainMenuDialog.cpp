@@ -1423,18 +1423,19 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     });
     m_viewPick->setToolTip(tr("Trocar a vista da Biblioteca (agora: %1)").arg(m_viewNames.value(int(m_viewMode))));
     header->addWidget(m_viewPick, 0, Qt::AlignTop);
-    header->addStretch(1);
-    col->addWidget(m_header);
+    header->addSpacing(24);
 
-    // --- Recados do autor: uma linha logo abaixo do título, em cima da
-    // vista (qualquer uma). Some quando não há recado ou quando a pessoa
+    // --- Recados do autor: na linha do título, ocupando o resto da largura
+    // (em qualquer vista). Some quando não há recado ou quando a pessoa
     // fecha no ×; ver Recados.h.
-    m_recadosStrip = new RecadosStrip(this);
+    m_recadosStrip = new RecadosStrip(m_header);
     connect(m_recadosStrip, &RecadosStrip::readRequested, this, [this]() {
         RecadosDialog dlg(this);
         dlg.exec();
     });
-    col->addWidget(m_recadosStrip);
+    header->addWidget(m_recadosStrip, 1, Qt::AlignVCenter);
+    header->addStretch(0);
+    col->addWidget(m_header);
     RecadosFeed::instance()->fetch();
 
     // --- Área da vista ativa: cada vista é montada do zero em
