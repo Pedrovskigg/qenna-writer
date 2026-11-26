@@ -475,6 +475,7 @@ qt_add_executable(qenna-writer
     src/carto/CartoIcons.cpp
     src/carto/CartoIcons.h
     src/carto/CartoCanvas.cpp
+    src/carto/CartoGl.cpp
     src/carto/CartoCanvas.h
     src/carto/CartoCanvasTools.cpp
     src/carto/CartoCanvasExplore.cpp
@@ -624,7 +625,7 @@ set_source_files_properties(src/AnimOceanDrive.cpp PROPERTIES COMPILE_OPTIONS "-
 set_source_files_properties(src/AnimLeva9.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 # O Mapa pinta milhões de pixels por quadro (gerador, pintor, pincéis): otimizado mesmo no Debug
 set_source_files_properties(src/carto/CartoCore.cpp src/carto/CartoPaint.cpp src/carto/CartoEdit.cpp src/carto/CartoInfo.cpp src/carto/CartoNames.cpp src/carto/CartoSprites.cpp src/carto/CartoSpritesArts.cpp src/carto/CartoSpritesArts4.cpp src/carto/CartoScene.cpp
-                            src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoCanvasExplore.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp src/carto/CartoImage.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+                            src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoCanvasExplore.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp src/carto/CartoImage.cpp src/carto/CartoGl.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 qt_add_translations(qenna-writer
     TS_FILES

@@ -77,6 +77,8 @@ struct ToolOpts {
     int spriteQ = 2;
 };
 
+struct GlTerrain;   // CartoGl.h
+
 class Canvas : public QWidget {
     Q_OBJECT
 public:
@@ -260,6 +262,14 @@ private:
     std::shared_ptr<LiveTile> m_liveTile;
     // o último pedaço fica na tela depois que a mão solta, até a pintura nítida chegar (sem o quadro chapado no meio)
     bool liveOn() const { return m_liveTile && !m_opts.spinLight; }
+    // Giro em OpenGL (experimental, Configurações › Avançado; ver CartoGl.h): a placa desenha o terreno do
+    // pedaço, e o chão dos sprites sai de uma conta rápida. Sem a placa pronta, o giro de sempre.
+    std::shared_ptr<GlTerrain> m_glTerrain;
+    std::shared_ptr<std::atomic<bool>> m_glCancel;
+    bool m_glBusy = false;
+    quint64 glKey() const;
+    void ensureGlTerrain();
+    bool requestLiveGl();
     std::shared_ptr<std::atomic<bool>> m_liveCancel;
     QImage m_spinLayer;   // o chão e o que fica de pé, durante o giro
     void requestLive();

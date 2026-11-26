@@ -1,4 +1,5 @@
 #include "CartoCanvas.h"
+#include "CartoGl.h"
 #include "CartoProf.h"
 
 #include <QCoreApplication>
@@ -151,6 +152,7 @@ void Canvas::waitIdle()
     // a pintura que estiver no meio fica velha com a edição: para agora (e volta depois, já com a edição)
     bool cancelled = false;
     if (m_cancel && m_jobs.load() > 0) { m_cancel->store(true); cancelled = true; }
+    if (m_glCancel) m_glCancel->store(true);   // o preparo do OpenGL lê o mundo: fica pra depois da edição
     m_pool->waitForDone();
     if (cancelled || wasPending) m_settle.start();
     // a pintura que acabou de terminar ainda está na fila: entrega agora (senão ela chega depois e apaga a edição)
@@ -221,11 +223,105 @@ void Canvas::adoptBase(std::shared_ptr<Render> r)
     if (m_showClimate) refreshClimate();
     m_detailTimer.start();
     update();
+    // OpenGL ligado: a malha e a textura ficam prontas antes do próximo giro (pincelando, não)
+    if (GlSpin::enabled() && m_tool != Tool::Brush) QTimer::singleShot(0, this, [this]() { ensureGlTerrain(); });
+}
+
+quint64 Canvas::glKey() const
+{
+    const View v = currentView(1);
+    return qHashMulti(0, quintptr(m_world), m_doc ? m_doc->ver : 0, m_sceneRev, int(v.style), v.info, qRound(m_litHour * 4));
+}
+
+void Canvas::ensureGlTerrain()
+{
+    if (!GlSpin::enabled() || !m_world || m_world->backdrop || m_glBusy) return;
+    const quint64 key = glKey();
+    if (m_glTerrain && m_glTerrain->key == key) return;
+    GlSpin* gl = GlSpin::get();
+    if (!gl) return;
+    m_glBusy = true;
+    const RealmPaint* realms = prepareRealms();
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    m_glCancel = cancel;
+    const View v = currentView(1);
+    World* w = m_world;
+    const std::vector<float> lut = m_lut;
+    const int maxTex = gl->maxTexture();
+    QPointer<Canvas> self(this);
+    m_pool->start([self, w, v, realms, lut, key, maxTex, cancel]() {
+        auto t = prepareGlTerrain(*w, v.style, v.info, realms, lut, key, maxTex, cancel.get());
+        if (!self) return;
+        QMetaObject::invokeMethod(self, [self, t, cancel]() {
+            if (!self) return;
+            self->m_glBusy = false;
+            if (!t || cancel->load()) return;
+            self->m_glTerrain = t;
+            // já manda pra placa (sem o tranco do primeiro quadro do giro)
+            if (GlSpin* gl = GlSpin::get()) gl->upload(*t);
+        }, Qt::QueuedConnection);
+    });
+}
+
+bool Canvas::requestLiveGl()
+{
+    CARTO_PROF("giro na placa");
+    ensureGlTerrain();
+    if (!m_glTerrain || m_glTerrain->key != glKey()) return false;   // ainda preparando: o giro de sempre
+    GlSpin* gl = GlSpin::get();
+    if (!gl) return false;
+    if (gl->uploadedKey() != m_glTerrain->key && !gl->upload(*m_glTerrain)) return false;
+    // o pedaço da tela, com ~1 px da vista por px da tela (a placa não precisa de orçamento)
+    const double k = m_zoom * devicePixelRatioF();
+    const double s = std::max(1.0 / std::max(k, 1e-3), 1.0 / 3.0);
+    View v = currentView(1);
+    v.step = s;
+    const Geom g = viewGeom(*m_world, v);
+    double u0 = 1e18, v0 = 1e18, u1 = -1e18, v1 = -1e18;
+    for (const QPointF c : { QPointF(0, 0), QPointF(width(), 0), QPointF(0, height()), QPointF(width(), height()) }) {
+        const QPointF pl = screenToPlane(c);
+        const double u = pl.x() / s + g.cu, vv = pl.y() / s + g.cv;
+        u0 = std::min(u0, u); u1 = std::max(u1, u); v0 = std::min(v0, vv); v1 = std::max(v1, vv);
+    }
+    const int mx = 16;
+    const QRect r = QRect(QPoint(int(std::floor(u0)) - mx, int(std::floor(v0)) - mx),
+                          QPoint(int(std::ceil(u1)) + mx, int(std::ceil(v1 + g.extF)) + mx)).intersected(QRect(0, 0, g.W, g.H));
+    if (r.isEmpty()) return false;
+    Geom G = g;
+    G.W = r.width(); G.H = r.height();
+    G.cu -= r.left(); G.cv -= r.top();
+    const double liftK = cameraOf(v).liftK;
+    auto L = std::make_shared<LiveTile>();
+    QImage img;
+    {
+        CARTO_PROF("placa: desenhar e ler de volta");
+        if (!gl->render(G, liftK, m_glTerrain->s0, m_glTerrain->cu0, m_glTerrain->cv0, m_glTerrain->ccx, m_glTerrain->ccy, img)) return false;
+    }
+    {
+        CARTO_PROF("placa: converter a imagem");
+        L->img = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    }
+    {
+        CARTO_PROF("placa: chão dos sprites");
+        fastAux(*m_glTerrain, G, liftK, L->aux);
+    }
+    L->g = G;
+    L->r = QRect(0, 0, G.W, G.H);
+    L->ang = m_ang; L->pitch = m_pitch; L->zoom = m_zoom; L->panX = m_panX; L->panY = m_panY;
+    // um pedaço do processador ainda no forno chegaria depois e passaria por cima: fica velho
+    ++m_liveGen;
+    if (m_liveCancel) m_liveCancel->store(true);
+    m_liveSpin = true;
+    m_liveTile = L;
+    m_liveStep = G.step;
+    update();
+    return true;
 }
 
 void Canvas::requestLive()
 {
     if (!m_world || m_world->backdrop) return;
+    if (GlSpin::enabled() && requestLiveGl()) return;   // a placa desenhou o pedaço (senão, o de sempre)
     m_liveSpin = true;
     if (m_liveBusy) { m_livePending = true; return; }   // a que está pintando acaba e já sai a próxima, no ângulo da hora
     m_liveBusy = true; m_livePending = false;

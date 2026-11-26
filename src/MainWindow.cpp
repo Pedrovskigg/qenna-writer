@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "carto/CartoGl.h"
 #include "AnimBackground.h"
 #include "GroupPicker.h"
 #include "PovPicker.h"
@@ -6166,6 +6167,11 @@ void MainWindow::onAddImageRequested()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    // Saída de incêndio do OpenGL do Mapa (pedido do Pe): fechar segurando Shift desliga, e o app volta sem ele
+    if ((QGuiApplication::queryKeyboardModifiers() & Qt::ShiftModifier) && carto::GlSpin::enabled()) {
+        carto::GlSpin::setEnabled(false);
+        CrashLogger::log("OpenGL do Mapa desligado: o app fechou com Shift");
+    }
     // O editor do mapa grava com calma: antes de decidir se há o que salvar, o que está na espera entra.
     if (cartoPanel) cartoPanel->flushPending();
     if (!projectSaver) {

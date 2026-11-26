@@ -1,5 +1,6 @@
 #include <QApplication>
 #include "PerfProbe.h"
+#include "carto/CartoGl.h"
 #include "AppPaths.h"
 #include <QCoreApplication>
 #include <QDir>
@@ -529,6 +530,8 @@ int main(int argc, char *argv[])
     QApplication::setApplicationName(appName);
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
     QApplication::setOrganizationName(appName);
+    // OpenGL do Mapa (experimental): se a sessão anterior usou o OpenGL e não fechou direito, ele volta desligado
+    carto::GlSpin::startupGuard();
     // Tem que ser a primeira leitura do QSettings depois de nomear o app: logo
     // abaixo o idioma detectado já é gravado, e o registro deixaria de parecer
     // vazio numa instalação nova.

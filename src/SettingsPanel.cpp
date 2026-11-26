@@ -1,4 +1,5 @@
 #include "SettingsPanel.h"
+#include "carto/CartoGl.h"
 #include "BugReportView.h"
 #include "BugReports.h"
 #include "ElementCreateDialog.h"
@@ -261,7 +262,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         tr("Tempo e resumo das cenas."),
         tr("Provedor, chave e imagem de personagem. O app nunca exige IA."),
         tr("Cópia zipada do projeto inteiro."),
-        tr("Memória."),
+        tr("Memória e o OpenGL do Mapa."),
         BugFeed::instance()->isAuthor() ? tr("Todos os relatos. Mude o estágio e responda: quem enviou acompanha em \"Meus bugs\".")
                                         : tr("Conte o que deu errado e acompanhe a correção.")
     };
@@ -1101,6 +1102,55 @@ SettingsPanel::SettingsPanel(QWidget* parent)
            tr("O app mantém os documentos abertos recentemente na memória para troca rápida. "
               "Ao atingir o limite, o mais antigo (sem edições pendentes) é descarregado automaticamente."));
     connect(m_maxDocsSpinBox, qOverload<int>(&QSpinBox::valueChanged), this, [this](int v) { emit maxDocsChanged(v); });
+
+    // OpenGL do Mapa (experimental, 26/11/2026): mora aqui e não no mapa, pra dar pra desligar sem abrir o mapa
+    auto* glCheck = new ToggleSwitch(this);
+    glCheck->setChecked(carto::GlSpin::enabled());
+    const bool glAutoOff = QSettings().value(QStringLiteral("carto/glAutoOff"), false).toBool();
+    addRow(Advanced, tr("OpenGL do Mapa (experimental)"),
+           glAutoOff ? tr("Desligado sozinho: o app fechou de repente com ele ligado.")
+                     : tr("A placa de vídeo desenha o terreno enquanto o mapa gira."),
+           glCheck,
+           tr("Enquanto você gira ou inclina o mapa, a placa de vídeo desenha o terreno e o giro fica mais leve. "
+              "Ainda é experimental e pode ser instável em alguns sistemas. Se o mapa bugar, feche o app segurando "
+              "Shift: ele volta com o OpenGL desligado."));
+    auto* glOff = new QPushButton(tr("Desligar OpenGL"), this);
+    glOff->setCursor(Qt::PointingHandCursor);
+    glOff->setEnabled(carto::GlSpin::enabled());
+    addRow(Advanced, tr("Se você ligou o OpenGL e deu merda, desligue aqui:"), QString(), glOff,
+           tr("Desliga o OpenGL do Mapa sem precisar abrir o mapa."));
+    connect(glCheck, &QCheckBox::toggled, this, [this, glCheck, glOff](bool on) {
+        if (on) {
+            QMessageBox box(QMessageBox::Warning, tr("OpenGL do Mapa"),
+                            tr("O OpenGL do Mapa ainda é experimental e pode ser instável em alguns sistemas.\n\n"
+                               "Se o mapa bugar ou ficar estranho, feche o app segurando Shift: ele volta com o "
+                               "OpenGL desligado. Também dá para desligar aqui, nas Configurações, sem abrir o mapa."),
+                            QMessageBox::NoButton, this);
+            QPushButton* yes = box.addButton(tr("Ligar mesmo assim"), QMessageBox::AcceptRole);
+            box.addButton(tr("Cancelar"), QMessageBox::RejectRole);
+            box.exec();
+            if (box.clickedButton() != yes) { QSignalBlocker b(glCheck); glCheck->setChecked(false); return; }
+            carto::GlSpin::setEnabled(true);
+            // já testa a placa: sem OpenGL 3.3, volta a desligar e diz por quê
+            if (!carto::GlSpin::get()) {
+                carto::GlSpin::setEnabled(false);
+                QSignalBlocker b(glCheck);
+                glCheck->setChecked(false);
+                QMessageBox::information(this, tr("OpenGL do Mapa"),
+                    tr("Este computador não tem o OpenGL que o Mapa precisa (3.3 ou mais novo). O giro continua como sempre foi."));
+                return;
+            }
+        } else {
+            carto::GlSpin::setEnabled(false);
+        }
+        glOff->setEnabled(on);
+    });
+    connect(glOff, &QPushButton::clicked, this, [glCheck, glOff]() {
+        carto::GlSpin::setEnabled(false);
+        QSignalBlocker b(glCheck);
+        glCheck->setChecked(false);
+        glOff->setEnabled(false);
+    });
 
     // ---- Montagem: trilho | páginas, e o rodapé embaixo ----
     auto* root = new QVBoxLayout(this);
