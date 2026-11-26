@@ -600,30 +600,8 @@ void Panel::buildSettings()
     auto* t = new QLabel(tr("Ajustes do mapa"), m_settings);
     t->setObjectName(QStringLiteral("cartoCardTitle"));
     l->addWidget(t);
-    auto* cap = new QLabel(tr("VISUAL DO TERRENO"), m_settings);
-    cap->setObjectName(QStringLiteral("cartoCaption"));
-    l->addWidget(cap);
-    auto* row = new QHBoxLayout();
-    row->setSpacing(4);
-    m_styleGroup = new QButtonGroup(m_settings);
-    const QStringList labels = { tr("Mira"), tr("Novo") };
-    const QStringList tips = { tr("O visual original do Mira (V)"), tr("Tons variados, texturas e luz de fim de tarde (V)") };
-    for (int i = 0; i < 2; i++) {
-        auto* b = new QToolButton(m_settings);
-        b->setObjectName(QStringLiteral("cartoSeg"));
-        b->setText(labels[i]); b->setToolTip(tips[i]);
-        b->setCheckable(true);
-        b->setCursor(Qt::PointingHandCursor);
-        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        m_styleGroup->addButton(b, i);
-        row->addWidget(b);
-    }
-    m_styleGroup->button(1)->setChecked(true);
-    connect(m_styleGroup, &QButtonGroup::idClicked, this, [this](int id) {
-        m_canvas->setTerrainStyle(id == 0 ? QStringLiteral("mira") : QStringLiteral("rich"));
-        scheduleSave();
-    });
-    l->addLayout(row);
+    // O visual "Mira" do terreno saiu em 26/11/2026 (pedido do Pe: não valia manter e derrubava o app
+    // no Linux); mapas salvos com ele abrem no visual de hoje (Canvas::setTerrainStyle).
     // Qualidade, separada pro terreno e pros sprites (ideia do Pe, 25/11/2026, depois do teste num
     // Pentium de 2008): dá pra deixar o terreno bonito e economizar nas árvores, ou o contrário.
     const QStringList qKeys = { QStringLiteral("0"), QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3") };
@@ -1035,7 +1013,6 @@ void Panel::openMap(const QString& id)
     m_undo.clear(); m_redo.clear();
     m_canvas->setHour(v.hour, true);
     m_canvas->setTerrainStyle(v.style);
-    m_styleGroup->button(v.style == QLatin1String("mira") ? 0 : 1)->setChecked(true);
     m_canvas->setMode(v.mode == QLatin1String("full") && !m_doc.hasContent() ? QStringLiteral("terrain") : v.mode);
     m_canvas->presetView(v.ang, v.pitch);
     m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
@@ -1427,12 +1404,6 @@ void Panel::keyPressEvent(QKeyEvent* e)
         else m_canvas->setView(m_canvas->angle() + 15 * DEG, m_canvas->pitch(), false);
         break;
     case Qt::Key_P: setPlaying(!m_playTimer->isActive()); break;
-    case Qt::Key_V: {
-        const bool mira = m_canvas->terrainStyle() == QLatin1String("mira");
-        m_styleGroup->button(mira ? 1 : 0)->setChecked(true);
-        m_canvas->setTerrainStyle(mira ? QStringLiteral("rich") : QStringLiteral("mira"));
-        break;
-    }
     case Qt::Key_BracketLeft:
         if (m_tool == QLatin1String("build") && m_canvas->selectedArt()) m_build->scaleSelected(1 / 1.1);   // o tamanho do selecionado
         else m_sizeSlider->setValue(qRound(m_sizeSlider->value() * 0.85));

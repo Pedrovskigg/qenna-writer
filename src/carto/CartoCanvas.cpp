@@ -523,8 +523,11 @@ void Canvas::setMode(const QString& mode)
 }
 void Canvas::setTerrainStyle(const QString& style)
 {
-    if (m_style == style) return;
-    m_style = style;
+    // só sobrou o visual de hoje: o "mira" (saiu em 26/11/2026) de mapa antigo vira "rich"
+    Q_UNUSED(style);
+    const QString s = QStringLiteral("rich");
+    if (m_style == s) return;
+    m_style = s;
     if (m_base) requestFull();
     emit viewChanged();
 }

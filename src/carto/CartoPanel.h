@@ -252,7 +252,6 @@ private:
     NewMap* m_newMap = nullptr;
     // ajustes
     QFrame* m_settings = nullptr;
-    QButtonGroup* m_styleGroup = nullptr;
     galaxy::Panel* m_galaxy = nullptr;
     galaxy::NewGalaxy* m_newGalaxy = nullptr;
     bool m_galaxyOpen = false;
