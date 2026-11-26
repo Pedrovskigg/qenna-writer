@@ -49,6 +49,7 @@ RGB paperOf(Style s)
 RGB inkOf(Style s)
 {
     switch (s) {
+    case Style::Atlas: return { 96, 80, 60 };   // relevo do Atlas em hachura (26/11, pedido do Pe)
     case Style::Parch: return { 74, 48, 30 };
     case Style::Chart: return { 62, 48, 36 };
     case Style::Blue: return { 232, 240, 250 };
@@ -380,7 +381,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     }
     const std::vector<float>& hLift = *hLiftP;
     std::vector<float> hInk;
-    if (ink) {
+    if (ink || atlas) {
         hInk = hLift;
         std::vector<float> ones(NB, 1.0f);
         boxBlurWeighted({ &hInk }, ones, bw, bh, std::max(1, static_cast<int>(jsRound(7.0 / s))));
@@ -699,6 +700,21 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 shade = AMBIENT + 0.02 + dot * DIRECT;
             }
 
+            // Atlas: as montanhas desenhadas em relevo, no estilo da Tinta (26/11/2026, pedido do Pe: "queria que
+            // ele tivesse as montanhas desenhadas em relevo, estilo do Ink"). A encosta na sombra vira hachura
+            // marrom por cima das cores do Atlas; o chão baixo continua liso. O contorno das cristas vem no fim
+            // (inkEdgePass), como na Tinta.
+            double atlasD = 0;
+            if (atlas) {
+                const int oI = std::max(1, static_cast<int>(jsRound(3.0 / s)));
+                const double dI = 1.0 / (2 * oI * s);
+                auto hi = [&](long long j) { return static_cast<double>(hInk[static_cast<size_t>(clampd(static_cast<double>(j), 0, static_cast<double>(NB - 1)))]); };
+                const double gX = (hi(i + oI) - hi(i - oI)) * dI;
+                const double gY = (hi(i + static_cast<long long>(oI) * bw) - hi(i - static_cast<long long>(oI) * bw)) * dI;
+                const double qL = (gX * LX + gY * LY) / LLn / maxH * 100;
+                atlasD = 0.75 * smoothstep(0.22, 1.3, qL) * (0.15 + 0.85 * smoothstep(0.10, 0.34, tc));
+            }
+
             // Tinta: tom da luz (vira hachura) e traço fixo do bioma e da fronteira
             double inkD = 0, inkE = 0, paperN = 1;
             if (ink) {
@@ -781,6 +797,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 double r = cr * ls * tr * tm, gg = cg * ls * tg * tm, b = cb * ls * tb * tm;
                 if (cont > 0) { r += (110 - r) * 0.55 * cont; gg += (78 - gg) * 0.55 * cont; b += (52 - b) * 0.55 * cont; }
                 const bool coast = hh(i - 1) <= 0 || hh(i + 1) <= 0 || hh(i - bw) <= 0 || hh(i + bw) <= 0;
+                if (atlasD > 0.05) { const double kk = hatchK(col, row, atlasD) * 0.9; r += (INKC[0] - r) * kk; gg += (INKC[1] - gg) * kk; b += (INKC[2] - b) * kk; }
                 if (atlas && coast) { r = 120; gg = 110; b = 92; }
                 double cov = 1;
                 if (coast) {
@@ -843,9 +860,13 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                     tmLast = texMul(qxA[iu] + (nqxW - qxA[iu]) * f, qyA[iu] + (nqyW - qyA[iu]) * f);
                 }
                 const double tm = mtnK > 0.001 ? tmLast : 1.0;
-                const double r = (cr * (1 - earth) + 78 * earth) * ls * tr * tm;
-                const double gg = (cg * (1 - earth) + 58 * earth) * ls * tg * tm;
-                const double b = (cb * (1 - earth) + 42 * earth) * ls * tb * tm;
+                double r = (cr * (1 - earth) + 78 * earth) * ls * tr * tm;
+                double gg = (cg * (1 - earth) + 58 * earth) * ls * tg * tm;
+                double b = (cb * (1 - earth) + 42 * earth) * ls * tb * tm;
+                if (atlasD > 0.05 || (atlas && frac > 0.1 && tc > 0.10)) {
+                    const double kk = hatchK(col, fy, clampd(atlasD + frac * 0.4 * smoothstep(0.10, 0.34, tc), 0, 0.85)) * 0.9;
+                    r += (INKC[0] - r) * kk; gg += (INKC[1] - gg) * kk; b += (INKC[2] - b) * kk;
+                }
                 if (AD) AD[PI(col, fy)] = static_cast<int16_t>(row);
                 if (AN) { const long long p2 = 2 * PI(col, fy); AN[p2] = nqx; AN[p2 + 1] = nqy; }
                 if (fy == top && cont > 0) {
@@ -858,7 +879,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
         }
     }
 
-    if (ink && AD && inkEdges) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, dst);
+    if ((ink || atlas) && AD && inkEdges) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, dst);
 }
 
 // Tinta: contorno das cristas (o pixel de cima é chão bem mais ao fundo)
@@ -870,7 +891,8 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
     const int16_t* AD = aux.depth.data();
     const RGB INKC = inkOf(g.style);
     {
-        const double T0 = 4.0 / s, T1 = 10.0 / s;
+        const bool atlasE = g.style == Style::Atlas;
+        const double T0 = (atlasE ? 1.0 : 4.0) / s, T1 = (atlasE ? 3.0 : 10.0) / s;
         const int xa = std::max(tx0, OX + 1), xb = std::min(tx1, OX + OW - 1);
         for (int y = std::max(ty0, OY + 1); y < ty1; y++) for (int x = xa; x < xb; x++) {
             const long long p = PI(x, y);
@@ -883,7 +905,7 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
             if (rt >= 0) e = std::max(e, smoothstep(T0, T1, r - rt) * 0.8);
             if (e < 0.03) continue;
             const long long o = p * 4;
-            const double kk = e * 0.92;
+            const double kk = e * (atlasE ? 0.8 : 0.92);
             for (int c = 0; c < 3; c++) out[o + c] = u8c(out[o + c] + (INKC[c] - out[o + c]) * kk);
         }
     }
@@ -932,7 +954,7 @@ void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1
     for (int t = 1; t < std::min(threads, bands); t++) pool.emplace_back(work);
     work();
     for (std::thread& t : pool) t.join();
-    if (inkFamily(g.style) && aux) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, nullptr);
+    if ((inkFamily(g.style) || g.style == Style::Atlas) && aux) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, nullptr);
 }
 
 void paintTile(World& w, const Geom& g0, uint8_t* out, Aux* aux, int x0, int y0, int x1, int y1,
@@ -962,7 +984,7 @@ void paintTile(World& w, const Geom& g0, uint8_t* out, Aux* aux, int x0, int y0,
     work();
     for (std::thread& t : pool) t.join();
     if (cancel && cancel->load()) return;
-    if (inkFamily(g.style) && aux) inkEdgePass(g, out, *aux, x0, y0, x1, y1, &dst);
+    if ((inkFamily(g.style) || g.style == Style::Atlas) && aux) inkEdgePass(g, out, *aux, x0, y0, x1, y1, &dst);
 }
 
 // ── hora do dia ──
