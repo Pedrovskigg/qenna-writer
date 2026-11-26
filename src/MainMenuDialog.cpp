@@ -1133,6 +1133,7 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
         else if (saved == QStringLiteral("seudia"))      m_viewMode = ViewMode::SeuDia;
         else if (saved == QStringLiteral("prateleiras")) m_viewMode = ViewMode::Estante;
         else if (saved == QStringLiteral("pilha"))       m_viewMode = ViewMode::Pilha;
+        else if (saved == QStringLiteral("destaque"))    m_viewMode = ViewMode::Destaque;
         else                                              m_viewMode = ViewMode::Continuar;
     }
     buildUi();
@@ -1395,7 +1396,7 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
 
     // Mesma ordem do enum ViewMode: o índice do botão é o modo.
     const QStringList names = { tr("Continuar"), tr("Vitrine"), tr("Cinema"),
-                                tr("Seu dia"), tr("Estante"), tr("Pilha") };
+                                tr("Seu dia"), tr("Estante"), tr("Pilha"), tr("Destaque") };
     auto* toggleWrap = new QHBoxLayout();
     toggleWrap->setSpacing(6);
     for (int i = 0; i < names.size(); ++i) {
@@ -1465,7 +1466,7 @@ void MainMenuDialog::setViewMode(ViewMode mode)
     if (changed && m_viewHost && m_viewHost->isVisible()) PanelMotion::swapOut(m_viewHost);
     populateActiveView();
 
-    static const char* kKeys[] = { "continuar", "vitrine", "cinema", "seudia", "prateleiras", "pilha" };
+    static const char* kKeys[] = { "continuar", "vitrine", "cinema", "seudia", "prateleiras", "pilha", "destaque" };
     QSettings().setValue(QStringLiteral("library/viewMode"), QLatin1String(kKeys[int(mode)]));
 }
 
@@ -1534,7 +1535,8 @@ LibraryEntry makeEntry(const QString& path, const RecentInfo& info, bool autoOpe
     e.autoOpen = autoOpen;
     QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
     e.hasOwnCover = !cover.isNull();
-    if (cover.isNull()) cover = renderDefaultCover(e.name, e.author, kCardCoverW, kCardCoverH);
+    // Gerada no tamanho grande: o Destaque mostra a capa a ~340 px de largura.
+    if (cover.isNull()) cover = renderDefaultCover(e.name, e.author, kStackHeroCoverW, kStackHeroCoverH);
     else if (cover.height() > 720) cover = cover.scaledToHeight(720, Qt::SmoothTransformation);
     e.cover = cover;
 
@@ -1717,15 +1719,8 @@ void MainMenuDialog::populateActiveView()
     }
 
     m_stackView->hide();
-    switch (m_viewMode) {
-    case ViewMode::Vitrine:
-        m_currentView = LibraryViews::vitrineView(entries, hooks, m_viewHost);
-        break;
-    case ViewMode::Cinema:
-        m_currentView = LibraryViews::cinemaView(entries, hooks, m_viewHost);
-        break;
-    case ViewMode::SeuDia: {
-        // Lembretes de hoje (e os atrasados) de todos os projetos da lista.
+    // Lembretes de hoje (e os atrasados) de todos os projetos da lista.
+    const auto todayReminders = [&]() {
         QVector<LibraryReminder> reminders;
         const QDate today = QDate::currentDate();
         for (int i = 0; i < n; ++i) {
@@ -1740,9 +1735,21 @@ void MainMenuDialog::populateActiveView()
         std::sort(reminders.begin(), reminders.end(),
                   [](const LibraryReminder& a, const LibraryReminder& b) { return a.dueAt < b.dueAt; });
         if (reminders.size() > 6) reminders.resize(6);
-        m_currentView = LibraryViews::dayView(entries, day, reminders, hooks, m_viewHost);
+        return reminders;
+    };
+    switch (m_viewMode) {
+    case ViewMode::Vitrine:
+        m_currentView = LibraryViews::vitrineView(entries, hooks, m_viewHost);
         break;
-    }
+    case ViewMode::Cinema:
+        m_currentView = LibraryViews::cinemaView(entries, hooks, m_viewHost);
+        break;
+    case ViewMode::SeuDia:
+        m_currentView = LibraryViews::dayView(entries, day, todayReminders(), hooks, m_viewHost);
+        break;
+    case ViewMode::Destaque:
+        m_currentView = LibraryViews::floatView(entries, day, todayReminders(), hooks, m_viewHost);
+        break;
     case ViewMode::Estante:
         m_currentView = LibraryViews::shelfView(entries, hooks, m_viewHost);
         break;

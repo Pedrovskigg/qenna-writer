@@ -77,7 +77,7 @@ private slots:
 
 private:
     // A ordem é a dos botões do cabeçalho (e o índice deles).
-    enum class ViewMode { Continuar, Vitrine, Cinema, SeuDia, Estante, Pilha };
+    enum class ViewMode { Continuar, Vitrine, Cinema, SeuDia, Estante, Pilha, Destaque };
 
     void buildUi();
     void buildSidebar(QVBoxLayout* col);

@@ -91,6 +91,11 @@ public:
                             const LibraryHooks& hooks, QWidget* parent);
     static QWidget* shelfView(const QVector<LibraryEntry>& entries,
                               const LibraryHooks& hooks, QWidget* parent);
+    // Destaque: a capa do projeto em foco flutuando em 3D, o próximo inclinado
+    // e a fileira dos outros; rolar troca o destaque (ideia do Pe, 26/11/2026).
+    static QWidget* floatView(const QVector<LibraryEntry>& entries, const WritingDay& day,
+                              const QVector<LibraryReminder>& reminders,
+                              const LibraryHooks& hooks, QWidget* parent);
     // Primeira vez: ainda não há projeto nenhum.
     static QWidget* welcomeView(const LibraryHooks& hooks, QWidget* parent);
 

@@ -1,12 +1,17 @@
 #include "LibraryViews.h"
 
 #include "IconUtils.h"
+#include "PanelMotion.h"
 #include "Theme.h"
 #include "WordCounter.h"
 
 #include <QApplication>
 #include <QComboBox>
 #include <QContextMenuEvent>
+#include <QElapsedTimer>
+#include <QEasingCurve>
+#include <QKeyEvent>
+#include <QtMath>
 #include <QEnterEvent>
 #include <QFrame>
 #include <QGridLayout>
@@ -1210,6 +1215,735 @@ private:
     QColor m_bg, m_panel, m_accent;
 };
 
+// ---- Destaque (o menu flutuante) ------------------------------------------
+// Ideia do Pe (26/11/2026, desenho no Paint; Lab D6TuYGLtomfY4KkszkxFVg): o
+// projeto em destaque com a capa grande à esquerda, o texto do lado e o "Seu
+// dia" na direita; embaixo, o próximo da fila inclinado e a fileira dos outros,
+// cortada pela borda de baixo. Cada livro é uma caixa 3D (capa, lombada e
+// páginas) projetada em perspectiva: o destaque e o próximo flutuam de leve, e
+// todos se inclinam para onde o mouse empurra (o lado embaixo do cursor recua).
+// Rolar a roda troca o destaque; clicar num livro traz ele para o destaque.
+//
+// As medidas vêm do Lab, numa moldura de 1578 × 980 que escala com a vista.
+
+class FloatStage : public QWidget {
+    static constexpr qreal kDW = 1578, kDH = 980;   // moldura de desenho
+    static constexpr qreal kPersp = 1500;            // distância da câmera (perspective do CSS)
+    static constexpr qreal kRestRy = -11;            // de leve de lado: aparece a lombada
+    static constexpr int kMoveMs = 850;
+    static constexpr int kTextMs = 460;
+
+    struct Pose { QRectF r; qreal rot = 0, op = 1, t = 26, z = 0; bool floating = false; };
+    struct Item {
+        Pose from, to;
+        qreal ry = kRestRy, rx = 0, tz = 0;          // inclinação atual
+        qreal try_ = kRestRy, trx = 0, ttz = 0;      // inclinação pedida pelo mouse
+        qreal bobAmp = 0;                            // 0 parado .. 1 flutuando
+        QPixmap art;                                 // capa no tamanho de tela (dpr 1)
+        QPolygonF hit;                               // capa projetada (para o mouse)
+        QRectF bounds;                               // caixa pintada (para o update parcial)
+    };
+
+public:
+    FloatStage(const QVector<LibraryEntry>& entries, const WritingDay& day,
+               const QVector<LibraryReminder>& reminders, const LibraryHooks& hooks, QWidget* parent)
+        : QWidget(parent), m_entries(entries), m_hooks(hooks)
+    {
+        setObjectName(QStringLiteral("libFloat"));
+        setMouseTracking(true);
+        setFocusPolicy(Qt::StrongFocus);
+        m_items.resize(m_entries.size());
+        m_clock.start();
+
+        m_go = goButton(LibraryViews::tr("Continuar  →"), this);
+        connect(m_go, &QPushButton::clicked, this, [this]() {
+            if (m_hooks.resume && !m_entries.isEmpty()) m_hooks.resume(m_entries.at(m_cur).path);
+        });
+
+        buildSide(day, reminders);
+
+        m_ease.addCubicBezierSegment(QPointF(0.2, 0.8), QPointF(0.22, 1.0), QPointF(1.0, 1.0));
+        m_tick = new QTimer(this);
+        m_tick->setTimerType(Qt::PreciseTimer);
+        connect(m_tick, &QTimer::timeout, this, [this]() { onTick(); });
+
+        m_shown = 0;
+        setBackdrop(false);
+        for (int k = 0; k < m_items.size(); ++k) {
+            m_items[k].to = poseFor(k);
+            m_items[k].from = m_items[k].to;
+        }
+        m_moveStart = -1;
+    }
+
+protected:
+    void resizeEvent(QResizeEvent* e) override
+    {
+        QWidget::resizeEvent(e);
+        m_bgScaled = QPixmap();
+        m_prevScaled = QPixmap();
+        for (Item& it : m_items) it.art = QPixmap();
+        // Os lugares dependem do tamanho (quantas capas cabem na fileira).
+        for (int k = 0; k < m_items.size(); ++k) {
+            m_items[k].to = poseFor(k);
+            if (m_moveStart < 0) m_items[k].from = m_items[k].to;
+        }
+        layoutChildren();
+    }
+
+    void showEvent(QShowEvent* e) override { QWidget::showEvent(e); wake(); }
+    void hideEvent(QHideEvent* e) override { QWidget::hideEvent(e); m_tick->stop(); }
+
+    void paintEvent(QPaintEvent* ev) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+        p.setClipRegion(ev->region());
+        const qreal s = scale();
+        const QColor bg = tc(Theme::chromeBackground());
+
+        // Fundo: a capa do destaque, desfocada e fraquinha, apagando nas bordas.
+        if (m_bgScaled.isNull()) m_bgScaled = scaledBg(m_bg);
+        if (m_prevScaled.isNull() && !m_prevBg.isNull()) m_prevScaled = scaledBg(m_prevBg);
+        const qreal glow = isDark() ? 0.34 : 0.12;   // no claro, o borrão escuro vira cinza sujo
+        const qreal mix = bgMix();
+        if (mix < 1.0 && !m_prevScaled.isNull()) {
+            p.setOpacity(glow * (1.0 - mix));
+            p.drawPixmap(0, 0, m_prevScaled);
+        }
+        if (!m_bgScaled.isNull()) {
+            p.setOpacity(glow * mix);
+            p.drawPixmap(0, 0, m_bgScaled);
+        }
+        p.setOpacity(1.0);
+        {
+            QRadialGradient vg(QPointF(width() * 0.30, height() * 0.30), qMax(width(), height()) * 0.85);
+            vg.setColorAt(0.30, alpha(bg, 0.0));
+            vg.setColorAt(0.85, bg);
+            p.fillRect(rect(), vg);
+            // e as quatro bordas apagam no fundo do menu, sem linha dura
+            const qreal e = 90 * s;
+            const auto edge = [&](const QRectF& r, QPointF a0, QPointF a1) {
+                QLinearGradient g(a0, a1);
+                g.setColorAt(0.0, bg);
+                g.setColorAt(1.0, alpha(bg, 0.0));
+                p.fillRect(r, g);
+            };
+            edge(QRectF(0, 0, width(), e), QPointF(0, 0), QPointF(0, e));
+            edge(QRectF(0, height() - e, width(), e), QPointF(0, height()), QPointF(0, height() - e));
+            edge(QRectF(0, 0, e, height()), QPointF(0, 0), QPointF(e, 0));
+            edge(QRectF(width() - e, 0, e, height()), QPointF(width(), 0), QPointF(width() - e, 0));
+        }
+
+        // Os livros, do fundo para a frente.
+        const qreal now = m_clock.elapsed() / 1000.0;
+        QVector<int> order(m_items.size());
+        for (int k = 0; k < order.size(); ++k) order[k] = k;
+        std::sort(order.begin(), order.end(), [this](int a, int b) { return m_items[a].to.z < m_items[b].to.z; });
+        for (int k : order) paintBook(p, k, s, now);
+
+        // Vinheta no canto de baixo à direita: a fileira some em vez de acabar seca.
+        {
+            const QRectF vr(width() - 440 * s, 420 * s, 440 * s, height() - 420 * s);
+            if (m_vignette.isNull() || m_vignetteColor != bg) {
+                // alfa = some da esquerda para a direita × some de cima para baixo
+                m_vignetteColor = bg;
+                m_vignette = QImage(128, 128, QImage::Format_ARGB32_Premultiplied);
+                const auto smooth = [](qreal v) { v = qBound(0.0, v, 1.0); return v * v * (3 - 2 * v); };
+                for (int y = 0; y < 128; ++y) {
+                    QRgb* line = reinterpret_cast<QRgb*>(m_vignette.scanLine(y));
+                    const qreal vy = smooth(y / 127.0 / 0.25);
+                    for (int x = 0; x < 128; ++x) {
+                        const qreal a = smooth(x / 127.0 / 0.72) * vy;
+                        line[x] = qPremultiply(qRgba(bg.red(), bg.green(), bg.blue(), qRound(a * 255)));
+                    }
+                }
+            }
+            p.drawImage(vr, m_vignette);
+        }
+
+        paintText(p, s);
+    }
+
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        const int k = hitTest(e->position());
+        setCursor(k >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+        for (int i = 0; i < m_items.size(); ++i) {
+            Item& it = m_items[i];
+            if (i == k) {
+                const Pose cp = currentPose(i);
+                const QPointF c = cp.r.center() * scale();
+                const QPointF d = e->position() - c;
+                const qreal a = -qDegreesToRadians(cp.rot);
+                const qreal lx = d.x() * std::cos(a) - d.y() * std::sin(a);
+                const qreal ly = d.x() * std::sin(a) + d.y() * std::cos(a);
+                const qreal nx = qBound(-1.0, lx / (cp.r.width() * scale() / 2), 1.0);
+                const qreal ny = qBound(-1.0, ly / (cp.r.height() * scale() / 2), 1.0);
+                it.try_ = kRestRy + nx * 15;
+                it.trx = -ny * 11;
+                it.ttz = -26;
+            } else {
+                it.try_ = kRestRy; it.trx = 0; it.ttz = 0;
+            }
+        }
+        wake();
+    }
+    void leaveEvent(QEvent* e) override
+    {
+        for (Item& it : m_items) { it.try_ = kRestRy; it.trx = 0; it.ttz = 0; }
+        wake();
+        QWidget::leaveEvent(e);
+    }
+    void mousePressEvent(QMouseEvent* e) override { m_pressed = hitTest(e->position()); e->accept(); }
+    void mouseReleaseEvent(QMouseEvent* e) override
+    {
+        const int k = hitTest(e->position());
+        if (e->button() == Qt::LeftButton && k >= 0 && k == m_pressed) {
+            if (k == m_cur) { if (m_hooks.open) m_hooks.open(m_entries.at(k).path); }
+            else go(k);
+        }
+        m_pressed = -1;
+    }
+    void contextMenuEvent(QContextMenuEvent* e) override
+    {
+        const int k = hitTest(e->pos());
+        if (k >= 0 && m_hooks.menu) m_hooks.menu(m_entries.at(k).path, e->globalPos());
+    }
+    void wheelEvent(QWheelEvent* e) override
+    {
+        m_wheel += e->angleDelta().y() != 0 ? e->angleDelta().y() : e->angleDelta().x();
+        if (std::abs(m_wheel) >= 120 && m_clock.elapsed() - m_lastStep > 380) {
+            step(m_wheel < 0 ? 1 : -1);
+            m_wheel = 0;
+            m_lastStep = m_clock.elapsed();
+        }
+        if (std::abs(m_wheel) > 240) m_wheel = m_wheel > 0 ? 240 : -240;
+        e->accept();
+    }
+    void keyPressEvent(QKeyEvent* e) override
+    {
+        switch (e->key()) {
+        case Qt::Key_Down: case Qt::Key_Right: step(1); return;
+        case Qt::Key_Up: case Qt::Key_Left: step(-1); return;
+        case Qt::Key_Return: case Qt::Key_Enter: m_go->click(); return;
+        default: QWidget::keyPressEvent(e);
+        }
+    }
+
+private:
+    qreal scale() const { return qMax(0.45, qMin(width() / kDW, height() / kDH)); }
+    bool isDark() const { return tc(Theme::chromeBackground()).lightnessF() < 0.5; }
+    bool motion() const { return PanelMotion::enabled(); }
+
+    int rowCount() const
+    {
+        const qreal s = scale();
+        const int fit = int(std::ceil((width() / s - 600.0) / 360.0));
+        return qBound(1, fit, 12);
+    }
+
+    // Lugar do livro k na fila atual: 0 destaque, 1 o próximo, depois a fileira.
+    Pose poseFor(int k) const
+    {
+        const int n = m_entries.size();
+        const int d = ((k - m_cur) % n + n) % n;
+        const int rows = rowCount();
+        Pose p;
+        if (d == 0) { p.r = QRectF(70, 50, 340, 510); p.t = 30; p.z = 8; p.floating = true; return p; }
+        if (d == 1) { p.r = QRectF(260, 560, 290, 435); p.rot = 10; p.t = 26; p.z = 7; p.floating = true; return p; }
+        const int ri = d - 2;
+        if (ri < rows) { p.r = QRectF(600 + ri * 360, 610, 330, 495); p.t = 28; p.z = 5; return p; }
+        if (d == n - 1) { p.r = QRectF(70, -660, 340, 510); p.rot = -4; p.op = 0; p.t = 30; p.z = 9; return p; }
+        p.r = QRectF(600 + rows * 360, 610, 330, 495); p.op = 0; p.t = 28; p.z = 4;
+        return p;
+    }
+
+    qreal moveProgress() const
+    {
+        if (m_moveStart < 0) return 1.0;
+        const qreal t = qBound(0.0, (m_clock.elapsed() - m_moveStart) / qreal(kMoveMs), 1.0);
+        return m_ease.valueForProgress(t);
+    }
+    Pose currentPose(int k) const
+    {
+        const Item& it = m_items.at(k);
+        const qreal e = moveProgress();
+        if (e >= 1.0) return it.to;
+        const auto L = [e](qreal a, qreal b) { return a + (b - a) * e; };
+        Pose p;
+        p.r = QRectF(L(it.from.r.x(), it.to.r.x()), L(it.from.r.y(), it.to.r.y()),
+                     L(it.from.r.width(), it.to.r.width()), L(it.from.r.height(), it.to.r.height()));
+        p.rot = L(it.from.rot, it.to.rot);
+        p.op = L(it.from.op, it.to.op);
+        p.t = L(it.from.t, it.to.t);
+        p.z = it.to.z;
+        p.floating = it.to.floating;
+        return p;
+    }
+
+    void step(int dir)
+    {
+        if (m_entries.size() < 2) return;
+        go(m_cur + dir);
+    }
+    void go(int k)
+    {
+        const int n = m_entries.size();
+        if (n == 0) return;
+        k = ((k % n) + n) % n;
+        if (k == m_cur) return;
+        for (int i = 0; i < m_items.size(); ++i) m_items[i].from = currentPose(i);
+        m_prevShown = m_shown;
+        m_cur = k;
+        for (int i = 0; i < m_items.size(); ++i) m_items[i].to = poseFor(i);
+        if (motion()) {
+            m_moveStart = m_clock.elapsed();
+            m_textStart = m_clock.elapsed();
+        } else {
+            m_moveStart = -1;
+            m_textStart = -1;
+            m_shown = m_cur;
+            layoutChildren();
+        }
+        setBackdrop(motion());
+        wake();
+    }
+
+    void setBackdrop(bool animate)
+    {
+        m_prevBg = m_bg;
+        m_prevScaled = m_bgScaled;
+        m_bg = blurredThumb(m_entries.value(m_cur).cover);
+        m_bgScaled = QPixmap();
+        m_bgStart = (animate && !m_prevBg.isNull()) ? m_clock.elapsed() : -1;
+    }
+    qreal bgMix() const
+    {
+        if (m_bgStart < 0) return 1.0;
+        return qBound(0.0, (m_clock.elapsed() - m_bgStart) / 900.0, 1.0);
+    }
+    QPixmap scaledBg(const QImage& img) const
+    {
+        if (img.isNull() || width() <= 0 || height() <= 0) return {};
+        const qreal dpr = devicePixelRatioF();
+        QPixmap pm = QPixmap::fromImage(img.scaled(size() * dpr, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+        const QSize target = size() * dpr;
+        pm = pm.copy((pm.width() - target.width()) / 2, (pm.height() - target.height()) / 3, target.width(), target.height());
+        pm.setDevicePixelRatio(dpr);
+        return pm;
+    }
+
+    // Liga o relógio no ritmo que a cena pede: 60 quadros enquanto algo anda,
+    // 30 só para a flutuação (e pintando só em volta dos dois livros que flutuam),
+    // e parado quando nada se mexe ou a vista está escondida.
+    void wake()
+    {
+        if (!isVisible()) return;
+        if (!m_tick->isActive()) m_tick->start(16);
+    }
+    bool busy() const
+    {
+        if (m_moveStart >= 0 || m_textStart >= 0 || m_bgStart >= 0) return true;
+        for (const Item& it : m_items) {
+            if (std::abs(it.ry - it.try_) > 0.05 || std::abs(it.rx - it.trx) > 0.05 || std::abs(it.tz - it.ttz) > 0.1) return true;
+            const qreal amp = it.to.floating ? 1.0 : 0.0;
+            if (std::abs(it.bobAmp - amp) > 0.01) return true;
+        }
+        return false;
+    }
+    void onTick()
+    {
+        const qint64 now = m_clock.elapsed();
+        const qreal dt = m_lastTick > 0 ? qBound(0.0, (now - m_lastTick) / 16.0, 4.0) : 1.0;
+        m_lastTick = now;
+        const qreal k = motion() ? 1.0 - std::pow(1.0 - 0.16, dt) : 1.0;
+        for (Item& it : m_items) {
+            it.ry += (it.try_ - it.ry) * k;
+            it.rx += (it.trx - it.rx) * k;
+            it.tz += (it.ttz - it.tz) * k;
+            const qreal amp = (it.to.floating && motion()) ? 1.0 : 0.0;
+            it.bobAmp += (amp - it.bobAmp) * (motion() ? 1.0 - std::pow(1.0 - 0.06, dt) : 1.0);
+        }
+        if (m_moveStart >= 0 && now - m_moveStart >= kMoveMs) {
+            m_moveStart = -1;
+            for (Item& it : m_items) it.from = it.to;
+        }
+        if (m_textStart >= 0) {
+            const qint64 t = now - m_textStart;
+            if (t >= kTextMs / 2 && m_shown != m_cur) { m_shown = m_cur; layoutChildren(); }
+            if (t >= kTextMs) m_textStart = -1;
+        }
+        if (m_bgStart >= 0 && now - m_bgStart >= 900) { m_bgStart = -1; m_prevScaled = QPixmap(); m_prevBg = QImage(); }
+
+        if (busy()) {
+            if (m_tick->interval() != 16) m_tick->setInterval(16);
+            update();
+            return;
+        }
+        if (motion() && m_entries.size() > 0) {
+            // Só flutuando: repinta em volta dos livros que se mexem.
+            if (m_tick->interval() != 33) m_tick->setInterval(33);
+            QRegion reg;
+            for (const Item& it : m_items)
+                if (it.to.floating && !it.bounds.isEmpty()) reg += it.bounds.toAlignedRect().adjusted(-24, -24, 24, 70);
+            update(reg);
+            return;
+        }
+        m_tick->stop();
+        update();
+    }
+
+    // ---- o livro em 3D --------------------------------------------------------
+    void paintBook(QPainter& p, int k, qreal s, qreal now)
+    {
+        Item& it = m_items[k];
+        const Pose cp = currentPose(k);
+        if (cp.op <= 0.01) { it.hit.clear(); it.bounds = QRectF(); return; }
+        const qreal dpr = devicePixelRatioF();
+        const QSize artPx = (QSizeF(340, 510) * s * dpr).toSize();
+        if (it.art.isNull() || it.art.size() != artPx) {
+            it.art = renderCoverArt(m_entries.at(k).cover, artPx.width(), artPx.height(), 1.0);
+            it.art.setDevicePixelRatio(1.0);
+        }
+
+        // flutuação: cada livro num tempo, o próximo meio ciclo atrás do destaque
+        const qreal phase = (k % 2) ? 3.1 : 0.0;
+        const qreal w2 = (now + phase) * 2.0 * M_PI / 6.2;
+        const qreal bob = (1.0 - std::cos(w2)) / 2.0 * it.bobAmp;   // 0..1
+        const qreal bobY = -14.0 * bob;
+        const qreal bobRot = 0.7 * bob;
+
+        const qreal w = cp.r.width(), h = cp.r.height(), t = cp.t;
+        const QPointF c(cp.r.center().x(), cp.r.center().y() + bobY);
+        const qreal ry = qDegreesToRadians(it.ry), rx = qDegreesToRadians(it.rx);
+        const qreal rr = qDegreesToRadians(cp.rot + bobRot);
+        const qreal cy = std::cos(ry), sy = std::sin(ry), cx = std::cos(rx), sx = std::sin(rx);
+        const qreal cr = std::cos(rr), sr = std::sin(rr);
+        const auto proj = [&](qreal x, qreal y, qreal z) -> QPointF {
+            const qreal x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+            const qreal y2 = y * cx - z1 * sx, z2 = y * sx + z1 * cx + it.tz;
+            const qreal f = kPersp / (kPersp - z2);
+            const qreal px = x1 * f, py = y2 * f;
+            return QPointF((c.x() + px * cr - py * sr) * s, (c.y() + px * sr + py * cr) * s);
+        };
+        const qreal X = w / 2, Y = h / 2, Z = t / 2;
+        const QPolygonF front { proj(-X, -Y, Z), proj(X, -Y, Z), proj(X, Y, Z), proj(-X, Y, Z) };
+        const QPolygonF spine { proj(-X, -Y, -Z), proj(-X, -Y, Z), proj(-X, Y, Z), proj(-X, Y, -Z) };
+        const qreal in = 3;
+        const QPolygonF pages { proj(X - 2, -Y + in, Z - 1), proj(X - 2, -Y + in, -Z + 1), proj(X - 2, Y - in, -Z + 1), proj(X - 2, Y - in, Z - 1) };
+        const QPolygonF top { proj(-X + 2, -Y + 2, -Z + 1), proj(X - 3, -Y + 2, -Z + 1), proj(X - 3, -Y + 2, Z - 1), proj(-X + 2, -Y + 2, Z - 1) };
+        const QPolygonF bottom { proj(-X + 2, Y - 2, Z - 1), proj(X - 3, Y - 2, Z - 1), proj(X - 3, Y - 2, -Z + 1), proj(-X + 2, Y - 2, -Z + 1) };
+        const auto facing = [](const QPolygonF& q) {
+            qreal a = 0;
+            for (int i = 0; i < 4; ++i) a += q[i].x() * q[(i + 1) % 4].y() - q[(i + 1) % 4].x() * q[i].y();
+            return a > 0;
+        };
+
+        p.save();
+        p.setOpacity(cp.op);
+
+        // sombra no chão, que encolhe quando o livro sobe
+        if (it.bobAmp > 0.01) {
+            const qreal sw = w * 0.84 * (1.0 - 0.16 * bob), sh = 34 * (1.0 - 0.16 * bob);
+            const QPointF sc(cp.r.center().x() * s, (cp.r.bottom() + 46 - 17) * s);
+            QRadialGradient g(sc, sw * s / 2);
+            const QColor sc0 = isDark() ? QColor(0, 0, 0) : QColor(60, 45, 30);
+            g.setColorAt(0.0, alpha(sc0, (isDark() ? 0.55 : 0.30) * it.bobAmp * (1.0 - 0.4 * bob) * cp.op));
+            g.setColorAt(1.0, alpha(sc0, 0.0));
+            p.save();
+            p.translate(sc);
+            p.scale(1.0, sh / sw);
+            p.translate(-sc);
+            p.setPen(Qt::NoPen);
+            p.setBrush(g);
+            p.drawEllipse(sc, sw * s / 2, sw * s / 2);
+            p.restore();
+        }
+
+        const auto faceFill = [&](const QPolygonF& q, const std::function<void(QPainter&)>& fill) {
+            QTransform T;
+            if (!QTransform::quadToQuad(QPolygonF(QRectF(0, 0, 1, 1)), q, T)) return;
+            p.save();
+            p.setTransform(T, false);
+            p.setPen(Qt::NoPen);
+            fill(p);
+            p.restore();
+        };
+
+        if (facing(spine)) {
+            // a lombada é a beirada esquerda da própria capa, esticada e sombreada
+            QTransform T;
+            const qreal stripW = qMax(2.0, it.art.width() * 0.06);
+            if (QTransform::quadToQuad(QPolygonF(QRectF(0, 0, stripW, it.art.height())), spine, T)) {
+                p.save();
+                p.setTransform(T, false);
+                p.drawPixmap(QRectF(0, 0, stripW, it.art.height()), it.art, QRectF(0, 0, stripW, it.art.height()));
+                p.restore();
+            }
+            faceFill(spine, [](QPainter& q) {
+                QLinearGradient g(0, 0, 1, 0);
+                g.setColorAt(0.0, QColor(0, 0, 0, 140));
+                g.setColorAt(0.4, QColor(0, 0, 0, 38));
+                g.setColorAt(0.6, QColor(255, 255, 255, 16));
+                g.setColorAt(1.0, QColor(0, 0, 0, 115));
+                q.fillRect(QRectF(0, 0, 1, 1), g);
+            });
+        }
+        const auto paper = [](QPainter& q, bool vertical, const QColor& a, const QColor& b) {
+            QLinearGradient g(0, 0, vertical ? 0 : 0.03, vertical ? 0.03 : 0);
+            g.setSpread(QGradient::RepeatSpread);
+            g.setColorAt(0.0, a);
+            g.setColorAt(0.6, a);
+            g.setColorAt(0.61, b);
+            g.setColorAt(1.0, b);
+            q.fillRect(QRectF(0, 0, 1, 1), g);
+            QLinearGradient sh(0, 0, 1, 0);
+            sh.setColorAt(0.0, QColor(0, 0, 0, 60));
+            sh.setColorAt(0.5, QColor(0, 0, 0, 0));
+            sh.setColorAt(1.0, QColor(0, 0, 0, 50));
+            q.fillRect(QRectF(0, 0, 1, 1), sh);
+        };
+        if (facing(pages)) faceFill(pages, [&](QPainter& q) { paper(q, false, QColor(0xef, 0xe9, 0xdc), QColor(0xdc, 0xd4, 0xc4)); });
+        if (facing(top)) faceFill(top, [&](QPainter& q) { paper(q, true, QColor(0xf1, 0xeb, 0xde), QColor(0xdd, 0xd5, 0xc6)); });
+        if (facing(bottom)) faceFill(bottom, [&](QPainter& q) { paper(q, true, QColor(0xec, 0xe6, 0xd8), QColor(0xd6, 0xce, 0xbe)); });
+
+        QTransform T;
+        if (QTransform::quadToQuad(QPolygonF(QRectF(0, 0, it.art.width(), it.art.height())), front, T)) {
+            p.save();
+            p.setTransform(T, false);
+            p.drawPixmap(0, 0, it.art);
+            p.restore();
+        }
+        p.restore();
+
+        it.hit = front;
+        QRectF b = front.boundingRect().united(spine.boundingRect()).united(pages.boundingRect());
+        it.bounds = b;
+    }
+
+    int hitTest(const QPointF& pos) const
+    {
+        int best = -1;
+        qreal bestZ = -1e9;
+        for (int k = 0; k < m_items.size(); ++k) {
+            const Item& it = m_items.at(k);
+            if (it.hit.size() == 4 && it.to.op > 0.5 && it.hit.containsPoint(pos, Qt::OddEvenFill) && it.to.z > bestZ) {
+                best = k;
+                bestZ = it.to.z;
+            }
+        }
+        return best;
+    }
+
+    // ---- o texto do destaque --------------------------------------------------
+    struct TextBlock {
+        QString kick, title, meta, synopsis, where;
+        QFont kickF, titleF, metaF, synF, whereF;
+        qreal width = 0;
+        QRectF kickR, titleR, metaR, synR, whereR;
+        qreal bottom = 0;
+    };
+
+    TextBlock textFor(int k, qreal s) const
+    {
+        TextBlock b;
+        const LibraryEntry& e = m_entries.at(k);
+        const QString head = e.resumeWhere.isEmpty() ? LibraryViews::tr("Último projeto") : LibraryViews::tr("Continuar de onde parou");
+        b.kick = (e.lastTouched.isValid() ? head + QStringLiteral(" · ") + LibraryViews::relativeWhen(e.lastTouched) : head).toUpper();
+        b.title = e.name;
+        QStringList facts;
+        if (!e.genres.trimmed().isEmpty()) facts << e.genres.trimmed();
+        if (e.totalWords >= 0) facts << LibraryViews::wordsText(e.totalWords);
+        if (e.manuscriptCount > 1) facts << LibraryViews::tr("Saga · %1 livros").arg(e.manuscriptCount);
+        b.meta = facts.join(QStringLiteral(" · "));
+        b.synopsis = e.synopsis.simplified();
+        b.where = e.resumeWhere;
+
+        b.kickF = sans(qMax(9.5, 11.5 * s), QFont::DemiBold);
+        b.kickF.setLetterSpacing(QFont::AbsoluteSpacing, qMax(1.2, 1.8 * s));
+        b.titleF = serif(qMax(26.0, 54 * s), QFont::DemiBold);
+        b.metaF = sans(qMax(12.0, 16.5 * s));
+        b.synF = serif(qMax(13.0, 20 * s), QFont::Normal, true);
+        b.whereF = sans(qMax(12.0, 15.5 * s));
+
+        const qreal x = textLeft(s);
+        b.width = textWidth(s);
+        qreal y = 96 * s;
+        const auto block = [&](const QString& txt, const QFont& f, int maxLines, qreal gapAfter, QString* out) -> QRectF {
+            if (txt.isEmpty()) return {};
+            const QFontMetricsF fm(f);
+            QString t = txt;
+            const auto tall = [&](const QString& v) {
+                return fm.boundingRect(QRectF(0, 0, b.width, 1e5), Qt::TextWordWrap, v).height() > fm.lineSpacing() * maxLines + 1;
+            };
+            if (tall(t)) {
+                while (t.size() > 8 && tall(t + QStringLiteral("…"))) t.chop(qMax(1, int(t.size() / 24)));
+                t = t.trimmed() + QStringLiteral("…");
+            }
+            if (out) *out = t;
+            const QRectF r = fm.boundingRect(QRectF(x, y, b.width, 1e5), Qt::TextWordWrap, t);
+            const QRectF rr(x, y, b.width, r.height());
+            y += r.height() + gapAfter;
+            return rr;
+        };
+        b.kickR = block(b.kick, b.kickF, 1, 14 * s, &b.kick);
+        b.titleR = block(b.title, b.titleF, 3, 12 * s, &b.title);
+        b.metaR = block(b.meta, b.metaF, 1, 18 * s, &b.meta);
+        b.synR = block(b.synopsis, b.synF, 5, 18 * s, &b.synopsis);
+        b.whereR = block(b.where, b.whereF, 1, 26 * s, &b.where);
+        b.bottom = y;
+        return b;
+    }
+    qreal textLeft(qreal s) const { return 460 * s; }
+    qreal textWidth(qreal s) const
+    {
+        const qreal right = m_side && m_side->isVisible() ? m_side->x() - 40 * s : width() - 40 * s;
+        return qMax(220.0, qMin(480 * s, right - textLeft(s)));
+    }
+
+    void paintText(QPainter& p, qreal s)
+    {
+        if (m_entries.isEmpty()) return;
+        qreal op = 1.0, dy = 0;
+        if (m_textStart >= 0) {
+            const qreal t = qBound(0.0, (m_clock.elapsed() - m_textStart) / qreal(kTextMs), 1.0);
+            op = std::abs(2.0 * t - 1.0);
+            dy = (1.0 - op) * 8 * s;
+        }
+        const TextBlock b = textFor(m_shown, s);
+        p.save();
+        p.setOpacity(op);
+        p.translate(0, dy);
+        p.setPen(tc(Theme::textMuted()));
+        p.setFont(b.kickF);
+        if (!b.kickR.isNull()) p.drawText(b.kickR, Qt::TextWordWrap, b.kick);
+        p.setPen(tc(Theme::textBright()));
+        p.setFont(b.titleF);
+        if (!b.titleR.isNull()) p.drawText(b.titleR, Qt::TextWordWrap, b.title);
+        p.setPen(tc(Theme::textMuted()));
+        p.setFont(b.metaF);
+        if (!b.metaR.isNull()) p.drawText(b.metaR, Qt::TextWordWrap, b.meta);
+        p.setPen(alpha(tc(Theme::textPrimary()), 0.9));
+        p.setFont(b.synF);
+        if (!b.synR.isNull()) p.drawText(b.synR, Qt::TextWordWrap, b.synopsis);
+        if (!b.whereR.isNull()) {
+            const qreal bh = QFontMetricsF(b.whereF).height();
+            p.fillRect(QRectF(b.whereR.left(), b.whereR.top() + bh * 0.12, 3, bh * 0.76), tc(Theme::accentDefault()));
+            p.setPen(tc(Theme::textMuted()));
+            p.setFont(b.whereF);
+            p.drawText(b.whereR.adjusted(12, 0, 0, 0), Qt::TextWordWrap, b.where);
+        }
+        // "1 de 8 projetos", embaixo do botão
+        if (m_entries.size() > 1) {
+            QFont f = sans(qMax(10.0, 12 * s), QFont::DemiBold);
+            f.setLetterSpacing(QFont::AbsoluteSpacing, 1.4);
+            p.setFont(f);
+            p.setPen(tc(Theme::textMuted()));
+            p.setOpacity(op * 0.8);
+            const qreal y = m_go->geometry().bottom() + 22 * s - dy;
+            p.drawText(QRectF(textLeft(s), y, b.width, 20 * s + 6), Qt::AlignLeft | Qt::AlignTop,
+                       LibraryViews::tr("%1 de %2 projetos").arg(m_shown + 1).arg(m_entries.size()).toUpper());
+        }
+        p.restore();
+    }
+
+    // ---- o "Seu dia" à direita ------------------------------------------------
+    void buildSide(const WritingDay& day, const QVector<LibraryReminder>& reminders)
+    {
+        m_side = new QWidget(this);
+        m_side->setAttribute(Qt::WA_TranslucentBackground, true);
+        auto* col = new QVBoxLayout(m_side);
+        col->setContentsMargins(0, 0, 0, 0);
+        col->setSpacing(0);
+        const QLocale loc;
+        if (day.valid) {
+            col->addWidget(kick(LibraryViews::tr("Seu dia"), m_side));
+            if (!day.scopeName.isEmpty()) {
+                col->addSpacing(4);
+                col->addWidget(new ElideLabel(LibraryViews::tr("Meta de %1").arg(day.scopeName), "libMuted", sans(12), m_side));
+            }
+            col->addSpacing(16);
+            auto* row = new QHBoxLayout;
+            row->setSpacing(24);
+            row->addWidget(new GoalRing(day, m_side), 0, Qt::AlignTop);
+            auto* facts = new QVBoxLayout;
+            facts->setSpacing(6);
+            facts->addSpacing(8);
+            const QString streak = day.streak == 1
+                ? LibraryViews::tr("%1 dia seguido").arg(bright(QStringLiteral("1")))
+                : LibraryViews::tr("%1 dias seguidos").arg(bright(loc.toString(day.streak)));
+            facts->addWidget(label(streak, "libText", sans(15), m_side));
+            int week = 0;
+            for (int v : day.week) week += v;
+            const QString wk = day.timeGoal ? LibraryViews::tr("%1 min nesta semana").arg(bright(loc.toString(week)))
+                                            : LibraryViews::tr("%1 palavras nesta semana").arg(bright(loc.toString(week)));
+            facts->addWidget(label(wk, "libText", sans(15), m_side));
+            facts->addSpacing(8);
+            facts->addWidget(new WeekBars(day, m_side));
+            row->addLayout(facts, 1);
+            col->addLayout(row);
+        } else {
+            // Sem meta nenhuma: a biblioteca em números no lugar do dia.
+            int words = 0;
+            for (const LibraryEntry& e : m_entries) words += qMax(0, e.totalWords);
+            col->addWidget(kick(LibraryViews::tr("Sua biblioteca"), m_side));
+            col->addSpacing(14);
+            col->addWidget(label(loc.toString(words), "libTitle", serif(40, QFont::DemiBold), m_side));
+            col->addSpacing(2);
+            const QString in = m_entries.size() == 1 ? LibraryViews::tr("palavras em 1 projeto")
+                                                     : LibraryViews::tr("palavras em %1 projetos").arg(m_entries.size());
+            col->addWidget(label(in, "libText", sans(15), m_side));
+        }
+        if (!reminders.isEmpty()) {
+            col->addSpacing(20);
+            const LibraryReminder& r = reminders.first();
+            const QString txt = r.project.isEmpty() ? r.text : QStringLiteral("%1 (%2)").arg(r.text, r.project);
+            auto* rem = label(LibraryViews::tr("Lembrete de hoje: %1").arg(txt.toHtmlEscaped()), "libMuted", sans(14), m_side);
+            rem->setWordWrap(true);
+            col->addWidget(rem);
+        }
+    }
+
+    void layoutChildren()
+    {
+        const qreal s = scale();
+        if (m_side) {
+            const int sx = qRound(990 * s), sw = qRound(qMax(380.0, 520 * s));
+            const bool fits = sx + 340 <= width();
+            m_side->setVisible(fits);
+            if (fits) {
+                m_side->setFixedWidth(qMin(sw, width() - sx - 24));
+                m_side->adjustSize();
+                m_side->move(sx, qRound(128 * s));
+            }
+        }
+        if (!m_entries.isEmpty()) {
+            m_go->setFont(sans(qMax(13.0, 16 * s), QFont::Medium));
+            m_go->adjustSize();
+            const TextBlock b = textFor(m_shown, s);
+            m_go->move(qRound(textLeft(s)), qRound(b.bottom));
+        }
+        update();
+    }
+
+    QVector<LibraryEntry> m_entries;
+    LibraryHooks m_hooks;
+    QVector<Item> m_items;
+    QPushButton* m_go = nullptr;
+    QWidget* m_side = nullptr;
+    QTimer* m_tick = nullptr;
+    QElapsedTimer m_clock;
+    QEasingCurve m_ease { QEasingCurve::BezierSpline };
+    qint64 m_moveStart = -1, m_textStart = -1, m_bgStart = -1, m_lastStep = -1000, m_lastTick = 0;
+    int m_cur = 0, m_shown = 0, m_prevShown = 0, m_pressed = -1, m_wheel = 0;
+    QImage m_bg, m_prevBg;
+    QPixmap m_bgScaled, m_prevScaled;
+    QImage m_vignette;
+    QColor m_vignetteColor;
+};
+
 } // namespace
 
 // ---- Dados ---------------------------------------------------------------
@@ -1788,4 +2522,13 @@ QWidget* LibraryViews::welcomeView(const LibraryHooks& hooks, QWidget* parent)
     col->addLayout(quick);
     col->addStretch(1);
     return root;
+}
+
+// ---- Destaque ----------------------------------------------------------------
+
+QWidget* LibraryViews::floatView(const QVector<LibraryEntry>& entries, const WritingDay& day,
+                                 const QVector<LibraryReminder>& reminders,
+                                 const LibraryHooks& hooks, QWidget* parent)
+{
+    return new FloatStage(entries, day, reminders, hooks, parent);
 }
