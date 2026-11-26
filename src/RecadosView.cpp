@@ -2,8 +2,13 @@
 
 #include "Recados.h"
 #include "Theme.h"
+#include "PanelMotion.h"
 
 #include <QDesktopServices>
+#include <QElapsedTimer>
+#include <QEnterEvent>
+#include <QTimer>
+#include <cmath>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLocale>
@@ -29,20 +34,86 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
-// Uma linha só, com "…" quando não cabe (o QLabel corta seco).
+// Uma linha só. Quando o texto não cabe, ele corre para o lado devagar, como o
+// letreiro do telejornal, até aparecer inteiro e recomeçar (pedido do Pe,
+// 26/11/2026). Para com o mouse em cima, para ler com calma. Com "Animações"
+// desligado, volta ao texto cortado com "…". Só esta faixinha é redesenhada,
+// a 30 quadros, e só enquanto o texto corre.
 class ElidedLabel : public QLabel {
 public:
-    using QLabel::QLabel;
+    explicit ElidedLabel(QWidget* parent = nullptr) : QLabel(parent)
+    {
+        m_tick.setInterval(33);
+        QObject::connect(&m_tick, &QTimer::timeout, this, [this]() { update(); });
+        m_clock.start();
+    }
     QSize minimumSizeHint() const override { return { 40, QLabel::minimumSizeHint().height() }; }
     QSize sizeHint() const override { return { 200, QLabel::sizeHint().height() }; }
+
 protected:
     void paintEvent(QPaintEvent*) override
     {
         QPainter p(this);
         p.setPen(palette().color(QPalette::WindowText));
-        const QString t = fontMetrics().elidedText(text(), Qt::ElideRight, width());
-        p.drawText(rect(), Qt::AlignVCenter | Qt::AlignLeft, t);
+        const QString txt = text();
+        if (txt != m_last) { m_last = txt; restart(); }
+        const int tw = fontMetrics().horizontalAdvance(txt);
+        if (tw <= width() || !PanelMotion::enabled()) {
+            m_tick.stop();
+            p.drawText(rect(), Qt::AlignVCenter | Qt::AlignLeft, fontMetrics().elidedText(txt, Qt::ElideRight, width()));
+            return;
+        }
+        // o letreiro: duas cópias seguidas, com um respiro entre elas; a conta do
+        // deslocamento é pelo relógio (não pelo quadro), então não acelera nem atrasa
+        const int gap = fontMetrics().horizontalAdvance(QStringLiteral("     ·     "));
+        const qint64 now = m_clock.elapsed();
+        if (!m_hover) m_run += qMax<qint64>(0, now - qMax(m_lastPaint, m_holdUntil));
+        m_lastPaint = now;
+        const qreal speed = 38.0 / 1000.0;   // px por ms
+        const qreal cycle = tw + gap;
+        const qreal off = std::fmod(m_run * speed, cycle);
+        QImage img(size() * devicePixelRatioF(), QImage::Format_ARGB32_Premultiplied);
+        img.setDevicePixelRatio(devicePixelRatioF());
+        img.fill(Qt::transparent);
+        {
+            QPainter ip(&img);
+            ip.setRenderHint(QPainter::TextAntialiasing, true);
+            ip.setFont(font());
+            ip.setPen(palette().color(QPalette::WindowText));
+            const QRectF r(-off, 0, tw + 2, height());
+            ip.drawText(r, Qt::AlignVCenter | Qt::AlignLeft, txt);
+            ip.drawText(r.translated(cycle, 0), Qt::AlignVCenter | Qt::AlignLeft, txt);
+            // as pontas esfumam (o texto entra e sai, não aparece cortado)
+            ip.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+            const qreal fade = qMin(18.0, width() / 6.0);
+            QLinearGradient g(0, 0, width(), 0);
+            g.setColorAt(0.0, QColor(0, 0, 0, off < 1 ? 255 : 0));
+            g.setColorAt(fade / width(), QColor(0, 0, 0, 255));
+            g.setColorAt(1.0 - fade / width(), QColor(0, 0, 0, 255));
+            g.setColorAt(1.0, QColor(0, 0, 0, 0));
+            ip.fillRect(rect(), g);
+        }
+        p.drawImage(0, 0, img);
+        if (isVisible() && !m_tick.isActive()) m_tick.start();
     }
+    void enterEvent(QEnterEvent* e) override { m_hover = true; QLabel::enterEvent(e); }
+    void leaveEvent(QEvent* e) override { m_hover = false; m_lastPaint = m_clock.elapsed(); QLabel::leaveEvent(e); }
+    void showEvent(QShowEvent* e) override { QLabel::showEvent(e); m_lastPaint = m_clock.elapsed(); update(); }
+    void hideEvent(QHideEvent* e) override { QLabel::hideEvent(e); m_tick.stop(); }
+
+private:
+    // texto novo: começa do início, parado um instante para dar tempo de ler o começo
+    void restart()
+    {
+        m_run = 0;
+        m_holdUntil = m_clock.elapsed() + 2200;
+        m_lastPaint = m_clock.elapsed();
+    }
+    QTimer m_tick;
+    QElapsedTimer m_clock;
+    QString m_last;
+    qint64 m_run = 0, m_lastPaint = 0, m_holdUntil = 0;
+    bool m_hover = false;
 };
 
 namespace {
