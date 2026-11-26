@@ -246,5 +246,6 @@ private:
     QTimer* m_globalRefreshTimer;
     QTimer* m_timeTickTimer;
     qint64 m_lastTimeTickAt = 0;
+    qint64 m_pendingTimeMs = 0;   // tempo de escrita ainda não anotado no progresso (ver onTimeTick)
     qint64 m_lastCursorActivityAt = 0;
 };

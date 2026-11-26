@@ -488,6 +488,11 @@ void ProjectModel::setSettings(const QJsonObject& s) {
     emit settingsChanged();
 }
 
+void ProjectModel::setWordCounterSettings(const QJsonObject& wc) {
+    m_settings.insert(QStringLiteral("wordCounter"), wc);
+    emit wordCounterSettingsChanged();
+}
+
 bool ProjectModel::firstLineIndentEnabled() const {
     const auto v = m_settings.value(QStringLiteral("firstLineIndent"));
     if (v.isUndefined() || v.isNull()) return true;

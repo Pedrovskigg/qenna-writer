@@ -526,9 +526,7 @@ void WordCounter::loadSettingsFromModel() {
 
 void WordCounter::writeSettingsToModel() {
     if (!m_model) return;
-    QJsonObject all = m_model->settings();
-    all.insert(QStringLiteral("wordCounter"), m_settings.toJson());
-    m_model->setSettings(all);
+    m_model->setWordCounterSettings(m_settings.toJson());
 }
 
 WordCounterSettings WordCounter::settings() const {
@@ -713,7 +711,7 @@ int WordCounter::progressWords() const {
 qint64 WordCounter::progressTimeMs() const {
     const QString key = currentGoalDayKey();
     const QJsonObject today = activeGoal().progress.value(key).toObject();
-    return static_cast<qint64>(today.value(QStringLiteral("timeMs")).toDouble(0));
+    return static_cast<qint64>(today.value(QStringLiteral("timeMs")).toDouble(0)) + m_pendingTimeMs;
 }
 
 bool WordCounter::isGoalMet() const {
@@ -1128,6 +1126,9 @@ void WordCounter::setCompactShowGoalBar(bool show) {
 }
 
 void WordCounter::updateGoalProgress(int deltaGoalWords, qint64 deltaTimeMs, int deltaSessionManuscript, int deltaSessionAll, const QString& editedKey) {
+    // o tempo guardado na memória pega carona em qualquer anotação
+    deltaTimeMs += m_pendingTimeMs;
+    m_pendingTimeMs = 0;
     const bool any = deltaGoalWords > 0 || deltaTimeMs > 0 || deltaSessionManuscript > 0 || deltaSessionAll > 0;
     if (!any) return;
     ensureCurrentDayKey();
@@ -1208,7 +1209,11 @@ void WordCounter::onTimeTick() {
     if (!shouldCountTimeNow()) return;
     const qint64 delta = now - lastTick;
     if (delta > 0 && delta < kDeltaMaxMs) {
-        updateGoalProgress(0, delta, 0, 0);
+        // Soma na memória e anota a cada 15 s: anotar a cada segundo regravava
+        // as metas e redesenhava os painéis do contador uma vez por segundo de
+        // digitação (o editor engasgava num Pentium T3400, 25/11/2026).
+        m_pendingTimeMs += delta;
+        if (m_pendingTimeMs >= 15000) updateGoalProgress(0, 0, 0, 0);
     }
 }
 

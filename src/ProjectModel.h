@@ -284,6 +284,10 @@ public:
     void setActiveChapterId(const QString& id);
     void setGroups(const QList<Group>& list);
     void setSettings(const QJsonObject& s);
+    // Só a chave "wordCounter". O contador grava o progresso enquanto a pessoa
+    // escreve: o settingsChanged faria o Manuscrito reconstruir a lista de
+    // capítulos a cada gravação (135 ms por segundo de digitação num Pentium).
+    void setWordCounterSettings(const QJsonObject& wc);
     void setUi(const QJsonObject& u);
     void setDataExtras(const QJsonObject& d);
 
@@ -542,6 +546,7 @@ signals:
     void activeManuscriptChanged();
     void activeChapterChanged();
     void settingsChanged();
+    void wordCounterSettingsChanged();
     void uiChanged();
     void projectDetailsChanged();
     void loaded();
