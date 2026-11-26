@@ -28,7 +28,11 @@
 #include <QTimer>
 
 namespace {
-constexpr int kDefaultFlushMs = 200;
+// Espera uma pausa de verdade (a ideia do contador do Mira, do Pe): copiar o
+// capítulo e contar as palavras custava ~33 ms num Pentium T3400, e com 200 ms
+// isso rodava a cada respiro da digitação. Salvar e trocar de documento
+// continuam copiando na hora (syncEditorToCache).
+constexpr int kDefaultFlushMs = 900;
 constexpr int kHistoryMax = 60;     // passos de Voltar guardados
 constexpr int kSpotsMax = 400;      // documentos com posição lembrada, por projeto
 }

@@ -1,6 +1,8 @@
 #include "PerfProbe.h"
 
+#include <QAbstractAnimation>
 #include <QDateTime>
+#include <QPropertyAnimation>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
@@ -36,6 +38,40 @@ int g_depth = 0;
 double g_busyMs = 0;       // soma dos eventos de nível 0 = tempo em que o app esteve ocupado
 double g_lastWriteS = 0;
 double g_busyAtLastWrite = 0;
+
+QString objName(const QObject* o)
+{
+    if (!o) return QStringLiteral("?");
+    QString s = QString::fromLatin1(o->metaObject()->className());
+    if (!o->objectName().isEmpty()) s += QLatin1Char('#') + o->objectName();
+    return s;
+}
+
+// As animações rodando agora (o QDefaultAnimationDriver sozinho não diz qual
+// delas pesou). Varre a árvore de objetos: só é chamado no relatório e depois
+// de um quadro de animação lento.
+QString runningAnimations()
+{
+    QStringList out;
+    QList<QObject*> roots;
+    for (QWidget* w : QApplication::topLevelWidgets()) roots << w;
+    roots << qApp;
+    for (QObject* r : std::as_const(roots)) {
+        const auto anims = r->findChildren<QAbstractAnimation*>();
+        for (QAbstractAnimation* a : anims) {
+            if (a->state() != QAbstractAnimation::Running) continue;
+            QString d = objName(a);
+            if (auto* pa = qobject_cast<QPropertyAnimation*>(a))
+                d += QStringLiteral(" [%1.%2]").arg(objName(pa->targetObject()), QString::fromLatin1(pa->propertyName()));
+            QObject* p = a->parent();
+            for (int i = 0; p && i < 3; ++i, p = p->parent()) d += QStringLiteral(" ‹ ") + objName(p);
+            d += QStringLiteral(" (%1 ms%2)").arg(a->duration())
+                     .arg(a->loopCount() != 1 ? QStringLiteral(", %1 voltas").arg(a->loopCount()) : QString());
+            if (!out.contains(d)) out << d;
+        }
+    }
+    return out.isEmpty() ? QStringLiteral("nenhuma") : out.join(QStringLiteral(" | "));
+}
 
 QString labelFor(QObject* r, QEvent::Type t)
 {
@@ -86,6 +122,7 @@ void writeReport()
                    .arg(s->top ? QString() : QStringLiteral("  "))
                    .arg(s->label);
     }
+    out << "\n== Animações rodando agora ==\n" << runningAnimations() << "\n";
     out << "\n== Eventos isolados acima de 25 ms (mais recentes por último) ==\n";
     for (const Slow& s : std::as_const(g_slow))
         out << QStringLiteral("%1 s  %2 ms  %3\n").arg(s.atS, 8, 'f', 1).arg(s.ms, 7, 'f', 1).arg(s.label);
@@ -136,7 +173,11 @@ bool QennaApplication::notify(QObject* receiver, QEvent* event)
     if (g_depth == 0) it->top = true;
 
     if (ms >= 25.0) {
-        g_slow.append({ g_clock.elapsed() / 1000.0, ms, it->label + (g_depth ? QStringLiteral("  (aninhado)") : QString()) });
+        QString label = it->label + (g_depth ? QStringLiteral("  (aninhado)") : QString());
+        if (ms >= 50.0 && type == QEvent::Timer
+            && qstrcmp(receiver->metaObject()->className(), "QDefaultAnimationDriver") == 0)
+            label += QStringLiteral("\n             animações: ") + runningAnimations();
+        g_slow.append({ g_clock.elapsed() / 1000.0, ms, label });
         if (g_slow.size() > 80) g_slow.removeFirst();
     }
     return r;
