@@ -448,4 +448,5 @@ private:
     // arrastada); o pedido fica guardado e roda quando o arrasto termina.
     bool m_dragActive = false;
     bool m_rebuildPending = false;
+    QTimer* m_countsTimer = nullptr;   // remonta a lista pelas contagens só com o editor parado
 };

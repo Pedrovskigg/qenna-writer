@@ -10,6 +10,7 @@
 #include <QMetaEnum>
 #include <QSysInfo>
 #include <QTextStream>
+#include <QThread>
 #include <QTimer>
 #include <QWidget>
 
@@ -122,7 +123,6 @@ void writeReport()
                    .arg(s->top ? QString() : QStringLiteral("  "))
                    .arg(s->label);
     }
-    out << "\n== Animações rodando agora ==\n" << runningAnimations() << "\n";
     out << "\n== Eventos isolados acima de 25 ms (mais recentes por último) ==\n";
     for (const Slow& s : std::as_const(g_slow))
         out << QStringLiteral("%1 s  %2 ms  %3\n").arg(s.atS, 8, 'f', 1).arg(s.ms, 7, 'f', 1).arg(s.label);
@@ -137,14 +137,16 @@ QennaApplication::QennaApplication(int& argc, char** argv)
     if (!m_perf) return;
     g_clock.start();
     auto* t = new QTimer(this);
-    t->setInterval(3000);
+    t->setInterval(10000);   // gravar no HD lento também pesa: a cada 10 s
     QObject::connect(t, &QTimer::timeout, this, [] { writeReport(); });
     t->start();
 }
 
 bool QennaApplication::notify(QObject* receiver, QEvent* event)
 {
-    if (!m_perf || !receiver || !event) return QApplication::notify(receiver, event);
+    // Só a linha principal (a da interface): as outras não tocam nas tabelas.
+    if (!m_perf || !receiver || !event || QThread::currentThread() != thread())
+        return QApplication::notify(receiver, event);
 
     const QEvent::Type type = event->type();
     // O nome sai antes da entrega: o evento pode apagar o próprio destinatário.

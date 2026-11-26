@@ -17,6 +17,7 @@
 #include <QSettings>
 #include <QTextDocument>
 #include <QTimer>
+#include <limits>
 
 namespace {
 
@@ -1197,6 +1198,11 @@ QString WordCounter::keyForCurrentEdit() const {
 
 void WordCounter::registerCursorActivity() {
     m_lastCursorActivityAt = QDateTime::currentMSecsSinceEpoch();
+}
+
+qint64 WordCounter::msSinceActivity() const {
+    if (m_lastCursorActivityAt == 0) return std::numeric_limits<qint64>::max();
+    return QDateTime::currentMSecsSinceEpoch() - m_lastCursorActivityAt;
 }
 
 void WordCounter::onTimeTick() {

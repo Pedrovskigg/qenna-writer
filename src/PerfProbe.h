@@ -3,7 +3,7 @@
 //
 // Desligado por padrão. Com QENNA_PERF=1 o app mede quanto tempo cada evento
 // leva para ser entregue (tecla, pintura de cada widget, timers, chamadas
-// adiadas) e grava um resumo em ~/qenna-perf.txt a cada 3 segundos: os campeões
+// adiadas) e grava um resumo em ~/qenna-perf.txt a cada 10 segundos: os campeões
 // de tempo somado e os eventos isolados mais lentos. Serve para achar o que pesa
 // em máquina fraca sem chutar.
 

@@ -206,6 +206,9 @@ private slots:
 
 public slots:
     void registerCursorActivity();
+    // Milissegundos desde a última tecla, clique ou seleção no editor
+    // (muito grande se ainda não houve nenhuma).
+    qint64 msSinceActivity() const;
     void onProjectLoaded();
 
 private:

@@ -1864,6 +1864,7 @@ void MainMenuDialog::confirmDeleteProject(const QString& path)
 void MainMenuDialog::rotateQuote()
 {
     if (!m_quoteLabel) return;
+    if (!isVisible()) return;   // escondido: o showEvent chama de novo
     // Primeira exibição (sem texto ainda): entra direto com fade-in.
     if (m_quoteLabel->text().isEmpty() || !m_quoteOpacity) {
         showNextQuote();
@@ -2093,6 +2094,9 @@ void MainMenuDialog::hideEvent(QHideEvent* event)
     // em andamento, senão o app segue compondo pixmap a 60fps sem ninguém
     // olhando.
     if (m_logoTimer) m_logoTimer->stop();
+    // As frases também: seguiam trocando com esmaecer atrás do editor, um
+    // soluço de até 170 ms a cada 6 s num Pentium T3400 (25/11/2026).
+    if (m_quoteTimer) m_quoteTimer->stop();
     if (m_logoAnim || m_logoShine) {
         // DeleteWhenStopped destrói; finished não dispara
         if (m_logoAnim) m_logoAnim->stop();

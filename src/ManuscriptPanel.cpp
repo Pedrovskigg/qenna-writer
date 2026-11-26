@@ -786,9 +786,20 @@ void ManuscriptPanel::setDialogueStore(DialogueStore* store) {
 void ManuscriptPanel::setWordCounter(WordCounter* counter) {
     if (m_wordCounter == counter) return;
     m_wordCounter = counter;
-    // countsChanged já é debounced lá dentro — seguro conectar direto.
+    // Remontar a lista inteira levava ~200 ms num Pentium T3400 e caía logo
+    // depois de cada pausa curta na digitação. Os números esperam a pessoa
+    // ficar 2,5 s sem mexer no editor (25/11/2026).
+    if (!m_countsTimer) {
+        m_countsTimer = new QTimer(this);
+        m_countsTimer->setSingleShot(true);
+        m_countsTimer->setInterval(1500);
+        connect(m_countsTimer, &QTimer::timeout, this, [this]() {
+            if (m_wordCounter && m_wordCounter->msSinceActivity() < 2500) { m_countsTimer->start(); return; }
+            if (isPanelOpen()) rebuildList();
+        });
+    }
     if (m_wordCounter) connect(m_wordCounter, &WordCounter::countsChanged, this, [this]() {
-        if (isPanelOpen()) rebuildList();
+        if (isPanelOpen()) m_countsTimer->start();
     });
     if (isPanelOpen()) rebuildList();
 }
