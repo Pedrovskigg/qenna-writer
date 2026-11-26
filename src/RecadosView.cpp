@@ -69,7 +69,7 @@ protected:
         const qint64 now = m_clock.elapsed();
         if (!m_hover) m_run += qMax<qint64>(0, now - qMax(m_lastPaint, m_holdUntil));
         m_lastPaint = now;
-        const qreal speed = 38.0 / 1000.0;   // px por ms
+        const qreal speed = 60.0 / 1000.0;   // px por ms (era 38: o Pe achou lento)
         const qreal cycle = tw + gap;
         const qreal off = std::fmod(m_run * speed, cycle);
         QImage img(size() * devicePixelRatioF(), QImage::Format_ARGB32_Premultiplied);
