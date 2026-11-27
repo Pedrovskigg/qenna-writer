@@ -33,6 +33,8 @@
 #include <QToolButton>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QVariantAnimation>
+#include <QEasingCurve>
 
 // Uma linha só. Quando o texto não cabe, ele corre para o lado devagar, como o
 // letreiro do telejornal, até aparecer inteiro e recomeçar (pedido do Pe,
@@ -125,7 +127,7 @@ QColor mix(const QColor& a, const QColor& b, qreal t)
                             a.blueF() + (b.blueF() - a.blueF()) * t);
 }
 
-enum class Glyph { Pin, Left, Right, Close, Bell, Heart, Fire, Clap, Laugh };
+enum class Glyph { Pin, Left, Right, Collapse, Close, Bell, Heart, Fire, Clap, Laugh };
 
 // Ícones desenhados (sem caractere de fonte, que no Linux pode faltar).
 QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr, bool filled = false)
@@ -153,6 +155,10 @@ QIcon glyphIcon(Glyph g, const QColor& c, int size, qreal dpr, bool filled = fal
         break;
     case Glyph::Right:
         p.drawPolyline(QPolygonF({ QPointF(9, 6), QPointF(15, 12), QPointF(9, 18) }));
+        break;
+    case Glyph::Collapse:   // » : a faixa recolhe pra direita
+        p.drawPolyline(QPolygonF({ QPointF(6, 7), QPointF(11, 12), QPointF(6, 17) }));
+        p.drawPolyline(QPolygonF({ QPointF(12.5, 7), QPointF(17.5, 12), QPointF(12.5, 17) }));
         break;
     case Glyph::Bell: {
         QPainterPath path;
@@ -324,13 +330,13 @@ RecadosStrip::RecadosStrip(QWidget* parent)
     m_body->setObjectName(QStringLiteral("recBody"));
     row->addWidget(m_body, 1);
 
-    m_prev = iconButton(this, tr("Recado anterior"));
+    m_prev = iconButton(this, tr("Mensagem anterior"));
     connect(m_prev, &QToolButton::clicked, this, [this]() { step(-1); });
     row->addWidget(m_prev);
     m_count = new QLabel(this);
     m_count->setObjectName(QStringLiteral("recCount"));
     row->addWidget(m_count);
-    m_next = iconButton(this, tr("Próximo recado"));
+    m_next = iconButton(this, tr("Próxima mensagem"));
     connect(m_next, &QToolButton::clicked, this, [this]() { step(1); });
     row->addWidget(m_next);
 
@@ -341,9 +347,6 @@ RecadosStrip::RecadosStrip(QWidget* parent)
     connect(m_read, &QPushButton::clicked, this, &RecadosStrip::readRequested);
     row->addWidget(m_read);
 
-    m_close = iconButton(this, tr("Dispensar (volta quando chegar recado novo)"));
-    connect(m_close, &QToolButton::clicked, this, []() { RecadosFeed::instance()->dismissStrip(); });
-    row->addWidget(m_close);
 
     RecadosFeed* feed = RecadosFeed::instance();
     connect(feed, &RecadosFeed::changed, this, [this]() { m_page = 0; refresh(); });
@@ -365,12 +368,12 @@ void RecadosStrip::refresh()
 {
     RecadosFeed* feed = RecadosFeed::instance();
     const QList<Recado> list = feed->recados();
-    if (list.isEmpty() || feed->stripDismissed()) { hide(); return; }
+    if (list.isEmpty()) return;   // quem mostra e esconde é o RecadosSlot
     m_page = qBound(0, m_page, int(list.size()) - 1);
     const Recado& r = list.at(m_page);
     const QString when = r.date.isValid() ? shortDate(r.date) : QString();
     const bool fresh = !feed->isRead(r.id);
-    const QString label = fresh ? tr("RECADO NOVO") : tr("RECADO");
+    const QString label = fresh ? tr("MENSAGEM NOVA") : tr("MENSAGEM");
     m_eyebrow->setText(when.isEmpty() ? label : label + QStringLiteral("  ·  ") + when);
     m_eyebrow->setProperty("fresh", fresh);
     m_eyebrow->style()->unpolish(m_eyebrow);
@@ -382,7 +385,6 @@ void RecadosStrip::refresh()
     m_next->setVisible(many);
     m_count->setVisible(many);
     m_count->setText(tr("%1 de %2").arg(m_page + 1).arg(list.size()));
-    show();
 }
 
 void RecadosStrip::applyTheme()
@@ -396,7 +398,6 @@ void RecadosStrip::applyTheme()
     m_pin->setPixmap(glyphIcon(Glyph::Pin, accent, 18, dpr).pixmap(18, 18));
     m_prev->setIcon(glyphIcon(Glyph::Left, muted, 14, dpr));
     m_next->setIcon(glyphIcon(Glyph::Right, muted, 14, dpr));
-    m_close->setIcon(glyphIcon(Glyph::Close, muted, 14, dpr));
     QPalette pal = m_body->palette();
     pal.setColor(QPalette::WindowText, muted);
     m_body->setPalette(pal);
@@ -418,6 +419,122 @@ void RecadosStrip::applyTheme()
              accent.name(), Theme::hoverOverlay()));
 }
 
+// ============================== Lugar da faixa ==============================
+
+RecadosSlot::RecadosSlot(QWidget* parent)
+    : QWidget(parent)
+{
+    setFixedHeight(46);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_strip = new RecadosStrip(this);
+    m_anim = new QVariantAnimation(this);
+    m_anim->setDuration(260);
+    m_anim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(m_anim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+        m_reveal = v.toReal();
+        place();
+    });
+    RecadosFeed* feed = RecadosFeed::instance();
+    connect(feed, &RecadosFeed::changed, this, [this]() { sync(true); });
+    connect(feed, &RecadosFeed::stateChanged, this, [this]() { sync(true); });
+    sync(false);
+}
+
+QSize RecadosSlot::sizeHint() const { return { m_strip->sizeHint().width(), 46 }; }
+QSize RecadosSlot::minimumSizeHint() const { return { m_strip->minimumSizeHint().width(), 46 }; }
+
+void RecadosSlot::resizeEvent(QResizeEvent* e)
+{
+    QWidget::resizeEvent(e);
+    place();
+}
+
+void RecadosSlot::sync(bool animate)
+{
+    RecadosFeed* feed = RecadosFeed::instance();
+    if (feed->recados().isEmpty()) { m_anim->stop(); hide(); return; }
+    show();
+    const qreal target = feed->stripDismissed() ? 0.0 : 1.0;
+    if (!animate || !PanelMotion::enabled() || !isVisible()) {
+        m_anim->stop();
+        m_reveal = target;
+        place();
+        return;
+    }
+    if (m_anim->state() == QAbstractAnimation::Running && m_anim->endValue().toReal() == target) return;
+    if (qFuzzyCompare(m_reveal + 1.0, target + 1.0)) { place(); return; }
+    m_anim->stop();
+    m_anim->setStartValue(m_reveal);
+    m_anim->setEndValue(target);
+    m_anim->start();
+}
+
+void RecadosSlot::place()
+{
+    // a faixa tem sempre a largura inteira e escorrega pra direita; o que passa
+    // da borda do lugar fica de fora (filho não pinta fora do pai)
+    const int w = width();
+    m_strip->setGeometry(qRound(w * (1.0 - m_reveal)), 0, w, height());
+    m_strip->setVisible(m_reveal > 0.001);
+}
+
+// ============================== Botão do canto ==============================
+
+RecadosToggle::RecadosToggle(QWidget* parent)
+    : QToolButton(parent)
+{
+    setObjectName(QStringLiteral("recadosToggle"));
+    setCursor(Qt::PointingHandCursor);
+    setFocusPolicy(Qt::NoFocus);
+    setAutoRaise(true);
+    setFixedSize(28, 28);
+    setIconSize(QSize(16, 16));
+    connect(this, &QToolButton::clicked, this, []() {
+        RecadosFeed* feed = RecadosFeed::instance();
+        if (feed->stripDismissed()) feed->restoreStrip();
+        else feed->dismissStrip();
+    });
+    RecadosFeed* feed = RecadosFeed::instance();
+    connect(feed, &RecadosFeed::changed, this, &RecadosToggle::refresh);
+    connect(feed, &RecadosFeed::stateChanged, this, &RecadosToggle::refresh);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, &RecadosToggle::refresh);
+    refresh();
+}
+
+void RecadosToggle::refresh()
+{
+    RecadosFeed* feed = RecadosFeed::instance();
+    const QList<Recado> list = feed->recados();
+    if (list.isEmpty()) { hide(); return; }
+    const bool closed = feed->stripDismissed();
+    const QColor muted = Theme::toColor(Theme::textMuted());
+    const QColor accent = Theme::toColor(Theme::accentDefault());
+    const qreal dpr = devicePixelRatioF();
+    QPixmap pm;
+    if (closed) {
+        bool unread = false;
+        for (const Recado& r : list) unread = unread || !feed->isRead(r.id);
+        pm = glyphIcon(Glyph::Pin, unread ? accent : muted, 16, dpr).pixmap(16, 16);
+        if (unread) {
+            QPainter p(&pm);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.setPen(QPen(Theme::toColor(Theme::chromeBackground()), 1.5));
+            p.setBrush(accent);
+            p.drawEllipse(QRectF(10, 0.5, 5.5, 5.5));
+        }
+        setToolTip(tr("Abrir o Mensageiro"));
+    } else {
+        pm = glyphIcon(Glyph::Collapse, muted, 16, dpr).pixmap(16, 16);
+        setToolTip(tr("Fechar o Mensageiro (volta sozinho quando chegar mensagem nova)"));
+    }
+    setIcon(QIcon(pm));
+    setStyleSheet(Theme::qss(QStringLiteral(
+        "QToolButton#recadosToggle { background: transparent; border: 1px solid transparent; border-radius: @radius-control; }"
+        "QToolButton#recadosToggle:hover { border-color: %1; background: %2; }"))
+        .arg(Theme::panelBorder(), Theme::hoverOverlay()));
+    show();
+}
+
 // ============================== Sininho ==============================
 
 RecadosBell::RecadosBell(QWidget* parent)
@@ -428,8 +545,8 @@ RecadosBell::RecadosBell(QWidget* parent)
     setFocusPolicy(Qt::NoFocus);
     setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     setAutoRaise(true);
-    setText(tr("Recados"));
-    setToolTip(tr("Ler os recados do autor"));
+    setText(tr("Mensageiro"));
+    setToolTip(tr("Ler as mensagens do autor"));
     setIconSize(QSize(16, 16));
     setFixedHeight(24);
     connect(this, &QToolButton::clicked, this, &RecadosBell::readRequested);
@@ -473,7 +590,7 @@ RecadosDialog::RecadosDialog(QWidget* parent)
     : QDialog(parent)
 {
     setObjectName(QStringLiteral("recadosDialog"));
-    setWindowTitle(tr("Recados"));
+    setWindowTitle(tr("Mensageiro"));
     setModal(true);
     setFixedWidth(640);
 

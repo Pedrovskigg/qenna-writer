@@ -264,9 +264,9 @@
   <div class="leaf">
     <div class="leaf-head"><span>Blog</span><span>Qenna Writer</span></div>
     <h1 class="title serif">Notas de quem faz o Qenna</h1>
-    <p class="dek">Novidades, ideias e agradecimentos, direto de P.H. Lobato. Os mesmos recados aparecem dentro do app, no menu principal.</p>
+    <p class="dek">Novidades, ideias e agradecimentos, direto de P.H. Lobato. As mesmas mensagens aparecem dentro do app, no Mensageiro do menu principal.</p>
   </div>
-  <div id="posts"><div class="leaf empty">Carregando os recados…</div></div>
+  <div id="posts"><div class="leaf empty">Carregando as mensagens…</div></div>
 </div>
 
 <footer>
@@ -281,7 +281,7 @@
 // Mesma lista que o app mostra na faixa do menu principal (docs/recados.json).
 (function () {
   var LANG = 'pt', LOCALE = 'pt-BR';
-  var T = {"none": "Ainda não há recados por aqui.", "fail": "Não foi possível carregar os recados agora. Tente de novo em instantes.", "note": "Recado"};
+  var T = {"none": "Ainda não há mensagens por aqui.", "fail": "Não foi possível carregar as mensagens agora. Tente de novo em instantes.", "note": "Mensagem"};
   var box = document.getElementById('posts');
   // Comentários (Worker da Cloudflare, tools/comentarios-worker). Vazio = desligado.
   // ?api=http://127.0.0.1:8787 testa com o servidor local; #admin mostra o "apagar" (pede a chave uma vez).

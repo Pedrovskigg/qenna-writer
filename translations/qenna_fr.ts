@@ -1552,27 +1552,27 @@ Profitez-en.</translation>
 <context>
     <name>BookCard</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1603"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1608"/>
         <source>Abrir automaticamente</source>
         <translation>Ouvrir automatiquement</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1606"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1611"/>
         <source>Editar projeto</source>
         <translation>Modifier le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1607"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1612"/>
         <source>Criar capa</source>
         <translation>Créer une couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1609"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1614"/>
         <source>Remover dos recentes</source>
         <translation>Retirer des récents</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1610"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1615"/>
         <source>Excluir projeto</source>
         <translation>Supprimer le projet</translation>
     </message>
@@ -12852,7 +12852,7 @@ En cas de doute, les sections ci-dessous expliquent tout.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1424"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1479"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1484"/>
         <source>Trocar a vista da Biblioteca (agora: %1)</source>
         <translation>Changer la vue de la Bibliothèque (actuelle : %1)</translation>
     </message>
@@ -12884,12 +12884,12 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucun projet pour l&apos;instant</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1665"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1670"/>
         <source>1 projeto</source>
         <translation>1 projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1665"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1670"/>
         <source>%1 projetos</source>
         <translation>%1 projets</translation>
     </message>
@@ -12902,18 +12902,18 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucune</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1820"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1874"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1825"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1879"/>
         <source>Erro</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1821"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1826"/>
         <source>Não foi possível ler o projeto para edição.</source>
         <translation>Impossible de lire le projet pour le modifier.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1875"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1880"/>
         <source>Não foi possível salvar as alterações:
 %1</source>
         <translation>Impossible d&apos;enregistrer les modifications&#xa0;:
@@ -12965,27 +12965,27 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation type="vanished">Changer la vue de la Bibliothèque</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1530"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1535"/>
         <source>Capítulo %1</source>
         <translation>Chapitre %1</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1535"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1540"/>
         <source>cap. %1 · %2</source>
         <translation>chap. %1 · %2</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1600"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1605"/>
         <source>Abrir</source>
         <translation>Ouvrir</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1601"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1606"/>
         <source>Continuar de onde parei</source>
         <translation>Reprendre là où j&apos;en étais</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="2002"/>
+        <location filename="../src/MainMenuDialog.cpp" line="2007"/>
         <source>Cor sólida do tema</source>
         <translation>Couleur unie du thème</translation>
     </message>
@@ -28731,214 +28731,226 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
 <context>
     <name>RecadosBell</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="360"/>
         <source>Recados</source>
-        <translation>Annonces</translation>
+        <translation type="vanished">Annonces</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="361"/>
         <source>Ler os recados do autor</source>
-        <translation>Lire les annonces de l&apos;auteur</translation>
+        <translation type="vanished">Lire les annonces de l&apos;auteur</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="548"/>
+        <source>Mensageiro</source>
+        <translation>Messager</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="549"/>
+        <source>Ler as mensagens do autor</source>
+        <translation>Lire les messages de l’auteur</translation>
     </message>
 </context>
 <context>
     <name>RecadosDialog</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="405"/>
         <source>Recados</source>
-        <translation>Annonces</translation>
+        <translation type="vanished">Annonces</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="441"/>
+        <location filename="../src/RecadosView.cpp" line="593"/>
+        <source>Mensageiro</source>
+        <translation>Messager</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="629"/>
         <source>Novo</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="492"/>
+        <location filename="../src/RecadosView.cpp" line="680"/>
         <source>Abrir</source>
         <translation>Ouvrir</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="512"/>
+        <location filename="../src/RecadosView.cpp" line="700"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="737"/>
         <source>Amei</source>
         <translation>J&apos;adore</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="737"/>
         <source>Que demais</source>
         <translation>Trop bien</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="737"/>
         <source>Mandou bem</source>
         <translation>Bien joué</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="549"/>
+        <location filename="../src/RecadosView.cpp" line="737"/>
         <source>Kkkkk</source>
         <translation>Mdr</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="609"/>
+        <location filename="../src/RecadosView.cpp" line="797"/>
         <source>Comentar de novo</source>
         <translation>Commenter à nouveau</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="638"/>
+        <location filename="../src/RecadosView.cpp" line="826"/>
         <source>Cancelar a resposta</source>
         <translation>Annuler la réponse</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="649"/>
+        <location filename="../src/RecadosView.cpp" line="837"/>
         <source>Seu nome</source>
         <translation>Votre nom</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="655"/>
+        <location filename="../src/RecadosView.cpp" line="843"/>
         <source>Escreva um comentário</source>
         <translation>Écrivez un commentaire</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="670"/>
-        <location filename="../src/RecadosView.cpp" line="846"/>
-        <location filename="../src/RecadosView.cpp" line="855"/>
+        <location filename="../src/RecadosView.cpp" line="858"/>
+        <location filename="../src/RecadosView.cpp" line="1034"/>
+        <location filename="../src/RecadosView.cpp" line="1043"/>
         <source>Enviar</source>
         <translation>Envoyer</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="709"/>
+        <location filename="../src/RecadosView.cpp" line="897"/>
         <source>Comentar</source>
         <translation>Commenter</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="709"/>
+        <location filename="../src/RecadosView.cpp" line="897"/>
         <source>Comentários (%1)</source>
         <translation>Commentaires (%1)</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="711"/>
+        <location filename="../src/RecadosView.cpp" line="899"/>
         <source>Ninguém comentou ainda. Seja a primeira pessoa.</source>
         <translation>Aucun commentaire pour l&apos;instant. Soyez le premier.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="712"/>
+        <location filename="../src/RecadosView.cpp" line="900"/>
         <source>Carregando comentários…</source>
         <translation>Chargement des commentaires…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="751"/>
+        <location filename="../src/RecadosView.cpp" line="939"/>
         <source>AUTOR</source>
         <translation>AUTEUR</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="759"/>
+        <location filename="../src/RecadosView.cpp" line="947"/>
         <source>apagar</source>
         <translation>supprimer</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="767"/>
+        <location filename="../src/RecadosView.cpp" line="955"/>
         <source>banir</source>
         <translation>bannir</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="773"/>
+        <location filename="../src/RecadosView.cpp" line="961"/>
         <source>Banir</source>
         <translation>Bannir</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="774"/>
+        <location filename="../src/RecadosView.cpp" line="962"/>
         <source>Banir %1? O comentário (e as respostas dele) some, e essa pessoa não poderá mais comentar nem reagir.</source>
         <translation>Bannir %1 ? Le commentaire (et ses réponses) disparaît, et cette personne ne pourra plus commenter ni réagir.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="794"/>
+        <location filename="../src/RecadosView.cpp" line="982"/>
         <source>Responder</source>
         <translation>Répondre</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="802"/>
+        <location filename="../src/RecadosView.cpp" line="990"/>
         <source>Respondendo a %1</source>
         <translation>Réponse à %1</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="833"/>
-        <location filename="../src/RecadosView.cpp" line="875"/>
+        <location filename="../src/RecadosView.cpp" line="1021"/>
+        <location filename="../src/RecadosView.cpp" line="1063"/>
         <source>Escreva o seu nome e o comentário.</source>
         <translation>Écrivez votre nom et le commentaire.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="837"/>
+        <location filename="../src/RecadosView.cpp" line="1025"/>
         <source>Enviando…</source>
         <translation>Envoi…</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="851"/>
-        <location filename="../src/RecadosView.cpp" line="864"/>
+        <location filename="../src/RecadosView.cpp" line="1039"/>
+        <location filename="../src/RecadosView.cpp" line="1052"/>
         <source>Chave errada.</source>
         <translation>Clé incorrecte.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="889"/>
+        <location filename="../src/RecadosView.cpp" line="1077"/>
         <source>Antes de comentar</source>
         <translation>Avant de commenter</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="895"/>
+        <location filename="../src/RecadosView.cpp" line="1083"/>
         <source>Antes de comentar e interagir, lembre-se:</source>
         <translation>Avant de commenter et d&apos;interagir, rappelez-vous :</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="901"/>
+        <location filename="../src/RecadosView.cpp" line="1089"/>
         <source>Respeito não é opcional, é obrigatório.</source>
         <translation>Le respect n&apos;est pas facultatif, il est obligatoire.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="902"/>
+        <location filename="../src/RecadosView.cpp" line="1090"/>
         <source>Comentários ofensivos serão apagados e o usuário pode ser banido permanentemente de comentar, a depender do contexto.</source>
         <translation>Les commentaires offensants seront supprimés et l&apos;utilisateur peut être banni définitivement, selon le contexte.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="903"/>
+        <location filename="../src/RecadosView.cpp" line="1091"/>
         <source>Discurso de ódio é CRIME aqui.</source>
         <translation>Le discours de haine est un CRIME ici.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="904"/>
+        <location filename="../src/RecadosView.cpp" line="1092"/>
         <source>Racismo, xenofobia, misoginia ou homofobia é ban direto e SECO. Sem segunda chance.</source>
         <translation>Racisme, xénophobie, misogynie ou homophobie : ban direct et SEC. Pas de seconde chance.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="905"/>
+        <location filename="../src/RecadosView.cpp" line="1093"/>
         <source>Não comente links externos ou qualquer coisa relacionada.</source>
         <translation>Ne publiez pas de liens externes ni rien de semblable.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="906"/>
+        <location filename="../src/RecadosView.cpp" line="1094"/>
         <source>Não tem problema falar palavrão, mas tenhamos classe.</source>
         <translation>Les gros mots, ça passe, mais gardons la classe.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="907"/>
+        <location filename="../src/RecadosView.cpp" line="1095"/>
         <source>Seja ativo!</source>
         <translation>Soyez actif !</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="907"/>
+        <location filename="../src/RecadosView.cpp" line="1095"/>
         <source>Interaja e comente sempre que possível! Eu e a comunidade agradecemos!</source>
         <translation>Interagissez et commentez dès que possible ! La communauté et moi vous remercions !</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="933"/>
+        <location filename="../src/RecadosView.cpp" line="1121"/>
         <source>Cancelar e não comentar</source>
         <translation>Annuler et ne pas commenter</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="936"/>
+        <location filename="../src/RecadosView.cpp" line="1124"/>
         <source>Entendi e concordo com tudo!</source>
         <translation>Compris, je suis d&apos;accord avec tout !</translation>
     </message>
@@ -28947,47 +28959,47 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
         <translation type="vanished">Commentaire publié.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="857"/>
+        <location filename="../src/RecadosView.cpp" line="1045"/>
         <source>Links não são aceitos nos comentários.</source>
         <translation>Les liens ne sont pas acceptés dans les commentaires.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="863"/>
+        <location filename="../src/RecadosView.cpp" line="1051"/>
         <source>Assinatura do autor</source>
         <translation>Signature de l&apos;auteur</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="865"/>
+        <location filename="../src/RecadosView.cpp" line="1053"/>
         <source>Esse nome é reservado ao autor do Qenna. Se você é o autor, digite a chave:</source>
         <translation>Ce nom est réservé à l&apos;auteur de Qenna. Si vous êtes l&apos;auteur, saisissez la clé :</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="872"/>
+        <location filename="../src/RecadosView.cpp" line="1060"/>
         <source>Esse nome é reservado ao autor do Qenna.</source>
         <translation>Ce nom est réservé à l&apos;auteur de Qenna.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="874"/>
+        <location filename="../src/RecadosView.cpp" line="1062"/>
         <source>Muitos comentários seguidos. Tente de novo daqui a alguns minutos.</source>
         <translation>Trop de commentaires d&apos;affilée. Réessayez dans quelques minutes.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="876"/>
+        <location filename="../src/RecadosView.cpp" line="1064"/>
         <source>O comentário passou do tamanho máximo.</source>
         <translation>Le commentaire dépasse la taille maximale.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="877"/>
+        <location filename="../src/RecadosView.cpp" line="1065"/>
         <source>Esse comentário foi apagado; a resposta não foi enviada.</source>
         <translation>Ce commentaire a été supprimé ; la réponse n&apos;a pas été envoyée.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="878"/>
+        <location filename="../src/RecadosView.cpp" line="1066"/>
         <source>Você não pode mais comentar aqui.</source>
         <translation>Vous ne pouvez plus commenter ici.</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="879"/>
+        <location filename="../src/RecadosView.cpp" line="1067"/>
         <source>Não foi possível enviar. Confira a internet e tente de novo.</source>
         <translation>Envoi impossible. Vérifiez votre connexion et réessayez.</translation>
     </message>
@@ -28995,39 +29007,71 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
 <context>
     <name>RecadosStrip</name>
     <message>
-        <location filename="../src/RecadosView.cpp" line="256"/>
         <source>Recado anterior</source>
-        <translation>Annonce précédente</translation>
+        <translation type="vanished">Annonce précédente</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="262"/>
         <source>Próximo recado</source>
-        <translation>Annonce suivante</translation>
+        <translation type="vanished">Annonce suivante</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="266"/>
+        <location filename="../src/RecadosView.cpp" line="333"/>
+        <source>Mensagem anterior</source>
+        <translation>Message précédent</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="339"/>
+        <source>Próxima mensagem</source>
+        <translation>Message suivant</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="343"/>
         <source>Ler</source>
         <translation>Lire</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="273"/>
+        <source>Dispensar (volta quando chegar mensagem nova)</source>
+        <translation type="vanished">Masquer (revient à l’arrivée d’un nouveau message)</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="376"/>
+        <source>MENSAGEM NOVA</source>
+        <translation>NOUVEAU MESSAGE</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="376"/>
+        <source>MENSAGEM</source>
+        <translation>MESSAGE</translation>
+    </message>
+    <message>
         <source>Dispensar (volta quando chegar recado novo)</source>
-        <translation>Masquer (revient à la prochaine annonce)</translation>
+        <translation type="vanished">Masquer (revient à la prochaine annonce)</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="302"/>
         <source>RECADO NOVO</source>
-        <translation>NOUVELLE ANNONCE</translation>
+        <translation type="vanished">NOUVELLE ANNONCE</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="302"/>
         <source>RECADO</source>
-        <translation>ANNONCE</translation>
+        <translation type="vanished">ANNONCE</translation>
     </message>
     <message>
-        <location filename="../src/RecadosView.cpp" line="313"/>
+        <location filename="../src/RecadosView.cpp" line="387"/>
         <source>%1 de %2</source>
         <translation>%1 sur %2</translation>
+    </message>
+</context>
+<context>
+    <name>RecadosToggle</name>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="525"/>
+        <source>Abrir o Mensageiro</source>
+        <translation>Ouvrir le Messager</translation>
+    </message>
+    <message>
+        <location filename="../src/RecadosView.cpp" line="528"/>
+        <source>Fechar o Mensageiro (volta sozinho quando chegar mensagem nova)</source>
+        <translation>Fermer le Messager (il revient tout seul à l’arrivée d’un nouveau message)</translation>
     </message>
 </context>
 <context>

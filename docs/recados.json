@@ -26,18 +26,18 @@
       "id": "2026-12-mural",
       "date": "2026-12-01",
       "title": {
-        "pt": "Agora o Qenna tem um mural de recados",
-        "en": "Qenna now has a notice board",
-        "es": "Ahora Qenna tiene un tablón de avisos",
-        "it": "Ora Qenna ha una bacheca",
-        "fr": "Qenna a maintenant un tableau d’annonces"
+        "pt": "Agora o Qenna tem um Mensageiro",
+        "en": "Qenna now has a Messenger",
+        "es": "Ahora Qenna tiene un Mensajero",
+        "it": "Ora Qenna ha un Messaggero",
+        "fr": "Qenna a maintenant un Messager"
       },
       "body": {
-        "pt": "De vez em quando, vou passar por aqui para contar o que está chegando, pedir sua opinião sobre alguma ideia ou só agradecer. Os recados aparecem nesta faixa e também no blog do site. Quando quiser, é só fechar no ×: ela some e volta apenas quando houver recado novo.",
-        "en": "Every now and then I'll stop by here to share what's coming, ask your opinion on an idea, or just say thank you. Notes show up in this strip and on the website's blog. Whenever you like, close it with the ×: it goes away and only comes back when there's a new note.",
-        "es": "De vez en cuando pasaré por aquí para contar lo que viene, pedir tu opinión sobre alguna idea o simplemente dar las gracias. Los avisos aparecen en esta franja y también en el blog del sitio. Cuando quieras, ciérrala con la ×: desaparece y solo vuelve cuando hay un aviso nuevo.",
-        "it": "Ogni tanto passerò di qui per raccontare cosa sta arrivando, chiedere la tua opinione su un'idea o semplicemente ringraziare. Gli avvisi compaiono in questa striscia e anche sul blog del sito. Quando vuoi, chiudila con la ×: sparisce e torna solo quando c'è un avviso nuovo.",
-        "fr": "De temps en temps, je passerai ici pour vous dire ce qui arrive, vous demander votre avis sur une idée ou simplement vous remercier. Les annonces apparaissent dans cette bande et aussi sur le blog du site. Quand vous voulez, fermez-la avec le × : elle disparaît et ne revient qu’avec une nouvelle annonce."
+        "pt": "De vez em quando, vou passar por aqui para contar o que está chegando, pedir sua opinião sobre alguma ideia ou só agradecer. As mensagens aparecem nesta faixa e também no blog do site. Quando quiser, é só fechar no ×: ela some e volta apenas quando houver mensagem nova.",
+        "en": "Every now and then I'll stop by here to share what's coming, ask your opinion on an idea, or just say thank you. Messages show up in this strip and on the website's blog. Whenever you like, close it with the ×: it goes away and only comes back when there's a new message.",
+        "es": "De vez en cuando pasaré por aquí para contar lo que viene, pedir tu opinión sobre alguna idea o simplemente dar las gracias. Los mensajes aparecen en esta franja y también en el blog del sitio. Cuando quieras, ciérrala con la ×: desaparece y solo vuelve cuando hay un mensaje nuevo.",
+        "it": "Ogni tanto passerò di qui per raccontare cosa sta arrivando, chiedere la tua opinione su un'idea o semplicemente ringraziare. I messaggi compaiono in questa striscia e anche sul blog del sito. Quando vuoi, chiudila con la ×: sparisce e torna solo quando c'è un messaggio nuovo.",
+        "fr": "De temps en temps, je passerai ici pour vous dire ce qui arrive, vous demander votre avis sur une idée ou simplement vous remercier. Les messages apparaissent dans cette bande et aussi sur le blog du site. Quand vous voulez, fermez-la avec le × : elle disparaît et ne revient qu’avec un nouveau message."
       }
     }
   ]

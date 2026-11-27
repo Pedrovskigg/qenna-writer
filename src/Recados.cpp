@@ -168,6 +168,14 @@ void RecadosFeed::dismissStrip()
     emit stateChanged();
 }
 
+void RecadosFeed::restoreStrip()
+{
+    if (m_dismissedIds.isEmpty()) return;
+    m_dismissedIds.clear();
+    saveState();
+    emit stateChanged();
+}
+
 QString RecadosFeed::commentsUrl()
 {
     const QString override = qEnvironmentVariable("QENNA_COMENTARIOS_URL");

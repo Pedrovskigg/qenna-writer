@@ -74,10 +74,11 @@ public:
     bool isRead(const QString& id) const { return m_read.contains(id); }
     void markRead(const QString& id);
     void markAllRead();
-    // A faixa some quando a pessoa fecha no ×, e só volta com um recado que ela
+    // A faixa some quando a pessoa fecha no botão do canto da linha do título, e só volta com um recado que ela
     // ainda não tinha visto na hora de fechar.
     bool stripDismissed() const;
     void dismissStrip();
+    void restoreStrip();                                    // o botão do canto reabre a faixa
 
     QNetworkAccessManager* network();
 

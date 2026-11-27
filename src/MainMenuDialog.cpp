@@ -1427,14 +1427,18 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
 
     // --- Recados do autor: na linha do título, ocupando o resto da largura
     // (em qualquer vista). Some quando não há recado ou quando a pessoa
-    // fecha no ×; ver Recados.h.
-    m_recadosStrip = new RecadosStrip(m_header);
+    // fecha no botão do canto; ver Recados.h.
+    // O botão no canto direito fecha e abre a faixa (ideia do Pe, 27/11/2026);
+    // ao fechar, ela desliza pra dentro dele.
+    auto* recadosSlot = new RecadosSlot(m_header);
+    m_recadosStrip = recadosSlot->strip();
     connect(m_recadosStrip, &RecadosStrip::readRequested, this, [this]() {
         RecadosDialog dlg(this);
         dlg.exec();
     });
-    header->addWidget(m_recadosStrip, 1, Qt::AlignVCenter);
+    header->addWidget(recadosSlot, 1, Qt::AlignVCenter);
     header->addStretch(0);
+    header->addWidget(new RecadosToggle(m_header), 0, Qt::AlignVCenter);
     col->addWidget(m_header);
     RecadosFeed::instance()->fetch();
 

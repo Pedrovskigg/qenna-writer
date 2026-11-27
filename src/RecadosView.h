@@ -11,6 +11,7 @@
 class QLabel;
 class QToolButton;
 class QPushButton;
+class QVariantAnimation;
 class ElidedLabel;
 
 class RecadosStrip : public QFrame {
@@ -34,8 +35,43 @@ private:
     QLabel* m_count = nullptr;
     QToolButton* m_next = nullptr;
     QPushButton* m_read = nullptr;
-    QToolButton* m_close = nullptr;
     int m_page = 0;
+};
+
+// O lugar da faixa na linha do título. Segura a faixa e, quando a pessoa
+// fecha no botão do canto, faz ela deslizar pra direita, pra dentro do botão
+// (e voltar ao abrir). O espaço continua reservado, então nada pula na tela.
+class RecadosSlot : public QWidget {
+    Q_OBJECT
+public:
+    explicit RecadosSlot(QWidget* parent = nullptr);
+    RecadosStrip* strip() const { return m_strip; }
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
+
+protected:
+    void resizeEvent(QResizeEvent* e) override;
+
+private:
+    void sync(bool animate);
+    void place();
+
+    RecadosStrip* m_strip = nullptr;
+    QVariantAnimation* m_anim = nullptr;
+    qreal m_reveal = 1.0;   // 1 = faixa inteira à vista, 0 = recolhida
+};
+
+// Botão no canto direito da linha do título (ideia do Pe, 27/11/2026): fecha e
+// abre a faixa do Mensageiro. Aberta, mostra as setinhas de recolher; fechada,
+// mostra o alfinete da faixa, com o pontinho quando há mensagem não lida.
+// Fechar vale até chegar mensagem nova (aí a faixa volta sozinha).
+class RecadosToggle : public QToolButton {
+    Q_OBJECT
+public:
+    explicit RecadosToggle(QWidget* parent = nullptr);
+
+private:
+    void refresh();
 };
 
 // Sininho "Recados" no topo da coluna do menu: o caminho de volta pros recados
