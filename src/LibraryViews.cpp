@@ -1229,11 +1229,11 @@ private:
 class FloatStage : public QWidget {
     static constexpr qreal kDW = 1578, kDH = 980;   // moldura de desenho
     static constexpr qreal kPersp = 1500;            // distância da câmera (perspective do CSS)
-    static constexpr qreal kRestRy = -11;            // de leve de lado: aparece a lombada
+    static constexpr qreal kRestRy = -19;            // de lado: aparece o bloco das páginas à direita (desenho do Pe, 27/11; era -11)
     static constexpr int kMoveMs = 850;
     static constexpr int kTextMs = 460;
 
-    struct Pose { QRectF r; qreal rot = 0, op = 1, t = 26, z = 0; bool floating = false; };
+    struct Pose { QRectF r; qreal rot = 0, op = 1, t = 80, z = 0; bool floating = false; };   // t = espessura (dobrada em 27/11: "os livros estão mt finos", o Pe)
     struct Item {
         Pose from, to;
         qreal ry = kRestRy, rx = 0, tz = 0;          // inclinação atual
@@ -1464,12 +1464,12 @@ private:
         const int d = ((k - m_cur) % n + n) % n;
         const int rows = rowCount();
         Pose p;
-        if (d == 0) { p.r = QRectF(70, 50, 340, 510); p.t = 30; p.z = 8; p.floating = true; return p; }
-        if (d == 1) { p.r = QRectF(260, 560, 290, 435); p.rot = 10; p.t = 26; p.z = 7; p.floating = true; return p; }
+        if (d == 0) { p.r = QRectF(70, 50, 340, 510); p.t = 92; p.z = 8; p.floating = true; return p; }
+        if (d == 1) { p.r = QRectF(260, 560, 290, 435); p.rot = 10; p.t = 80; p.z = 7; p.floating = true; return p; }
         const int ri = d - 2;
-        if (ri < rows) { p.r = QRectF(600 + ri * 360, 610, 330, 495); p.t = 28; p.z = 5; return p; }
-        if (d == n - 1) { p.r = QRectF(70, -660, 340, 510); p.rot = -4; p.op = 0; p.t = 30; p.z = 9; return p; }
-        p.r = QRectF(600 + rows * 360, 610, 330, 495); p.op = 0; p.t = 28; p.z = 4;
+        if (ri < rows) { p.r = QRectF(600 + ri * 360, 610, 330, 495); p.t = 86; p.z = 5; return p; }
+        if (d == n - 1) { p.r = QRectF(70, -660, 340, 510); p.rot = -4; p.op = 0; p.t = 92; p.z = 9; return p; }
+        p.r = QRectF(600 + rows * 360, 610, 330, 495); p.op = 0; p.t = 86; p.z = 4;
         return p;
     }
 
@@ -1709,13 +1709,19 @@ private:
                 q.fillRect(QRectF(0, 0, 1, 1), g);
             });
         }
-        const auto paper = [](QPainter& q, bool vertical, const QColor& a, const QColor& b) {
-            QLinearGradient g(0, 0, vertical ? 0 : 0.03, vertical ? 0.03 : 0);
+        // As folhas: listras ao longo da espessura. O número de listras sai do
+        // tamanho da face na tela (no mínimo ~4 px cada) e a passagem entre
+        // elas é suave: listra mais fina que o pixel vira onda de moiré, a
+        // "TV de tubo" que o Pe viu quando os livros engrossaram (27/11).
+        const auto paper = [](QPainter& q, bool vertical, qreal depthPx, const QColor& a, const QColor& b) {
+            const qreal n = qBound(3.0, depthPx / 4.0, 34.0);
+            const qreal per = 1.0 / n;
+            QLinearGradient g(0, 0, vertical ? 0 : per, vertical ? per : 0);
             g.setSpread(QGradient::RepeatSpread);
             g.setColorAt(0.0, a);
-            g.setColorAt(0.6, a);
-            g.setColorAt(0.61, b);
-            g.setColorAt(1.0, b);
+            g.setColorAt(0.35, a);
+            g.setColorAt(0.65, b);
+            g.setColorAt(1.0, a);
             q.fillRect(QRectF(0, 0, 1, 1), g);
             QLinearGradient sh(0, 0, 1, 0);
             sh.setColorAt(0.0, QColor(0, 0, 0, 60));
@@ -1723,9 +1729,13 @@ private:
             sh.setColorAt(1.0, QColor(0, 0, 0, 50));
             q.fillRect(QRectF(0, 0, 1, 1), sh);
         };
-        if (facing(pages)) faceFill(pages, [&](QPainter& q) { paper(q, false, QColor(0xef, 0xe9, 0xdc), QColor(0xdc, 0xd4, 0xc4)); });
-        if (facing(top)) faceFill(top, [&](QPainter& q) { paper(q, true, QColor(0xf1, 0xeb, 0xde), QColor(0xdd, 0xd5, 0xc6)); });
-        if (facing(bottom)) faceFill(bottom, [&](QPainter& q) { paper(q, true, QColor(0xec, 0xe6, 0xd8), QColor(0xd6, 0xce, 0xbe)); });
+        // quantos pixels a espessura ocupa na tela, em cada face (média das duas bordas)
+        const auto depth = [](const QPolygonF& q, int a0, int a1, int b0, int b1) {
+            return (QLineF(q[a0], q[a1]).length() + QLineF(q[b0], q[b1]).length()) / 2.0;
+        };
+        if (facing(pages)) faceFill(pages, [&](QPainter& q) { paper(q, false, depth(pages, 0, 1, 3, 2), QColor(0xef, 0xe9, 0xdc), QColor(0xdc, 0xd4, 0xc4)); });
+        if (facing(top)) faceFill(top, [&](QPainter& q) { paper(q, true, depth(top, 1, 2, 0, 3), QColor(0xf1, 0xeb, 0xde), QColor(0xdd, 0xd5, 0xc6)); });
+        if (facing(bottom)) faceFill(bottom, [&](QPainter& q) { paper(q, true, depth(bottom, 1, 2, 0, 3), QColor(0xec, 0xe6, 0xd8), QColor(0xd6, 0xce, 0xbe)); });
 
         QTransform T;
         if (QTransform::quadToQuad(QPolygonF(QRectF(0, 0, it.art.width(), it.art.height())), front, T)) {
